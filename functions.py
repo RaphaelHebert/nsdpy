@@ -4,7 +4,7 @@ import uuid                 #unique filename
 ########################################################################
 ####################################    main.py    #####################
 
-def esearchquery(query, apikey):
+def esearchquery(query, apikey=''):
 
     ##build api address
     esearchaddress = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
@@ -92,7 +92,7 @@ def taxids(querykey, webenv, count):
 
             except requests.exceptions.RequestException as e:
                 print(f'An exception occured:\n{e}')
-                return(1)
+                continue
         
         ##append the whole results to the text file
         with open(TaxIdfilename, 'a') as dl:
@@ -130,7 +130,7 @@ def taxids(querykey, webenv, count):
 
 
 #query taxonomy with efetch, returns a dict with taxid as key and info in a dict as value
-def completetaxo(idlist, apikey):
+def completetaxo(idlist, apikey = ""):
     ##number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
@@ -178,7 +178,7 @@ def completetaxo(idlist, apikey):
 
             except requests.exceptions.RequestException as e:
                 print(f'An exception occured:\n{e}')
-                return(1)
+                continue
                 
         print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
 
@@ -227,7 +227,7 @@ def completetaxo(idlist, apikey):
 
 
 ##the feattable function dl the feat table by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def feattable(querykey, webenv, count, apikey):
+def feattable(querykey, webenv, count, apikey = ""):
 
     ##build the filename
     unique_filename = str(uuid.uuid4())
@@ -274,7 +274,7 @@ def feattable(querykey, webenv, count, apikey):
 
             except requests.exceptions.RequestException as e:
                 print(f'An exception occured:\n{e}')
-                return(1)
+                continue
 
         ##append the feature table file in a text file
         with open(ftfilename, 'a') as dl:
@@ -287,7 +287,7 @@ def feattable(querykey, webenv, count, apikey):
     return(ftfilename)
 
 
-def taxo(filename, listofid, dictid, dicttaxo, apikey):
+def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
     if len(listofid) < 1:
         return
 
