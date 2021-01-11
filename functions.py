@@ -1,10 +1,14 @@
 import requests             #https://requests.readthedocs.io/en/master/
-import uuid                 #unique filename
+import os
+
 
 ########################################################################
 ####################################    main.py    #####################
 
-def esearchquery(query, apikey=''):
+def esearchquery(QUERY):
+
+    ##unpack QUERY:
+    (query, apikey) = QUERY
 
     ##build api address
     esearchaddress = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
@@ -44,16 +48,28 @@ def esearchquery(query, apikey=''):
     return (y.json())
 
 
-def taxids(querykey, webenv, count):
+def taxids(params, path, OPTIONS=("","","","","")):
+
+    ##unpack parameters
+    (querykey, webenv, count) = params
+    (verb, _, _, fileoutput, _) = OPTIONS
 
     ##number of accession number to be sent to the API at once
     retmax = 100
 
-    ##build unique filename
-    unique_filename = str(uuid.uuid4())
-    TaxIdfilename = "TaxIDs" + unique_filename[:12] + '.txt'
-    
+    ##filename
+    filename = "TaxIDs.txt"
+    ##path to filename
+    path = path + "/" + filename
+
+
+    if verb > 0:
+        print("retrieving TaxIds...")
+
     ##retreive the taxids sending batches of accession numbers to esummary
+    dictid = {}
+    taxid = ''
+    seqnb = ''
     for x in range((count//retmax) + 1):
         ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -66,7 +82,7 @@ def taxids(querykey, webenv, count):
         parameters['retmax'] = str(retmax)
         parameters['rettype'] = "uilist"
         parameters['retmode'] = "text"
-        
+
         ##loop until download is correct
         connect = 0
         while True:
@@ -94,46 +110,100 @@ def taxids(querykey, webenv, count):
                 print(f'An exception occured:\n{e}')
                 continue
         
-        ##append the whole results to the text file
-        with open(TaxIdfilename, 'a') as dl:
-            dl.write(x.text)
-        ret = parameters['retstart']
-        print(f'{round((int(ret)/count)*100, 1)} %  of {TaxIdfilename} downloaded')
+
+        if verb > 1:
+            ret = parameters['retstart']
+            print(f'{round((int(ret)/count)*100, 1)} %  of the TaxIDs downloaded')
 
     ###extract the TaxIDs and accession numbers (record in text file and in dictid)
-    dictid = {}
-    taxid = ''
-    seqnb = ''
-    f = open(TaxIdfilename)
-    for line in f:
-        if len(line.split('<DocSum>')) > 1:
-            taxid = ''
-            seqnb = ''
-        else: 
-            caption = line.split('<Item Name="Caption" Type="String">', 1)
-            if len(caption) > 1:
-                seqnb = caption[1].split("<")[0].strip()
+    
+        f = x.text.splitlines()
+        for line in f:
+            if len(line.split('<DocSum>')) > 1:
+                taxid = ''
+                seqnb = ''
+            else: 
+                caption = line.split('<Item Name="Caption" Type="String">', 1)
+                if len(caption) > 1:
+                    seqnb = caption[1].split("<")[0].strip()
 
-            TaxId = line.split('<Item Name="TaxId" Type="Integer">', 1)
-            if len(TaxId) > 1:
-                taxid = TaxId[1].split("<")[0].strip()
-            
-            if seqnb:
-                dictid[seqnb] = taxid 
-    f.close()
+                TaxId = line.split('<Item Name="TaxId" Type="Integer">', 1)
+                if len(TaxId) > 1:
+                    taxid = TaxId[1].split("<")[0].strip()
+                
+                if seqnb:
+                    dictid[seqnb] = taxid 
 
     #rewrite the text file with only TaxIds and Accession numbers
-    with open(TaxIdfilename, 'w') as summary:
-        [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-    
+        if fileoutput:
+            with open(path, 'a') as summary:
+                [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
+   
+
     return dictid
 
+def dispatch(lineage, classif):
+    Plantae = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
+    'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
+    'Cyanidiophyta', 'Glaucophyta', 'Prasinophyceae','Rhodophyta']
+
+    Fungi = ['Chytridiomycota', 'Zygomycota', 'Ascomycota', 'Basidiomycota', 'Glomeromycota']
+
+    Metazoa = ['Acanthocephala', 'Acoelomorpha', 'Annelida', 'Arthropoda', 'Brachiopoda', 'Ectoprocta', 'Bryozoa', 'Chaetognatha',\
+    'Chordata', 'Cnidaria', 'Ctenophora', 'Cycliophora', 'Echinodermata', 'Echiura', 'Entoprocta', 'Gastrotricha', 'Gnathostomulida',\
+    'Hemichordata', 'Kinorhyncha', 'Loricifera', 'Micrognathozoa', 'Mollusca', 'Nematoda', 'Nematomorpha', 'Nemertea', 'Onychophora'\
+    'Orthonectida', 'Phoronida', 'Placozoa', 'Plathelminthes', 'Porifera', 'Priapulida', 'Rhombozoa', 'Rotifera', 'Sipuncula',\
+    'Tardigrada', 'Xenoturbella']
+    
+    if classif == 2:
+        return "COI"
+
+    if isinstance(classif, list):
+        try:
+            other = [rank for rank in lineage if rank in classif][0]
+        except IndexError:
+            other = "OTHERS"
+        return other
+
+    if classif == 0:
+        try:
+            Phylum = [phy for phy in lineage if phy in Metazoa or phy in Fungi or phy in Plantae][0]
+        except IndexError:
+            Phylum = 'OTHERS'
+        return Phylum
+
+    if classif == 1:
+        if 'Metazoa' in lineage or len(list(set(lineage) & set(Metazoa))) > 0:
+            kingdom = "METAZOA"
+        elif "Viridiplantae" in lineage or len(list(set(lineage) & set(Plantae))) > 0:
+            kingdom = "PLANTAE" 
+        elif "Fungi" in  lineage or len(list(set(lineage) & set(Fungi))) > 0:
+            kingdom = "FUNGI" 
+        else:
+            kingdom = "OTHERS"
+        return kingdom
+    
+    ## if the users choose to make groupe n rank higher than species (classif >= 3)
+    classif = -(int(classif) - 2)
+    try:
+        rank = lineage[classif]
+    except IndexError:
+        rank = "OTHERS"
+    return rank
 
 #query taxonomy with efetch, returns a dict with taxid as key and info in a dict as value
-def completetaxo(idlist, apikey = ""):
+def completetaxo(idlist, QUERY, OPTIONS):
+
+    ##unpack parameters
+    (_, apikey) = QUERY
+    (verb, _, classif, _, _) = OPTIONS
+
     ##number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
+
+    if verb > 0:
+            print("retrieving taxonomy...")
     ##dictionnary that will be returned
     data = {}
 
@@ -152,7 +222,7 @@ def completetaxo(idlist, apikey = ""):
         parameters['id'] = idsublist
         if apikey:
             parameters['api_key'] = apikey
-        
+
         ##loop until download is correct
         connect = 0
         while True:
@@ -179,8 +249,9 @@ def completetaxo(idlist, apikey = ""):
             except requests.exceptions.RequestException as e:
                 print(f'An exception occured:\n{e}')
                 continue
-                
-        print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
+
+        if verb > 1:
+            print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
 
         ##analyse the results from efetch
         x = x.text
@@ -210,7 +281,16 @@ def completetaxo(idlist, apikey = ""):
                 _, Lineage = Lineage.split('<Lineage>', 1)    
             except ValueError:
                 Lineage = 'not found'
-            dicttemp['Lineage'] = Lineage
+            lineage = Lineage.split('; ')
+            dicttemp['Lineage'] = lineage
+
+            ##dispatch
+            if classif == 2:
+                rank = "COI"
+            else:
+                rank = dispatch(lineage, classif)
+
+            dicttemp['dispatch'] = rank
 
             try:
                 Division , _ = seq.split('</Division>', 1)
@@ -220,21 +300,35 @@ def completetaxo(idlist, apikey = ""):
             dicttemp['Division'] = Division
 
             data[TaxId] = dicttemp
-    
-    print(f'number of taxids:{len(data.keys())}')
+
+    if verb > 0:
+        print(f'number of taxids:{len(data.keys())}')
 
     return data
 
 
 ##the feattable function dl the feat table by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def feattable(querykey, webenv, count, apikey = ""):
+def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
+    
+    ##unpack parameters
+    (querykey, webenv, count) = params
+    (_, apikey) = QUERY
+    (verb, genelist, _, _, fileoutput)= OPTIONS
 
-    ##build the filename
-    unique_filename = str(uuid.uuid4())
-    ftfilename = "featuretable_" + unique_filename[:12] + '.txt'
+    if fileoutput:
+        ##filename
+        filename = "featuretable.txt"
+        ##path to filename
+        feattablename = path + "/" + filename
 
     ##number of accession numbers to be sent at each API query
     retmax = 100
+    if verb > 0:
+            print("retrieving the feature tables...")
+
+    #list of accession number for wich a COI is found:
+    found = []
+
     for x in range((count//retmax) + 1):
         ##build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
@@ -254,7 +348,7 @@ def feattable(querykey, webenv, count, apikey = ""):
         connect = 0
         while True:
             try:
-                x2 = requests.get(efetchaddress, params = parameters, timeout = 60)
+                result = requests.get(efetchaddress, params = parameters, timeout = 60)
                 break
             except requests.exceptions.HTTPError as errh:
                 print("Http Error:",errh)
@@ -275,34 +369,117 @@ def feattable(querykey, webenv, count, apikey = ""):
             except requests.exceptions.RequestException as e:
                 print(f'An exception occured:\n{e}')
                 continue
-
+        
+        result = result.text
         ##append the feature table file in a text file
-        with open(ftfilename, 'a') as dl:
-            dl.write(x2.text)
+        if fileoutput:
+            with open(feattablename, 'a') as dl:
+                dl.write(result)
 
+        ##analyse the results     
+        sublist = extract(path, result, dictid, dicttaxo, genelist, verb)
+        found = found + sublist
         ##output % done in terminal
-        start = parameters['retmax']
-        print(f'{round(((x * int(start))/count)*100, 1)} %  of {ftfilename} downloaded')
+        if verb > 1:
+            start = parameters['retmax']
+            print(f'{round(((x * int(start))/count)*100, 1)} %  of the feature tables downloaded')
+
+    return found
+
+def subextract(seq, path, dictid, dicttaxo, genelist):
+    ###find coi in a seq and write to ouput file
+    ##extract accession number
+    try:
+        key = seq.split(">lcl|")[1].split(".")[0]
+    except IndexError:
+        return 
+
+    ##build idline (retreive info)
+    try:
+        TaxId = dictid[key]
+    except KeyError:
+        return 
+    try:
+        Lineage = dicttaxo[TaxId]['Lineage']
+        Division = dicttaxo[TaxId]['Division']
+        Name = dicttaxo[TaxId]['Name']  
+        dispatch = dicttaxo[TaxId]['dispatch']
+    except KeyError:
+        return 
+
+    ##check if COI
+    #coilist0 = ["=COX1]", "=Cox1]", "=cox1]", "=co1]", "=CO1]", "=Co1]", "=COXI]", "=CoxI]", "=coxI]", "=coi]", "=COI]"]
+    ok = [ 1 if len(seq.split(co)) > 1 else 0 for co in genelist]
+    if 1 in ok:
+        ##get the Sequence
+        description, dna = seq.split('\n', 1)
+
+        try:
+            _ ,location = description.split('[location=', 1)
+            location, _ = location.split(']',1)
+        except ValueError:
+            print('location')
+            location = 'not found'
+        
+        Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        idline = '> Accession number: ' + str(key) + '|Name:' + Name +  '|TaxId:' + TaxId + '|Lineage:' + Lineage +\
+        '|Division:' + Division  + '|Location:' + location
+
+        path = path + "/" + dispatch + ".fasta"
+        with open(path, 'a') as new:
+            new.write('\n' + str(idline) + '\n' + str(dna) +'\n') 
+        return key
+    else:
+        return 
+
+
+def extract(path, text, dictid, dicttaxo, genelist, verb):
+    if verb > 0:
+        print('analyzing the results...')
     
-    return(ftfilename)
+    genelist = [ "=" + gene + "]" for gene in genelist]
+    ##extract sequences from input file (seq by seq)
+    found = []
+    seq = ''
+    text = text.splitlines()
+    for line in text:
+        if len(line.split(">lcl|")) > 1:
+            if seq:
+                try:
+                    x = subextract(seq, path, dictid, dicttaxo, genelist)
+                    found.append(x)
+                except:
+                    pass
+            seq = str(line)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+        else:
+            seq = seq + '\n' + line
+
+    return (found)
 
 
-def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
+def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
     if len(listofid) < 1:
         return
 
+    ##unpack params
+    (verb, genelist, classif, _, _) = OPTIONS
+    (_, apikey) = QUERY
     ##build output unique filename
-    unique_filename = str(uuid.uuid4())
-    notfound = "notfound_" + unique_filename[:12] + '.txt'
+    notfound = path + "/notfound.txt"
 
     count = len(listofid)
     #number of accession number to be send in each API call:
     retmax = 10
     #forms COI can be found in 'gene' (from gene and CDS section of the gb file)
-    coilist = ['gene="COX1"', 'gene="Cox1"', 'gene="cox1"', 'gene="co1"', 'gene="CO1"', 'gene="Co1"', 'gene="COXI"', 'gene="CoxI"', 'gene="coxI"', 'gene="coi"', 'gene="COI"']
+    genelist = ['gene=' + '"' + gene + '"' for gene in genelist]
+    #coilist = ['gene="COX1"', 'gene="Cox1"', 'gene="cox1"', 'gene="co1"', 'gene="CO1"', 'gene="Co1"', 'gene="COXI"', 'gene="CoxI"', 'gene="coxI"', 'gene="coi"', 'gene="COI"']
     remain = {}
     analysed = []
+    if verb > 0:
+        print("Looking for the COI for the remaining accession numbers...")
+
     for x in range((count//retmax) + 1):
+        ###################  API CALL  ##################
         ##slice the list of ids passed to the function
         ids = listofid[x * retmax:(x+1) * retmax]
         ##if some ids haven't been dl at the last call add them to this call
@@ -351,14 +528,9 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
                 print(f'An exception occured:\n{e}')
                 continue
 
+        #######################   RESULTS ANALYZING   ##########################
         x = x.text
         x = x.split('//')
-        #####check if number of gb files == number of sequences to be downloaded#########
-        if len(x) == len(ids):
-            print('dl ok')
-        else:
-            print(f'{len(ids) - (len(x)-1)} numbers not dl')
-        ########################
 
         for i, seq in enumerate(x[:-1]):
             ##EXTRACT THE ACCESSION NUMBER
@@ -373,7 +545,7 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
             ###LOOK FOR COX1 IN gene
             genes = seq.split('gene  ')
             try:
-                genes = [(gene.split('\n')[0].strip(), gene.split('\n')[1].strip().split(' ')[0].strip(' /')) for gene in genes if gene.split('\n')[1].strip().split(' ')[0].strip(' /') in coilist]
+                genes = [(gene.split('\n')[0].strip(), gene.split('\n')[1].strip().split(' ')[0].strip(' /')) for gene in genes if gene.split('\n')[1].strip().split(' ')[0].strip(' /') in genelist]
             except IndexError:
                 pass
 
@@ -381,12 +553,13 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
             ##get location from the CDS:
             try:
                 CDS1 = seq.split('CDS  ')
-                CDS = [c.split('\n')[0].strip() for c in CDS1 if c.split('\n')[1].strip().split(' ')[0].strip(' /') in coilist]
+                CDS = [c.split('\n')[0].strip() for c in CDS1 if c.split('\n')[1].strip().split(' ')[0].strip(' /') in genelist]
                 if len(CDS) == 0:
                     try:
-                        CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome c oxidase subunit I"]
-                        if len(CDS) == 0:
-                            CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome oxidase subunit I"]
+                        CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] in genelist]
+                        # CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome c oxidase subunit I"]
+                        # if len(CDS) == 0:
+                        #     CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome oxidase subunit I"]
                     except IndexError:
                         pass
                 CDS0 = CDS[0]
@@ -469,13 +642,11 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
             ##build idline
             try:
                 TaxId = dictid[version]
-            except:
-                TaxId = 'not found'
-            try:
                 Lineage = dicttaxo[TaxId]['Lineage']
                 Division = dicttaxo[TaxId]['Division']
                 Name = dicttaxo[TaxId]['Name']
-            except:
+            except KeyError:
+                TaxId = 'not found'
                 Lineage = 'not found'
                 Division = 'not found'
                 Name = 'not found'                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
@@ -487,6 +658,7 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
                     _, Lineage = Lineage.split('\n',1)
                     Lineage, _ = Lineage.split('REFERENCE', 1)
                     Lineage = Lineage.strip()
+                    Lineage = Lineage.split("; ")
                 except ValueError:
                     pass
             if Name == 'not found':
@@ -496,190 +668,31 @@ def taxo(filename, listofid, dictid, dicttaxo, apikey = ""):
                 except ValueError:
                     pass
 
-
+            Lineage = ", ".join(Lineage)
             idline = '> Accession number: ' + str(version) + '|Name:' + Name +  '|TaxId:' + TaxId + '|Lineage:' + Lineage\
                 + '|Division:' + Division  + '|Location:' + loc1
             
+            
+            Lineage = Lineage.split(", ")
+            if classif == 2:
+                rank = "COI"
+            else:
+                rank = dispatch(Lineage, classif)
+            towrite = path + "/" + rank + ".fasta"
+
             coilen = len(''.join(COI))
             ##output the result
-            with open(filename, 'a') as dl:
+            with open(towrite, 'a') as dl:
                 dl.write(f'{idline}\n')
-                if COI == 'location error':
-                    dl.write(f'{COI}\n')
-                else:
-                    [dl.write(c+'\n') for c in COI]
+                # if COI == "location error":
+                #     dl.write(f'{COI}\n')
+                # else:
+                [dl.write(c + '\n') for c in COI]
             analysed.append(version)
         remain = set(ids) - set(foundlist)
-        print(f'{round((int(retstart)/count)*100, 1)} %  of the remaining  analysis done')
+
+        if verb > 1:
+            print(f'{round((int(retstart)/count)*100, 1)} %  of the remaining  analysis done')
+
     return analysed
-
-
-def subextract(seq, filename, dictid, dicttaxo):
-    ###find coi in a seq and write to ouput file
-    ##extract accession number
-    try:
-        key = seq.split(">lcl|")[1].split(".")[0]
-    except IndexError as r:
-        return
-    
-    ##build idline (retreive info)
-    try:
-        TaxId = dictid[key]
-    except KeyError:
-        return
-
-    try:
-        Lineage = dicttaxo[TaxId]['Lineage']
-        Division = dicttaxo[TaxId]['Division']
-        Name = dicttaxo[TaxId]['Name']  
-    except KeyError:
-        # Lineage = 'not found' 
-        # Division = 'not found'   
-        # Name = 'not found'  
-        return
-
-    ##check if COI
-    coilist0 = ["=COX1]", "=Cox1]", "=cox1]", "=co1]", "=CO1]", "=Co1]", "=COXI]", "=CoxI]", "=coxI]", "=coi]", "=COI]"]
-    ok = [ 1 if len(seq.split(co)) > 1 else 0 for co in coilist0]
-    if 1 in ok:
-        ##get the Sequence
-        description, dna = seq.split('\n', 1)
-        try:
-            _ ,location = description.split('[location=', 1)
-            location, _ = location.split(']',1)
-        except ValueError:
-            location = 'not found'
-        
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
-        idline = '> Accession number: ' + str(key) + '|Name:' + Name +  '|TaxId:' + TaxId + '|Lineage:' + Lineage +\
-        '|Division:' + Division  + '|Location:' + location
-
-        with open(filename, 'a') as new:
-            new.write('\n' + str(idline) + '\n' + str(dna) +'\n') 
-        return key
-    else:
-        return
-
-def extract(inputfilename, dictid, dicttaxo):
-    print('in extract')
-    ##build output file name
-    unique_filename = str(uuid.uuid4())
-    COIfasta = "COI_" + unique_filename[:12] + '.fasta'
-
-    ##extract sequences from input file (seq by seq)
-    y = open(inputfilename)
-    found = []
-    seq = ''
-    try:
-        for line in y:
-            if len(line.split(">lcl|")) > 1:
-                if seq:
-                    try: 
-                        x = subextract(seq, COIfasta, dictid, dicttaxo)
-                        found.append(x)
-                    except:
-                        pass
-                seq = str(line)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
-            else:
-                seq = seq + line
-        f.close() 
-    except:
-        y.close()
-
-    return (found, COIfasta)
-
-
-
-############################################################
-################    analysemainoutput.py    ################
-
-##extract the sequences with introns
-def table(inputfile, outputfile):
-    ###lists if phylums
-    Plantae = ['Plantae', 'Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
-    'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
-    'Cyanidiophyta', 'Glaucophyta', 'Prasinophyceae','Rhodophyta']
-
-    Fungi = ['Fungi', 'Chytridiomycota', 'Zygomycota', 'Ascomycota', 'Basidiomycota', 'Glomeromycota']
-
-    Metazoa = ['Metazoa','Acanthocephala', 'Acoelomorpha', 'Annelida', 'Arthropoda', 'Brachiopoda', 'Ectoprocta', 'Bryozoa', 'Chaetognatha',\
-    'Chordata', 'Cnidaria', 'Ctenophora', 'Cycliophora', 'Echinodermata', 'Echiura', 'Entoprocta', 'Gastrotricha', 'Gnathostomulida',\
-    'Hemichordata', 'Kinorhyncha', 'Loricifera', 'Micrognathozoa', 'Mollusca', 'Nematoda', 'Nematomorpha', 'Nemertea', 'Onychophora'\
-    'Orthonectida', 'Phoronida', 'Placozoa', 'Plathelminthes', 'Porifera', 'Priapulida', 'Rhombozoa', 'Rotifera', 'Sipuncula',\
-    'Tardigrada', 'Xenoturbella']
-
-    with open(inputfile, 'r') as i:
-        content = i.read()
-
-    content = content.split('>')[1:]
-    content.sort()
-    for seq in content:
-        seq = seq.splitlines()
-        idline = seq[0]
-        dna = len(''.join(seq[1:]))
-        ##explore idline
-        try:
-            _, location = idline.split('join')
-            introns = len(location.split(',')) - 1
-        except ValueError:
-            continue
-
-        allaccess = []
-        access =  idline.split('Accession number: ')[1].split('|')[0]
-        allaccess.append(access)
-        TaxID = idline.split('TaxId:')[1].split('|')[0]
-        Phylum = idline.split('Lineage:')[1].split('|')[0].split(';')
-        try:
-            Phylum = [phy.strip() for phy in Phylum if phy.strip() in Metazoa or phy.strip() in Fungi or phy.strip() in Plantae][0]
-        except IndexError:
-            Phylum = 'not found'
-        
-        genenb = allaccess.count(access)
-        tableline = access + ',' + TaxID + ',' + Phylum + ',' + str(genenb) + ',' + str(introns) + ',' + str(dna)
-
-        try:
-            with open(outputfile, 'r') as o:
-                pass
-            with open(outputfile, 'a') as o:
-                o.write(f'{tableline}\n')
-        except FileNotFoundError:
-            with open(outputfile, 'a') as o:
-                o.write('accession number,TaxID,Phylum,number of gene,number of introns,COI length\n')
-                o.write(f'{tableline}\n')
-
-    return 
-
-
-def duplicates(inputfilename):
-    with open(inputfilename, 'r') as i:
-        content = i.read()
-    ##make a list of the accession number and keep the AN with more than occurence 
-    content1 = content.split('> Accession number: ')[1:]
-    content1 = [co.split('|')[0] for co in content1]
-    duplis = [co for co in content1 if content1.count(co) > 1]
-    
-    ###rewrite the file wihtout the duplication
-    ###write a file for the duplication
-    ###create filenames
-    unique_filename = str(uuid.uuid4())
-    Duplifilename = "Duplicates_" + unique_filename[:12] + '.fasta'
-    COIfilename = "COIanalysed_" + unique_filename[:12] + '.fasta'
-
-    ###separate duplicates and unique sequence
-    content1 = content.split('> Accession number: ')[1:]
-    duplilist = [co for co in content1 if co.split('|')[0] in duplis]
-    duplilist.sort()
-
-    with open(Duplifilename, 'w') as dup:
-        [dup.write(f'> Accession number: {co}') for co in duplilist]
-
-    uniquelist = [co for co in content1 if co.split('|')[0] not in duplis]
-    uniquelist.sort()
-
-    with open(inputfilename, 'w') as dup:
-        [dup.write(f'> Accession number: {co}') for co in uniquelist]
-
-    return print(f'number of accession number with more than sequence:{len(set(duplilist))}\n\
-        number of duplicates:{len(duplilist)}')
-
 
