@@ -334,7 +334,7 @@ def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
         #parameters 
-        parameters['db'] = "nuccore"
+        parameters['db'] = "nucleotide"
         parameters['query_key'] = querykey
         parameters['WebEnv'] = webenv
         parameters['retstart'] = str(x * retmax)
@@ -447,7 +447,8 @@ def extract(path, text, dictid, dicttaxo, genelist, verb):
             if seq:
                 try:
                     x = subextract(seq, path, dictid, dicttaxo, genelist)
-                    found.append(x)
+                    if x:
+                        found.append(x)
                 except:
                     pass
             seq = str(line)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
@@ -464,15 +465,17 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
     ##unpack params
     (verb, genelist, classif, _, _) = OPTIONS
     (_, apikey) = QUERY
+
     ##build output unique filename
     notfound = path + "/notfound.txt"
+    countnotfound = 0
 
     count = len(listofid)
     #number of accession number to be send in each API call:
     retmax = 10
-    #forms COI can be found in 'gene' (from gene and CDS section of the gb file)
+    #format the expression to be found in 'gene' (from gene and CDS section of the gb file)
     genelist = ['gene=' + '"' + gene + '"' for gene in genelist]
-    #coilist = ['gene="COX1"', 'gene="Cox1"', 'gene="cox1"', 'gene="co1"', 'gene="CO1"', 'gene="Co1"', 'gene="COXI"', 'gene="CoxI"', 'gene="coxI"', 'gene="coi"', 'gene="COI"']
+
     remain = {}
     analysed = []
     if verb > 0:
@@ -528,7 +531,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
                 print(f'An exception occured:\n{e}')
                 continue
 
-        #######################   RESULTS ANALYZING   ##########################
+        #######################   RESULT ANALYZING   ##########################
         x = x.text
         x = x.split('//')
 
@@ -545,7 +548,8 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
             ###LOOK FOR COX1 IN gene
             genes = seq.split('gene  ')
             try:
-                genes = [(gene.split('\n')[0].strip(), gene.split('\n')[1].strip().split(' ')[0].strip(' /')) for gene in genes if gene.split('\n')[1].strip().split(' ')[0].strip(' /') in genelist]
+                genes = [(gene.split('\n')[0].strip(), gene.split('\n')[1].strip().split(' ')[0].strip(' /'))\
+                    for gene in genes if gene.split('\n')[1].strip().split(' ')[0].strip(' /') in genelist]
             except IndexError:
                 pass
 
@@ -590,7 +594,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
             if (len(genes) == 0 and CDS[0] == (0,0)) or not dna:
                 with open(notfound, 'a') as nf:
                     nf.write(f'{version}    No COI found in gb file error#1\n')
-                analysed.append(version)
+                countnotfound += 1                
                 continue
 
             try:
@@ -623,20 +627,19 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
                     ###should not happen
                     with open(notfound, 'a') as nf:
                         nf.write(f'{version}    No COI found in gb file error#2\n')
-                    analysed.append(version)
+                    countnotfound += 1
                     continue
                 
                 ###COI lists to display 80 char per line
                 COI = ''.join(COI)
                 COI = [''.join(COI[i:i + 80]) for i, t in enumerate(list(COI)) if i % 80 == 0]
-
                 analysed.append(version)
 
             except:
                 ###should not happen
                 with open(notfound, 'a') as nf:
                     nf.write(f'{version}    No COI found in gb file error#3\n')
-                analysed.append(version)
+                countnotfound += 1
                 continue
         
             ##build idline
@@ -684,15 +687,13 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=""):
             ##output the result
             with open(towrite, 'a') as dl:
                 dl.write(f'{idline}\n')
-                # if COI == "location error":
-                #     dl.write(f'{COI}\n')
-                # else:
                 [dl.write(c + '\n') for c in COI]
             analysed.append(version)
+
         remain = set(ids) - set(foundlist)
 
         if verb > 1:
             print(f'{round((int(retstart)/count)*100, 1)} %  of the remaining  analysis done')
 
-    return analysed
+    return analysed, countnotfound
 

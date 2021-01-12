@@ -11,7 +11,7 @@ from datetime import datetime
 
 ##for the taxo function keep the "" around the coi exp:'gene="CO1"'
 COIs = ["COX1", "Cox1", "cox1", "co1", "CO1", "Co1", "COXI", "CoxI", "coxI", "coi", "COI", "MTCO1", "cytochrome c oxidase subunit I", "cytochrome oxidase subunit I"]
-RBCLs = []
+RBCLs = ["rbcL"]
 #rbcL, MatK etc
 
 
@@ -51,7 +51,6 @@ args = parser.parse_args()
 #############   GLOBAL VARIABLES    #############
 #################################################
     ##for testing only
-    #apikey = '66ab22581a26c4fdc8e74788e8562502a308'
     #query = '((mitochondrion[Title]) AND (complete[Title]) AND ("CO*" OR "COX1"))'
  
 #verbose
@@ -113,7 +112,7 @@ count = int(y["esearchresult"]["count"])
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
 ##for testing purpose
-#count = 500
+#count = 300
 
 params = (querykey, webenv, count)
 
@@ -151,16 +150,18 @@ if verb > 0:
     print(f'number of remaining accession numbers with no COI found: {len(remaining)}')
 
 ###analyse
-analyse = taxo(path, remaining, dictid, dicttaxo, QUERY, OPTIONS)
+analyse, notfound = taxo(path, remaining, dictid, dicttaxo, QUERY, OPTIONS)
 
 if verb > 0:
-    print(f'number of unique accession numbers:{len(listofids)}')
-    print(f'number of COI found in the feature table: {len(found)}')
-    print(f'number of COI found in gb file: {len(analyse)}')
-    print(f'total number of accession number analysed: {len(set(analyse)) + len(set(found))}')
+    print(f'number of unique accession numbers:         {len(listofids)}')
+    print(f'number of COI found in the feature table:   {len(found)}')
+    print(f'number of COI found in gb file:             {len(analyse)}')
+    print(f'total number of sequences retrieved:        {len(found) + len(analyse)}')
+    print(f'total number of accession number analysed:  {len(set(analyse)) + len(set(found)) + notfound}')
 
 allaccess = dictid.keys()
-idk = set(allaccess) - (set(analyse) | set(found))
+idk = list(set(allaccess) - (set(analyse) | set(found)))
 
-if len(list(idk)) > 0 and verb > 0:
-    print(f"These accession numbers were not analyzed; {idk}")
+if len(idk) > 0 and verb > 0:
+    print(f"total number of accession number \nfor which no gene has been retrieve:  {len(idk)}")
+    print("see the notfound.txt for the detail")
