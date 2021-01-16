@@ -2,13 +2,14 @@ script: main.py
 
     INPUTS: 
     	POSITIONNAL ARGUMENTS
-        -takes the user's query as first command line argument (the query as the user would enter it in the NCBI search engine)
-        -optionnaly takes API key as second command line argument
+        -r --request	the user's query as first command line argument (the query as the user would enter it in the NCBI search engine)
+        
        OPTIONNAL ARGUMENTS
-        -h --help will display the help
-        -v --verbose / -q --quiet will display more (v) or less (q) comments in the terminal
-        -C --COI / -R --RIBULOSE (in development) / -o --OTHERS choose the gene to be search, if OTHERS enter manually the expression(s) to be searched exp: -o TNF TP53
-        if no option selected the COI will be searched
+        -a --apikey	the user's NCBI API key
+        -h --help	will display the help
+        -v --verbose / -q --quiet	will display more (v) or less (q) comments in the terminal
+        -g --genes / -f --fasta (exclusive)	choose the gene(s) to be search in featture table files and genbank files, if -f just download and write a text file with the sequences found in the fasta files and their taxonomy information (linaeage and name)
+        if no option selected the sequences of the feature tables files and genbank files won't be filtered.
         -T --TAXIDS writes a text file with all the accession numbers and their corresponding taxids found by the esearch query
         -F --FEATURE writes a text file with the retrieved feature table from the nuccore database.
         -k --kingdom / -p -phylum / -l --levels / -s --species
@@ -42,11 +43,12 @@ The webenv and query_key to send the access numbers of the results directly to e
 the dispatch key depends on the option selected for the classification (-kpls)
             Featuretable
         -call the function feattable 
-        -the function uses efetch E-utility to search the nuccore (=nucleotide) database and retreive the results as a Featuretable in text format, then call the extract function with this result.
+        -the function uses efetch E-utility to search the nuccore (=nucleotide) database and retreive the results as a Featuretable in text format (if fasta option is selected it download the fasta files), then call the extract function with this result.
 
     The function outputs a list of the accession number for which the targeted gene(s) has been found.
     
         Taxo
+        (not called if the fasta option is selected)
         -the script calls the taxo function with the list of remaining accession number, the dictionnaries with the TaxIDs and taxonomy information and name of the file to append the results
         -the taxo function searches the nucleotide database using the efetch e-utility to retreive the genbank file, it sends batches of 10 (can be set to more changing the retmax variable value) accession numbers
     from the genbank file the taxo function looks for the COI for each accession numbers and retreive the informations: location, DNA sequences.

@@ -21,6 +21,15 @@ OPTIONS:
 	-webenv(STRING), the webenv returned by a search with the esearch E-utility in history mode, text format. exp: "MCID_5fdaff9d0aee646a05268177"
 	-count(INTEGER), the number of of matches returned by a search in esearch E-utility and converted to an integer. exp: 86184
 
+Function dowload(parameters, address):
+
+	INPUTS:
+		-parameters(DICT) a dictionnary with the name of the parameters as keys and their value as values
+	ACTION:
+		-make a call using the get method from the request library to the address provided with the parameters as parameters
+		-loop untils getting an answer from the call
+		-handle errors (sush as HTTPerror, network error...)
+		
 
 Function esearchquery(QUERY):
 
