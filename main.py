@@ -42,9 +42,7 @@ args = parser.parse_args()
 #################################################
 #############   GLOBAL VARIABLES    #############
 #################################################
-    ##for testing only
-    #query = '((mitochondrion[Title]) AND (complete[Title]) AND ("CO*" OR "COX1"))'
- 
+
 #verbose
 if args.verbose:
     verb = 2
@@ -102,8 +100,6 @@ if count < 1:
     sys.exit("No results found")
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
-if count > 10000:
-    count = 10000
 params = (querykey, webenv, count)
 #comments
 if verb > 0:    
