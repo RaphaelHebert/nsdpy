@@ -1,5 +1,5 @@
 Script functions.py:
-Define some functions that are used in taxonomy.py and feature.py
+Define some functions that are used in main.py
 
 
 The intputs QUERY, OPTIONS and params correspond to tuples that contain:
@@ -10,7 +10,7 @@ QUERY:
 		 exp:'66af22581a26c4fdc8e74788e8562502a308'
 
 OPTIONS:
-	-args.FEATURE(BOOL):if the function should writes a text file with the feature table or not
+	-args.CDS(BOOL):if the function should writes a text file with the CDS fasta file or not
 	-args.TAXIDS(BOOL):if the function should writes a text file with the accession numbers and their TaxIDS table or not
 	-verb(INT): verbose or quiet options
 	-genelist(list): list of genes to be found
@@ -65,24 +65,36 @@ Function taxids(params, path, OPTIONS):
 		-A dictionnary with the accession numbers as keys and TaxIDs as values.
 	
 
-Function feattable(params, path, dictid, dicttaxo, QUERY, OPTION):
+Function cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTION):
 
 	INPUTS:
 		params(TUPLE): uses querykey, webenv, count from params
 		path(STRING): the path of the location where the results are written
 		dictid(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
 		QUERY(TUPLE): uses apikey from QUERY
-		OPTION(optionnal):uses verb, genelist and args.FEATURE from OPTION
+		OPTION(optionnal):uses verb, genelist and args.CDS from OPTION
 	
 	ACTION:
-		Using the efetch E-utility with the parameter from params it looks in the nuccore (=nucleotide) database to retrieve the feature table for 100 accession numbers (see retmax variable) at the time.
-		If the arge.FEATURE is True, writes the results in a txt file.
+		Using the efetch E-utility with the parameter from params it looks in the nuccore (=nucleotide) database to retrieve the CDS fasta file for 100 accession numbers (see retmax variable) at the time.
+		If the args.CDS is True, writes the results in a txt file.
 Call the extract function to analyse the results from Entrez API (everytime Entrez returns some results).
 		
 	OUTPUTS:
-		It returns the list of the accession number for which a COI and its taxonomy have been found.
+		It returns the list of the accession number for which a gene and its taxonomy have been found.
 
-		
+Function fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS):
+	INPUTS:
+		path(STRING): the path of the location where the results are written
+		dictid(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
+		QUERY(TUPLE): uses apikey from QUERY
+		listofids(LIST): list of accession number for which the fasta files must be retrieved
+		OPTIONS(optionnal):uses verb and fileoutput from OPTIONS
+	ACTION:
+		Using the efetch E-utility with the parameter from params it looks in the nuccore (=nucleotide) database to retrieve the fasta file for 10 accession numbers (see retmax variable) at the time. If fileoutput is True it writes the results in a fasta file. It writes the results in one or more fasta file (depending on the taxonomy option) and add the taxonomy information to information line.
+	OUTPUT:
+		It returns the list of the accession number for which a sequence have been found.
+	
+	
 Function taxo(path, listofid, dictid, dicttaxo, QUERY, OPTION)
 	
 	INPUTS:
@@ -117,7 +129,7 @@ Function extract(path, text, dictid, dicttaxo, genelist, verb):
 	
 	INPUTS:
 		-path(STRING): see above
-		-text(STRING): featuretable in text format, results of the call to nuccore database made by feattable function.
+		-text(STRING): CDS fasta file in text format, results of the call to nuccore database made by the cdsfasta function.
 		-dictid (DICTIONNARY) see above
 		-dicttaxo (DICTIONNARY) see above
 		-genelist(LIST) from OPTIONS, see above 

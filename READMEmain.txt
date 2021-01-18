@@ -8,10 +8,10 @@ script: main.py
         -a --apikey	the user's NCBI API key
         -h --help	will display the help
         -v --verbose / -q --quiet	will display more (v) or less (q) comments in the terminal
-        -g --genes / -f --fasta (exclusive)	choose the gene(s) to be search in featture table files and genbank files, if -f just download and write a text file with the sequences found in the fasta files and their taxonomy information (linaeage and name)
-        if no option selected the sequences of the feature tables files and genbank files won't be filtered.
+        -g --genes / -f --fasta (exclusive)	choose the gene(s) to be search in CDS fasta files and genbank files, if -f just download and write a text file with the sequences found in the fasta files and their taxonomy information (linaeage and name)
+        if no option selected the sequences of the CDS fasta files and genbank files won't be filtered.
         -T --TAXIDS writes a text file with all the accession numbers and their corresponding taxids found by the esearch query
-        -F --FEATURE writes a text file with the retrieved feature table from the nuccore database.
+        -C --CDS writes a text file with the retrieved CDS fasta files from the nuccore database.
         -k --kingdom / -p -phylum / -l --levels / -s --species
 select how the results must be classified, if no option selected all the results will be appended in one text file.
 if -k 3 text files (METAZOA, PLANTAE/FUNGI, OTHERS)
@@ -41,10 +41,11 @@ The webenv and query_key to send the access numbers of the results directly to e
         -the completetaxo function is called with the list of unique TaxIDs and the API key (if provided) as INPUTS
         -the function use the efetch E-utility to search the taxonomy database, its returns a dictionnary with the TaxIDs as keys and their Lineage, Name and Division listed as values
 the dispatch key depends on the option selected for the classification (-kpls)
-            Featuretable
-        -call the function feattable 
-        -the function uses efetch E-utility to search the nuccore (=nucleotide) database and retreive the results as a Featuretable in text format (if fasta option is selected it download the fasta files), then call the extract function with this result.
-
+            cdsfasta
+        -calls the function cdsfasta if the fasta option is not selected
+        	-the function uses efetch E-utility to search the nuccore (=nucleotide) database and retreive the results as a CDS fasta file in text format, then call the extract function with this result.
+	-calls the fasta function if the fasta fonction is selected
+		-the function uses efetch E-utility to search the nuccore (=nucleotide) database and retreive the results as a fasta file in text format (if fasta option is selected it download the fasta files), then append the results to the fasta file(s)
     The function outputs a list of the accession number for which the targeted gene(s) has been found.
     
         Taxo

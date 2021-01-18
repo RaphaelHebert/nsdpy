@@ -1,4 +1,4 @@
-from functions import esearchquery, completetaxo, taxids, feattable, extract, taxo
+from functions import esearchquery, completetaxo, taxids, cdsfasta, extract, taxo, fasta
 import sys
 import os
 import argparse             #parsing command line arguments
@@ -27,7 +27,7 @@ group2.add_argument("-g", "--genes", help="search for a given list of gene, exp:
 group2.add_argument("-f", "--fasta", help="retrieve the fasta files, adapted to non-coding sequences", action="store_true")
 #file output
 parser.add_argument("-T", "--TAXIDS", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
-parser.add_argument("-F", "--FEATURE", help='write a text file listing the feature tables', action="store_true")
+parser.add_argument("-C", "--CDS", help='write a text file with the dowloaded CDS fasta files', action="store_true")
 #Taxonomy
 group3 = parser.add_mutually_exclusive_group()
 group3.add_argument("-k", "--kingdom", help="output three different file text (Plantae and Fungi, Metazoa, Others", action="store_true" )
@@ -71,7 +71,7 @@ elif args.species:
 else:
     classif = 2
 
-OPTIONS = (verb, genelist, classif, args.TAXIDS, args.FEATURE)
+OPTIONS = (verb, genelist, classif, args.TAXIDS, args.CDS)
 QUERY = (args.request, args.apikey)
 ##foldername and path
 name = str(datetime.now())
@@ -82,7 +82,9 @@ path = "./results/" + name
 ##############################################
 ###########RUN THE RUN!!######################
 ##############################################
-
+    ##for testing only
+    #query = '((mitochondrion[Title]) AND (complete[Title]) AND ("CO*" OR "COX1"))'
+ 
 #create the directory to store the results
 if not os.path.exists(path):
     os.makedirs(path)
@@ -100,6 +102,7 @@ if count < 1:
     sys.exit("No results found")
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
+
 params = (querykey, webenv, count)
 #comments
 if verb > 0:    
@@ -116,8 +119,11 @@ listofTaxids = list(reverse)
 ###completetaxo2
 dicttaxo = completetaxo(listofTaxids, QUERY, OPTIONS)
 
-###feattable
-found = feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS)
+###CDS fasta file
+if genelist is None:
+    found = fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS)
+else:
+    found = cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS)
     
 ###list the remaining access id:
 remaining = set(listofids) - set(found)
@@ -135,7 +141,7 @@ if genelist is not None:
     #comments:
     if verb > 0:
         print(f'number of unique accession numbers:           {len(listofids)}')
-        print(f'number of genes found in the feature table:   {len(found)}')
+        print(f'number of genes found in the CDS fasta file:  {len(found)}')
         print(f'number of genes found in gb file:             {len(analyse)}')
         print(f'total number of sequences retrieved:          {len(found) + len(analyse)}')
         print(f'total number of accession number analysed:    {len(set(analyse)) + len(set(found)) + notfound}')
@@ -152,3 +158,4 @@ else:
         print(f'number of unique accession numbers:                                                   {len(listofids)}')
         print(f'number of accession numbers for which a fasta file has been retreived:                {len(found)}')
         print(f'number of accession number without fasta file:                                        {len(remaining)}')
+        print(remaining)

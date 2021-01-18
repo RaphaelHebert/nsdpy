@@ -96,7 +96,7 @@ def taxids(params, path, OPTIONS=("","","","","")):
             ret = parameters['retstart']
             print(f'{round((int(ret)/count)*100, 1)} %  of the TaxIDs downloaded')
 
-    ###extract the TaxIDs and accession numbers (record in text file and in dictid)
+        ###extract the TaxIDs and accession numbers (record in text file and in dictid)
         f = result.text.splitlines()
         for line in f:
             if len(line.split('<DocSum>')) > 1:
@@ -177,7 +177,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
     (_, apikey) = QUERY
     (verb, _, classif, _, _) = OPTIONS
 
-    if verb > 0:
+    if verb and verb > 0:
         print("retrieving taxonomy...")
     ##dictionnary that will be returned
     data = {}
@@ -248,14 +248,14 @@ def completetaxo(idlist, QUERY, OPTIONS):
             data[TaxId] = dicttemp
 
     #comments
-    if verb > 0:
+    if verb and verb > 0:
         print(f'number of taxids:{len(data.keys())}')
 
     return data
 
 
-##the feattable function dl the feat table by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
+##dl the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
+def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
     
     ##unpack parameters
     (querykey, webenv, count) = params
@@ -263,10 +263,9 @@ def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
     (verb, genelist, _, _, fileoutput)= OPTIONS
 
     #comment:
-    if verb > 0 and genelist:
-        print("retrieving the feature tables...")
-    elif verb > 0:
-        print("retrieving the fasta files...")
+    if verb and verb > 0:
+        print("retrieving the cds fasta files...")
+    
 
     #list of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
@@ -284,13 +283,8 @@ def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
         parameters['retmax'] = str(retmax)
         if apikey:
             parameters["api_key"] = apikey
-        if genelist is not None:
-            parameters['rettype'] = "fasta_cds_na"
-            parameters['retmode'] = "text"
-        else:
-            parameters['rettype'] = "fasta"
-            parameters['retmode'] = "text"
-
+        parameters['rettype'] = "fasta_cds_na"
+        parameters['retmode'] = "text"
         ##send requests to the API until getting a result
         result = download(parameters, efetchaddress)
         result = result.text
@@ -305,12 +299,9 @@ def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
         found = found + sublist
 
         #comments
-        if verb > 1 and genelist is not None:
+        if verb > 1:
             start = parameters['retmax']
-            print(f'{round(((x * int(start))/count)*100, 1)} %  of the feature tables downloaded')
-        elif verb > 1:
-            start = parameters['retmax']
-            print(f'{round(((x * int(start))/count)*100, 1)} %  of the fasta files downloaded')
+            print(f'{round(((x * int(start))/count)*100, 1)} %  of the CDS fasta files downloaded')
 
     return found
 
@@ -318,13 +309,8 @@ def feattable(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
 def subextract(seq, path, dictid, dicttaxo, genelist):
     ###find coi in a seq and write to ouput file
     ##extract accession number
-    if genelist is not None:
-        pattern = ">lcl|"
-    else:
-        #fasta option
-        pattern = ">"
     try:
-        key = seq.split(pattern)[1].split(".")[0]
+        key = seq.split(">lcl|")[1].split(".")[0]
     except IndexError:
         return    
 
@@ -345,13 +331,11 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
 
     if not Lineage or not Name:
         return
-    if genelist:
-        ##check if genes
-        check = [1 for co in genelist if len(re.split(co, seq, flags=re.IGNORECASE)) > 1]
-    else:
-        check = [1]
 
-    if 1 in check:
+    ##check if genes
+    
+    check = [1 for co in genelist if len(re.split(co, seq, flags=re.IGNORECASE)) > 1]
+    if 1 in check or not genelist:
         ##get the Sequence
         description, dna = seq.split('\n', 1)
         try:
@@ -373,32 +357,20 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
         return
 
 
-def extract(path, text, dictid, dicttaxo, genelist, verb):
+def extract(path, text, dictid, dicttaxo, genelist, verb=""):
     #comments
-    if verb > 0:
+    if verb and verb > 1:
         print('analyzing the results...')
-
+    
     found = []
-
-    #gene option
-    if genelist:
-        genelist = [ "=" + gene + "]" for gene in genelist]
-        ##extract sequences from input file (seq by seq)
-        
+    genelist = [ "=" + gene + "]" for gene in genelist]        
     seq = ''
     text = text.splitlines()
-    if len(text) == 0:
+    if not text:
         return
-    
-    if genelist is None:
-        #if fasta file
-        pattern = ">"
-    else:
-        #if get feature tables
-        pattern = ">lcl|"
 
     for line in text:
-        if len(line.split(pattern)) > 1:
+        if len(line.split(">lcl|")) > 1:
             if seq:
                 try:
                     result = subextract(seq, path, dictid, dicttaxo, genelist)
@@ -425,11 +397,11 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
     notfound = path + "/notfound.txt"
 
     #format the expression to be found in 'gene' (from gene and CDS section of the gb file)
-    if len(genelist) > 0:
+    if genelist:
         genelist = ['gene=' + '"' + gene + '"' for gene in genelist]
 
     #comments
-    if verb > 0:
+    if verb and verb > 0:
         print("Looking for the genes for the remaining accession numbers...")
 
     remain = {}
@@ -482,7 +454,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
             CDS = [(0,0)]
             
             #option genes
-            if len(genelist) > 0:
+            if genelist:
                 genes = seq.split('gene  ')
                 try:
                     genes = [(gene.split('\n')[0].strip(), gene.split('\n')[1].strip().split(' ')[0].strip(' /'))\
@@ -653,5 +625,78 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
     return analysed, countnotfound
 
 
+def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
+    
+    ##unpack parameters
+    (_, apikey) = QUERY
+    (verb, _, _, _, fileoutput)= OPTIONS
 
+    if verb and verb > 0:
+        print("Downloading fasta files...")
+
+    retmax = 10
+    keys = []
+    count = len(listofids)
+    for x in range((count//retmax) + 1):
+        ##split the list of ids
+        ids = listofids[x*retmax : (x*retmax) + retmax]
+        ##build API address
+        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+        parameters = {}
+        #parameters 
+        parameters['db'] = "nuccore"
+        parameters['id'] = ",".join(ids)
+        if apikey:
+            parameters["api_key"] = apikey
+        parameters['rettype'] = "fasta"
+        parameters['retmode'] = "text"
+
+
+        ##send requests to the API until getting a result
+        result = download(parameters, efetchaddress)
+        result = result.text
+        if fileoutput:
+            with open(path + "/fastafiles.fasta", "a") as f:
+                f.write(result)
+
+        result = result.split('>')
+        for seq in result:
+            try:
+                idline, dna = seq.split('\n', 1)
+            except ValueError:
+                continue
+            try:
+                key = idline.split(".")[0]
+            except IndexError:
+                print('no key found')
+                continue
+            
+            try:
+                taxid = dictid[key]
+                lineage = dicttaxo[taxid]['Lineage']
+                name = dicttaxo[taxid]['Name']
+                dispatch = dicttaxo[taxid]['dispatch']
+                lineage = ", ".join(lineage)
+            except KeyError:
+                taxid = 'not found'
+                lineage = 'not found'
+                name = 'not found'
+                if fileoutput:
+                    dispatch = 'others'
+                else:
+                    dispatch = 'results'
+
+            idline = ">" + key + " |" + name + "|" + name + "|" + lineage + "|fasta"
+            
+            with open(path + "/" + dispatch + ".fasta", 'a') as f:
+                f.write(f"{idline}\n")
+                f.write(f"{dna}\n")
+            keys.append(key)
+
+        if verb > 1:
+            start = (x*retmax) + retmax
+            print(f'{round((start/count)*100, 1)} %  of the fasta files downloaded')
+
+    
+    return keys
             
