@@ -102,10 +102,12 @@ def taxids(params, path, OPTIONS=("","","","","")):
             if len(line.split('<DocSum>')) > 1:
                 taxid = ''
                 seqnb = ''
-            else: 
-                caption = line.split('<Item Name="Caption" Type="String">', 1)
-                if len(caption) > 1:
-                    seqnb = caption[1].split("<")[0].strip()
+            else:
+                try:
+                    version = line.split('<Item Name="AccessionVersion" Type="String">', 1)[1]
+                    seqnb = version.split("<")[0].strip()
+                except IndexError:
+                    pass
 
                 TaxId = line.split('<Item Name="TaxId" Type="Integer">', 1)
                 if len(TaxId) > 1:
@@ -114,9 +116,9 @@ def taxids(params, path, OPTIONS=("","","","","")):
                 if seqnb:
                     dictid[seqnb] = taxid 
 
-        if fileoutput:
-            with open(path, 'a') as summary:
-                [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
+    if fileoutput:
+        with open(path, 'a') as summary:
+            [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
    
     return dictid
 
@@ -181,7 +183,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
         print("retrieving taxonomy...")
     ##dictionnary that will be returned
     data = {}
-
+    idlist = [i.split(".")[0] for i in idlist]
     ##retreive the taxonomy sending batches of TaxIds to efetch
     #number of TaxIds to be sent to the API at once
     retmax = 100
@@ -291,7 +293,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
 
         ##append the feature table file in a text file (option -F)
         if fileoutput:
-            with open(path + "/featuretable.txt", 'a') as dl:
+            with open(path + "/fasta_cds.txt", 'a') as dl:
                 dl.write(result)
 
         ##analyse the results     
@@ -310,7 +312,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
     ###find coi in a seq and write to ouput file
     ##extract accession number
     try:
-        key = seq.split(">lcl|")[1].split(".")[0]
+        key = seq.split(">lcl|")[1].split("_cds")[0]
     except IndexError:
         return    
 
@@ -351,6 +353,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
         path = path + "/" + dispatch + ".fasta"
         with open(path, 'a') as new:
             new.write('\n' + str(idline) + '\n' + str(dna) +'\n') 
+
         return key
 
     else:
@@ -382,7 +385,7 @@ def extract(path, text, dictid, dicttaxo, genelist, verb=""):
         else:
             seq = seq + '\n' + line
 
-    return (found)
+    return found
 
 
 def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
@@ -441,7 +444,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
         for i, seq in enumerate(result[:-1]):
             ##EXTRACT THE ACCESSION NUMBER
             try:
-                version = seq.split('ACCESSION', 1)[1]
+                version = seq.split('VERSION', 1)[1]
                 version = version.split('\n', 1)[0]
                 version = version.split()[0]
                 version = version.strip()
@@ -470,9 +473,6 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
                     if len(CDS) == 0:
                         try:
                             CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] in genelist]
-                            # CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome c oxidase subunit I"]
-                            # if len(CDS) == 0:
-                            #     CDS = [c.split('\n')[0].strip() for c in CDS1[1:] if c.split('/product="')[1].split('"')[0] == "cytochrome oxidase subunit I"]
                         except IndexError:
                             pass
                     CDS0 = CDS[0]
@@ -501,7 +501,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
                 dna = ''
 
             ###If nothing is found
-            if not dna or (len(genes) == 0 and CDS[0] == (0,0)):
+            if not dna or (len(genes) == 0 and CDS[0] == (0,0) and genelist):
                 with open(notfound, 'a') as nf:
                     nf.write(f'{version}    No COI found in gb file error#1\n')
                 countnotfound += 1                
@@ -552,7 +552,7 @@ def taxo(path, listofid, dictid, dicttaxo, QUERY, OPTIONS=("","","","","")):
                 ###COI lists to display 80 char per line
                 COI = ''.join(COI)
                 COI = [''.join(COI[i:i + 80]) for i, t in enumerate(list(COI)) if i % 80 == 0]
-                analysed.append(version)
+                #analysed.append(version)
 
             except:
                 ###should not happen
@@ -666,7 +666,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
             except ValueError:
                 continue
             try:
-                key = idline.split(".")[0]
+                key = idline.split()[0]
             except IndexError:
                 print('no key found')
                 continue
@@ -686,7 +686,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
                 else:
                     dispatch = 'results'
 
-            idline = ">" + key + " |" + name + "|" + name + "|" + lineage + "|fasta"
+            idline = ">" + key + " |" + name + "|" + name + "|" + lineage 
             
             with open(path + "/" + dispatch + ".fasta", 'a') as f:
                 f.write(f"{idline}\n")

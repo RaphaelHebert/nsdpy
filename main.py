@@ -28,6 +28,7 @@ group2.add_argument("-f", "--fasta", help="retrieve the fasta files, adapted to 
 #file output
 parser.add_argument("-T", "--TAXIDS", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
 parser.add_argument("-C", "--CDS", help='write a text file with the dowloaded CDS fasta files', action="store_true")
+parser.add_argument("-S", "--SUMMARY", help='summarize the process in a table', action="store_true")
 #Taxonomy
 group3 = parser.add_mutually_exclusive_group()
 group3.add_argument("-k", "--kingdom", help="output three different file text (Plantae and Fungi, Metazoa, Others", action="store_true" )
@@ -91,7 +92,6 @@ if not os.path.exists(path):
 
 ###esearchquery
 y = esearchquery(QUERY)
-    
 ##check errors (if bad API key etc) errors returned by the Entrez API
 if "error" in y.keys():
     errors = y["error"]
@@ -102,7 +102,6 @@ if count < 1:
     sys.exit("No results found")
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
-
 params = (querykey, webenv, count)
 #comments
 if verb > 0:    
@@ -111,7 +110,6 @@ if verb > 0:
 ###Taxids
 dictid = taxids(params, path, OPTIONS)
 listofids = list(dictid.keys())
-
 ##select TaxIDs
 reverse = {value for value in dictid.values()}
 listofTaxids = list(reverse)
@@ -137,25 +135,44 @@ if genelist is not None:
 
     ##check the accession numbers for which no COI have been found
     idk = list(set(listofids) - (set(analyse) | set(found)))
-
     #comments:
+    end = str(datetime.now())
+    end = '_'.join(end.split())
     if verb > 0:
-        print(f'number of unique accession numbers:           {len(listofids)}')
-        print(f'number of genes found in the CDS fasta file:  {len(found)}')
-        print(f'number of genes found in gb file:             {len(analyse)}')
-        print(f'total number of sequences retrieved:          {len(found) + len(analyse)}')
-        print(f'total number of accession number analysed:    {len(set(analyse)) + len(set(found)) + notfound}')
+        print(f'number of unique accession version identifiers:                     {len(listofids)}')
+        print(f'number of genes found in the CDS fasta file:                        {len(found)}')
+        print(f'number of genes found in gb file:                                   {len(analyse)}')
+        print(f'total number of sequences retrieved:                                {len(found) + len(analyse)}')
+        print(f'number of accession version identifiers with more than one gene:    {len(analyse) - (len(listofids) - len(found))}')
+        print(f'total number of accession version identifiers analysed:             {len(set(analyse)) + len(set(found)) + notfound}')
+        print(f'ended:                                                              {end}')
     if len(idk) > 0 and verb > 0:
-        print(f"total number of accession number \nfor which no gene has been retrieve:    {len(idk)}")
+        print(f"total number of accession number \nfor which no gene has been retrieved:    {len(idk)}")
         print("see the notfound.txt for the detail")
 
 else:
     remaining = list(set(listofids) - set(found))
-    with open('notfound.text', 'w') as n:
+    with open(path + "/notfound.txt", "w") as n:
         [n.write(number) for number in remaining]
     #comments:
     if verb > 0:
-        print(f'number of unique accession numbers:                                                   {len(listofids)}')
+        end = str(datetime.now())
+        end = '_'.join(end.split())
+        print(f'number of unique accession version identifiers:                                       {len(listofids)}')
         print(f'number of accession numbers for which a fasta file has been retreived:                {len(found)}')
         print(f'number of accession number without fasta file:                                        {len(remaining)}')
         print(remaining)
+        print(f'ended:                                                                                {end}')
+
+
+if args.SUMMARY:
+    try:
+        y = open("report.txt")
+        y.close()
+        with open("report.txt", 'a') as r:
+            r.write(f"{args.request}    {name}  {end}   {count}     {len(found)}     {len(listofTaxids)}\n")
+    except:
+        with open("report.txt", 'a') as r:
+            r.write(f"request   start   end   results   esearch    sequences    TaxIDs\n")
+            r.write(f"{args.request}    {name}  {end}   {count}     {len(found)}     {len(listofTaxids)}\n")
+        
