@@ -77,6 +77,7 @@ QUERY = (args.request, args.apikey)
 ##foldername and path
 name = str(datetime.now())
 name = '_'.join(name.split())
+name = name.replace(":", "-")
 path = "./results/" + name
 
 
@@ -143,7 +144,6 @@ if genelist is not None:
         print(f'number of genes found in the CDS fasta file:                        {len(found)}')
         print(f'number of genes found in gb file:                                   {len(analyse)}')
         print(f'total number of sequences retrieved:                                {len(found) + len(analyse)}')
-        print(f'number of accession version identifiers with more than one gene:    {len(analyse) - (len(listofids) - len(found))}')
         print(f'total number of accession version identifiers analysed:             {len(set(analyse)) + len(set(found)) + notfound}')
         print(f'ended:                                                              {end}')
     if len(idk) > 0 and verb > 0:
