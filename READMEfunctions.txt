@@ -10,16 +10,16 @@ QUERY:
 		 exp:'66af22581a26c4fdc8e74788e8562502a308'
 
 OPTIONS:
-	-args.CDS(BOOL):if the function should writes a text file with the CDS fasta file or not
+	-args.cds(LIST): the function should writes a text file with the CDS fasta file, elements of the list will be used as regexp for filter the results
 	-args.TAXIDS(BOOL):if the function should writes a text file with the accession numbers and their TaxIDS table or not
 	-verb(INT): verbose or quiet options
-	-genelist(list): list of genes to be found
 	-classif (INT, or LIST): if LIST correspont to a list of taxonomic levels names entered by the user, if INT [0, infinite[
 	
 -params: 
 	-querykey(STRING) the query_key returned by a search with the esearch E-utility in history mode, text format. exp: "1".
 	-webenv(STRING), the webenv returned by a search with the esearch E-utility in history mode, text format. exp: "MCID_5fdaff9d0aee646a05268177"
 	-count(INTEGER), the number of of matches returned by a search in esearch E-utility and converted to an integer. exp: 86184
+
 
 Function dowload(parameters, address):
 
@@ -82,6 +82,7 @@ Call the extract function to analyse the results from Entrez API (everytime Entr
 	OUTPUTS:
 		It returns the list of the accession number for which a gene and its taxonomy have been found.
 
+
 Function fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS):
 	INPUTS:
 		path(STRING): the path of the location where the results are written
@@ -101,28 +102,22 @@ Function taxo(path, listofid, dictid, dicttaxo, QUERY, OPTION)
 		-path(STRING) see above
 		-listofid (LIST) list of the accession numbers for which no COI have been found 
 		-dictid (DICTIONNARY) see above
-		-dicttaxo (DICTIONNARY) dictionnary with the TaxIDs as keys and the taxonomic information as values
 		-QUERY(TUPLE): uses the apikey from QUERY
 		-OPTIONS(TUPLE): uses verb, genelist and classif from OPTIONS
 	
 	ACTION:
 		-query Entrez API with the efetch tool to search the nucleotide database from NCBI and retreive a genbank file. Send 10 (retmax variable) accession numbers at the time, send some queries until no more accession number are left from the listofid. Use the requests librairy to send get requests to Entrez API.
-		-split the received text (gb format) every '//' to get a list.
-		-Iterate over the list, and for each accession number look for the strings from genelist
-		-tries to find gene corressponding to genelist and extract name and location
-		-if no match is found, the accession number is appended to the notefound.txt file and the next accession number is analysed
-		 -tries to find CDS corressponding to the above list and extract name and location
-		 -compares the starting and ending positions of the gene location and CDS location, if they corrrespond extract the gene from the DNA sequence based on the location(s) of the exons found in CDS, if not based on the gene location(s).
-Takes the location annotation from gene or CDS depending on which one was used to retreive the sequence.
-		-get the lineage division and Name from the inputted ditcionnaries.
-		-if lineage name or division are not found in the dictionnaries extract them from the genbank format results .
+		-split the received text (.gb format) every '\n//' to get a list.
+		-iterate over the list calling the genbankfields function to get a list of dictionnary and the DNA sequence as a string
+		-iterate over the list resturned by genbanfields function
+		-get the information from the dictionnaries and writes the ouput file(s)
 		-calls the dispatch function with the classif parameters
-		-append the gene and its taxonomy to a textfile corresponding to path and the results from the dispatch funtion
+		-makes a list of the accession version number with sequences printed in the output file
 		
 	OUTPUT:
-		-returns a list of the accession numbers for which a COI has been found (LIST)
-		-appends the accession numbers for which no COI has been found in the notefound.txt file
-		-appends the results (information line + dna sequence) in a fasta file for the accession for which a gene has been found.
+		-a list of the accession version numbers for which one or more sequence s have been written in the output file(s)
+		-a list of the accession version numbers for which a genbank file have been downloaded
+		-writes in the output file called notfound.txt the accession version numbers for which no sequences has been written in the output file or with no genbank file downloaded.
 		
 		
 Function extract(path, text, dictid, dicttaxo, genelist, verb):
@@ -144,7 +139,7 @@ Function extract(path, text, dictid, dicttaxo, genelist, verb):
 		
 		
 Function subextract(seq, path, dictid, dicttaxo, genelist):
-this function is called by the extract2 function.
+this function is called by the extract function.
 
 	INPUTS:
 		-seq(STRING): the gene sequence with its information line
@@ -161,7 +156,43 @@ this function is called by the extract2 function.
 		-if the gene matches, the location information is extracted from the information line.
 		-else it returns
 		-the results is appended to the fasta file given as input base on the dispatch values from dicttaxo parameter
+		
+	OUTPUT
 		-returns the accession number(STRING)
 
 
+Function genbankfields(text, genelist):
+this function is called by the taxo function
+	
+	INPUTS:
+		-text (STRING) the text of a genbank file 
+		-genelist (LIST) a list of regexp to be used as filters
+		
+	ACTION:
+		-extract the accession version number, DNA sequence, organism name and lineage from the text then add these in a dict
+		-split the text every "  gene  " and iterate over the list of result calling the search function and splitting the results every "  CDS  " to iterate over these results calling again the search function
+		-from the calls to search function it gets two dictionnaries: one for the "  gene  " sequence and one for "  CDS  " sequence. 
+		-if one or more filter is provided in the genelist: for each CDS sequences, looks for a match between the filters and the "gene", "product", "gene_synonym" and "note" fields from the Genbank file.if no mtach found it compares the start and stop of the location field from the "  gene  " and the "  CDS  " file are the same it looks for a match in the gene sequence fields. If a mtach is found it writes the dictionnary containing the cds sequence informations is appended to the list of dictionnares the function will return.
+		-if no filter is provided the the dictionnary containing the cds sequence informations is directly appended to the list of dictionnares the function will return.
+		
+	OUTPUTS
+		-list of dictionnaries (LIST)
+		-DNA sequence (STRING)
+		
+		
+Function search(dna, dictentry, s):
+This function is called by the genbankfields function
+
+	INPUTS
+		-dna (STRING) the dna sequence from the genbank file
+		-dictentry (DICTIONNARY) a dictionnary containing the information from the genbank file extracted by the genbankfield function.
+		-s (STRING) the part of the genbank file to analyse
+	
+	ACTION
+		-extract the location and the corresponding dna sequence, product, protein_id, gene, note, gene_synonym and locus_tag information form the corresponding fields found in the genbank file
+		-duplicates the dictentry and append the all the extracted informations to it.
+		
+	OUTPUT
+		-dict1 (DICTIONNARY) a dictionnary containing all the informations extracted from the genabnk file.
+	
 

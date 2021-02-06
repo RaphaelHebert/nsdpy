@@ -1,4 +1,4 @@
-from functions import esearchquery, completetaxo, taxids, cdsfasta, extract, taxo2, fasta, duplicates
+from functions import esearchquery, completetaxo, taxids, cdsfasta, extract, taxo, fasta, duplicates
 import sys
 import os
 import argparse             #parsing command line arguments
@@ -94,7 +94,6 @@ if count < 1:
     sys.exit("No results found")
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
-count = 400
 params = (querykey, webenv, count)
 #comments
 if verb > 0:    
@@ -150,7 +149,6 @@ if args.cds:
         print(f'ended:                                                                                      {end}')
     if notfound and verb > 0:
         print(f"total number of accession version identifiers \nfor which no gene has been retrieved:                                                  {len(notfound)}")
-        print(notfound)
         print("see the notfound.txt for the detail")
 
 else:
@@ -163,8 +161,7 @@ else:
         print(f'number of accession version identifiers analysed with no sequences downloaded:             {len(notfound)}')
         if len(notfound) > 0:
             print(f'see "notfound.txt"')
-            # with open(path + "/notfound.txt", "w") as n:
-            #     [n.write(f'{number}\n') for number in remaining]
+
 
 
 

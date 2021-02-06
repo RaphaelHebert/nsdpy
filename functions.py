@@ -81,11 +81,10 @@ def taxids(params, path, OPTIONS=("","","","")):
     taxid = ''
     seqnb = ''
 
-    if int(count/retmax) == count//retmax:
+    if count/retmax == float(count//retmax):
         nb = count//retmax
     else: 
-        (count//retmax) + 1
-
+        nb = (count//retmax) + 1
     for x in range(nb):
         ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -98,7 +97,6 @@ def taxids(params, path, OPTIONS=("","","","")):
         parameters['retmax'] = str(retmax)
         parameters['rettype'] = "uilist"
         parameters['retmode'] = "text"
-
         result = download(parameters, esummaryaddress)
 
         #comments
@@ -198,7 +196,12 @@ def completetaxo(idlist, QUERY, OPTIONS):
     #number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
-    for x in range((count//retmax) + 1):
+    if count/retmax == float(count//retmax):
+        nb = count//retmax
+    else: 
+        nb = (count//retmax) + 1
+
+    for x in range(nb):
         ##slice the idlist
         retstart = x * retmax
         idsublist = idlist[retstart:(retstart+retmax)]
@@ -283,10 +286,11 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","")):
     found = []
     #number of accession numbers to be sent at each API query
     retmax = 100
-    if int(count/retmax) == count//retmax:
+    if count/retmax == float(count//retmax):
         nb = count//retmax
     else: 
-        (count//retmax) + 1
+        nb = (count//retmax) + 1
+
     for x in range(nb):
         ##build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
@@ -492,7 +496,7 @@ def duplicates(listofaccess, path):
         if value > 1:
             nb += 1
             with open(filename, "a") as f:
-                f.write(f"{key}   {value}")
+                f.write(f"{key}   {value}\n")
     return(nb)
 
 
@@ -509,7 +513,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=("","","","","")):
 
     #format the expression to be found in 'gene' (from gene and CDS section of the gb file)
     if genelist:
-        genelist = ['[; "]' + gene + '["; ]' for gene in genelist]
+        genelist = ['[; "()]+' + gene + '["; ()]+' for gene in genelist]
 
     #comments
     if verb and verb > 0:
@@ -520,7 +524,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=("","","","","")):
     genefound = []      ##accessions with some cds foudn or matching the filter if filter(s)
     count = len(listofid)
     retmax = 10
-    if (count/retmax) == float(count//retmax) and (count//retmax) > 0:
+    if (count/retmax) == float(count//retmax):
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
@@ -552,121 +556,37 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=("","","","","")):
         result = result.text
 
         #######################   RESULT ANALYZING   ##########################
-        result = result.split('//')
+        result = result.split('\n//')
         ###extract the CDS for each asscession version number
         accessionlist = []
         for i, seq in enumerate(result[:-1]):
-            ##ACCESSION VERSION NUMBER
-            try:
-                version = seq.split('VERSION', 1)[1]
-                version = version.split('\n', 1)[0]
-                version = version.split()[0]
-                version = version.strip()
-                accessionlist.append(version)
-            except IndexError:
-                print("error!")
-                continue
-
-            ##ORGANISM And TAXO
-            try:
-                taxo = seq.split('ORGANISM', 1)[1]
-                taxo = taxo.split('REFERENCE')[0]
-                organism = taxo.splitlines()[0].strip()
-                taxo = ''.join(taxo.splitlines()[1:]).split("; ")
-                taxo = [t.strip() for t in taxo]
-            except IndexError:
-                taxo, organism = "not found", "not found"
-                pass
-
-            ###DNA sequence
-            try:
-                dna = seq.split("ORIGIN")[1].splitlines()
-                dna = [d.strip().strip('1234567890') for d in dna]
-                dna = "".join("".join(dna).split())
-            except IndexError:
-                dna = []
-                pass
-
-            ###look for all the CDS, their gene names or product names (== protein) and locations and sequences
-            ##and protein_id, frame
-            try:
-                seq = seq.split("  CDS  ")[1:]
-                for s in seq:
-                    s = s.split("RNA   ")[0].split("  misc_feature  ")[0].split("  gene  ")[0].split("repeat_region")[0]\
-                        .split("transit_peptide")[0].split("mat_peptide")[0].split("3'UTR")[0].split("5'UTR")[0]
-                    #Location and sequence
-                    try:
-                        loc = s.splitlines()[0]
-                        if dna:
-                        ##if join or complement:
-                            try:
-                                loc = loc.split('(')[1].split(')')[0].split(',')
-                                loc = [l.split('..') for l in loc]
-                                sequence = "".join([dna[int(l[0]):int(l[1])] for l in loc])
-                            #else
-                            except IndexError:
-                                start, stop = loc.strip().split('..')
-                                start = int(start.strip('><'))
-                                stop = int(stop.strip('><'))
-                                sequence = dna[start:stop]
-                        else:
-                            sequence = []
-                    ##if no location
-                    except ValueError:
-                        continue
-
-                    #Product
-                    try:
-                        product = s.split("product=")[1].split()[0]
-                    except IndexError:
-                        product = "not found"
-                    #protein_id
-                    try: 
-                        proteinid = product = s.split("protein_id=")[1].split()[0]
-                    except IndexError:
-                        proteinid = "not found"
-                    #note
-                    try:
-                        note = s.split("note=")[1].split('"')[1]
-                    except IndexError:
-                        note = ""
-                    #gene
-                    try:
-                        gene = s.split("gene=")[1].split("\n")[0]
-                    except IndexError:
-                        gene = "not found"
-                    #locus_tag
-                    try:
-                        locustag = s.split("locus_tag=")[1].split()[0]
-                    except IndexError:
-                        locustag = "not found"
-                    #TaxIDs
-                    try:
-                        taxid = dictid[version]
-                    except KeyError:
-                        taxid = "not found"
-                                    
+            ##search in CDS
+            listCDS, dna = genbankfields(seq, genelist)
+            for dictCDS in listCDS:
+                if dictCDS:
+                    accessionlist.append(dictCDS["version"])
                     #select the gene if genes to select
-                    if genelist:
-                        check = [1 for reg in genelist if re.findall(reg, product, flags=re.IGNORECASE) or re.findall(reg, gene, flags=re.IGNORECASE)]
-                    if not genelist or check:
+                    if "gene" in dictCDS.keys():
                         ##genefound
-                        genefound.append(version)
+                        genefound.append(dictCDS["version"])
                         ###path
+                        taxo = dictCDS["taxo"]
                         filename = dispatch(taxo, classif)
                         output = path + "/" + filename + ".fasta"
+                        
                         ##information line 
                         taxo = ', '.join(taxo)
-                        infoline = ">" + version + "| [locus_tag=" + locustag + '] | [product=' + product + '] | [gene=' + gene + '] | [protein_id='\
-                            + proteinid +  '] | [location=' + str(start) + ".." + str(stop) + "] | " + note + " | [gbkey=CDS]" + "| " + taxid + "| " + taxo
-                        sequence = list(sequence)
+                        
+                        try:
+                            taxid = dictid[dictCDS["version"]]
+                        except IndexError:
+                            taxid = ""
+                        infoline = ">" + dictCDS["version"] + "| [locus_tag=" + dictCDS["locustag"] + '] | [product=' + dictCDS["product"] + '] | [gene=' + dictCDS["gene"] + '] | [protein_id='\
+                            + dictCDS["proteinid"] +  '] | [location=' + dictCDS["loc"].strip() + "] | " + dictCDS["note"] + " | [gbkey=CDS]" + "| " + taxid + "| " + "".join(taxo)
                         ##append to file
                         with open(output, 'a') as a:
                             a.write(f"{infoline}\n")
-                            [a.write(f'{"".join(dna[i: i + 80])}\n') for i in range(0, len(sequence), 80)]
-                    
-            except IndexError:
-                continue
+                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 80])}\n') for i in range(0, len(dictCDS["sequence"]), 80)]
 
         remain = list(set(accessionlist) - set(ids))
         analysed = analysed + accessionlist
@@ -688,3 +608,147 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=("","","","","")):
 
     return analysed, genefound
             
+
+
+def genbankfields(text, genelist):
+    ###extract the CDS for each asscession version number
+    dictfield = {}
+    listofdict = []
+    dna = []
+    ##ACCESSION VERSION NUMBER
+    try:
+        version = text.split('VERSION', 1)[1]
+        version = version.split('\n', 1)[0]
+        version = version.split()[0]
+        version = version.strip()
+        dictfield["version"] = version
+    except IndexError:
+        return listofdict, dna
+
+    ##ORGANISM And TAXO
+    try:
+        taxo = text.split('ORGANISM', 1)[1]
+        taxo = taxo.split('REFERENCE')[0]
+        organism = taxo.splitlines()[0].strip()
+        taxo = ''.join(taxo.splitlines()[1:]).split("; ")
+        taxo = [t.strip() for t in taxo]
+    except IndexError:
+        taxo, organism = "not found", "not found"
+    dictfield["taxo"] = taxo
+    dictfield["organism"] = organism    
+
+    ###DNA sequence
+    try:
+        dna = text.split("ORIGIN")[1].splitlines()
+        dna = [d.strip().strip('1234567890') for d in dna]
+        dna = "".join("".join(dna).split())
+    except IndexError:
+        dna = []
+    dictfield["dna"] = dna
+
+    ###look for all the CDS, their gene names or product names (== protein) and locations and sequences
+    ##and protein_id, frame
+    seqgene = text.split("  gene  ")
+    for seq in seqgene:
+        dictgene = {}
+        dictgene = search(dna, dictgene, seq)
+        seqcds = seq.split("  CDS  ")[1:]
+        for seq1 in seqcds:
+            dictcds = search(dna, dictfield, seq1)
+            if genelist:
+                ##check if target is found
+                check = [1 for reg in genelist if re.findall(reg, dictcds["product"], flags=re.IGNORECASE) or re.findall(reg, dictcds["gene"], flags=re.IGNORECASE)\
+                or re.findall(reg, dictcds["note"], flags=re.IGNORECASE) or re.findall(reg, dictcds["genesynonym"], flags=re.IGNORECASE)]
+                try:
+                    if not check:
+                        if dictgene["location"][0][0] ==  dictcds["location"][0][0] and dictgene["location"][-1][1] ==  dictcds["location"][-1][1]:
+                            check = [1 for reg in genelist if re.findall(reg, dictgene["product"], flags=re.IGNORECASE) or re.findall(reg, dictgene["gene"], flags=re.IGNORECASE)\
+                            or re.findall(reg, dictgene["note"], flags=re.IGNORECASE) or re.findall(reg, dictgene["genesynonym"], flags=re.IGNORECASE)]
+                except IndexError:
+                    pass
+                if check:
+                    listofdict.append(dictcds)
+            else:
+                listofdict.append(dictcds)
+        
+    if listofdict:
+        return listofdict, dna 
+    else:
+        listofdict.append(dictfield)
+        return listofdict, dna
+    
+
+def search(dna ,dictentry, s):
+    dict1 = dict(dictentry)
+    s = s.split("RNA   ")[0].split("  misc_feature  ")[0].split("  gene  ")[0].split("repeat_region")[0]\
+        .split("transit_peptide")[0].split("mat_peptide")[0].split("3'UTR")[0].split("5'UTR")[0]
+    #Location and sequence
+    if dna:
+    ##if join or complement:
+        try:
+            loc = s.split("/")[0]
+            loc1 = loc.split(',')
+            loc1 = [(int(i.split('..')[0].strip("cmpletjoin(><) \n")), int(i.split('..')[1].strip("cmpletjoin(><) \n"))) for i in loc1]
+            sequence = "".join([dna[i[0]:i[1]] for i in loc1])
+        #else
+        except IndexError:
+            sequence = ""
+            loc = "not found"
+            loc1 = "not found"
+        except ValueError:
+            sequence = ""
+            loc = "not found"
+            loc1 = "not found"
+    else:
+        sequence = ""
+        loc = "not found"
+        loc1 = "not found"
+    dict1["sequence"] = sequence
+    dict1["location"] = loc1
+    dict1["loc"] = "".join(loc.split("\n"))
+
+    
+    #Product
+    try:
+        product = s.split('product="')[1].split('"')[0]
+    except IndexError:
+        product = "not found"
+    dict1["product"] = product
+
+    #protein_id
+    try: 
+        proteinid = s.split("protein_id=")[1].split()[0]
+    except IndexError:
+        proteinid = "not found"
+    dict1["proteinid"] = proteinid
+
+    #note
+    try:
+        note = s.split("note=")[1].split("/")[0]
+        note = "".join(note.split("\n"))
+    except IndexError:
+        note = ""
+    dict1["note"] = note
+
+    #gene
+    try:
+        gene = s.split("gene=")[1].split("\n")[0]
+    except IndexError:
+        gene = "not found"
+    dict1["gene"] = gene
+
+    #gene_synonym
+    try:
+        genesynonym = s.split("gene_synonym=")[1].split("/")[0].strip("\n")
+    except IndexError:
+        genesynonym = "not found"
+    dict1["genesynonym"] = genesynonym
+
+    #locus_tag
+    try:
+        locustag = s.split("locus_tag=")[1].split()[0]
+    except IndexError:
+        locustag = "not found"
+    dict1["locustag"] = locustag
+
+    return dict1
