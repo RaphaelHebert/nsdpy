@@ -24,10 +24,9 @@ Using NucleoPy the user can:
 - **Sort** the sequences based on their taxonomy
 - **Filter** the sequences based on the name of the gene by giving one or more regular expression as filter(s)
 
-## workflow
+## Workflow
 
-![workflow](https://github.com/RaphaelHebert/Nucleopy/)
-
+<img src="https://github.com/RaphaelHebert/Nucleopy/blob/options/workflow.png" alt="workflow" width="600"/>
 
 ## Installation 
 
@@ -60,6 +59,6 @@ to choose, probably: https://choosealicense.com/licenses/gpl-3.0/
 ## More Documentation
 
 For examples of usage and more detailed documentation check: 
-[Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing)
+[Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing =100)
 
 
