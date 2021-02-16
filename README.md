@@ -1,5 +1,19 @@
 # NucleoPy
 
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Google Colab](#on-google-colab)
+  - [Command line](#command-line)
+- [Authors and acknowledgment](#authors-and-acknowledgment)
+- [Support](#support)
+- [Licence](#license)
+- [More Documentation](#more-documentation)
+
+
+
+## Introduction
+
 NucleoPy aims to ease the download and sort of big bacth of DNA sequences from the NCBI database. 
 It can also be usefull to filter the sequences based on their annotations.
 Using NucleoPy the user can:
