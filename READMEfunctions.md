@@ -2,16 +2,16 @@
 
 The following functions are described here:
 
-- [download](##dowload(*parameters*, *address*):)
-- [esearchquery](##esearchquery(*QUERY*):)
-- [taxids](##taxids(*params*, *path*, *OPTIONS*):)
-- [cdsfasta](##cdsfasta(*params*, *path*, *dictid*, *dicttaxo*, *QUERY*, *OPTION*):)
-- [fasta](##fasta(*path*, *dictid*, *dicttaxo*, *QUERY*, *listofids*, *OPTIONS*):)
-- [taxo](##taxo(*path*, *listofid*, *dictid*, *dicttaxo*, *QUERY*, *OPTION*))
-- [extract](##extract(*path*, *text*, *dictid*, *dicttaxo*, *genelist*, *verb*):)
-- [subextract](##subextract(*seq*, *path*, *dictid*, *dicttaxo*, *genelist*):)
-- [genbankfields](##genbankfields(*text*, *genelist*):)
-- [search](##search(*dna*, *dictentry*, *s*):)
+- [download](#dowload) 
+- [esearchquery](#esearchquery)
+- [taxids](#taxids)
+- [cdsfasta](#cdsfasta)
+- [fasta](#fasta)
+- [taxo](#taxo)
+- [extract](#extract)
+- [subextract](#subextract)
+- [genbankfields](#genbankfields)
+- [search](#search)
 
 
 Define some functions that are used in main.py
@@ -45,7 +45,11 @@ example:
 -webenv(STRING), the webenv returned by a search with the esearch E-utility in history mode, text format. exp: "MCID_5fdaff9d0aee646a05268177"
 -count(INTEGER), the number of of matches returned by a search in esearch E-utility and converted to an integer. exp: 86184
 
-## dowload(*parameters*, *address*)
+## dowload
+
+```python
+download(parameters, address)
+```
 
 ### INPUTS
 
@@ -58,7 +62,11 @@ example:
 - loop untils getting an answer from the call, returns 1 if an HTTPerror is raised
 - handle errors (such as HTTPerror, network error...), see the [errors](https://requests.readthedocs.io/en/master/_modules/requests/exceptions/) for more information
 
-## esearchquery(*QUERY*)
+## esearchquery
+
+```python
+esearchquery(QUERY)
+```
 
 ### INPUTS
 
@@ -78,7 +86,11 @@ Submit the user's request to the [ncbi esearch engine](https://www.ncbi.nlm.nih.
 
 - Returns the result of the user's request result as a dictionnary
 
-## taxids(*params*, *path*, *OPTIONS*)
+## taxids
+
+```python
+taxids(params, path, OPTIONS)
+```
 
 ### INPUTS
 
@@ -96,7 +108,11 @@ Submit the user's request to the [ncbi esearch engine](https://www.ncbi.nlm.nih.
 - (optionnal -T) A text file with one accession number and its corresponding TaxID per line separated by a tab. exp:MW080658   436086.
 - A dictionnary with the accession numbers as keys and TaxIDs as values.
 
-## cdsfasta(*params*, *path*, *dictid*, *dicttaxo*, *QUERY*, *OPTION*)
+## cdsfasta
+
+```python
+cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTION)
+```
 
 ### INPUTS
 
@@ -116,7 +132,12 @@ Submit the user's request to the [ncbi esearch engine](https://www.ncbi.nlm.nih.
 
 It returns the list of the accession number for which a gene and its taxonomy have been found.
 
-## fasta(*path*, *dictid*, *dicttaxo*, *QUERY*, *listofids*, *OPTIONS*):
+## fasta
+
+```python
+fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS)
+```
+
 
 ### INPUTS
 
@@ -134,7 +155,11 @@ Using the efetch E-utility with the parameter from params it looks in the nuccor
 
 It returns the list of the accession number for which a sequence have been found.
 
-## taxo(*path*, *listofid*, *dictid*, *dicttaxo*, *QUERY*, *OPTION*)
+## taxo
+
+```python
+taxo(path, listofid, dictid, dicttaxo, QUERY, OPTION)
+```
 
 ### INPUTS
 
@@ -160,7 +185,11 @@ It returns the list of the accession number for which a sequence have been found
 - a list of the accession version numbers for which a genbank file have been downloaded
 - writes in the output file called **notfound.txt** the accession version numbers for which no sequences has been written in the output file or with no genbank file downloaded.
 
-## extract(*path*, *text*, *dictid*, *dicttaxo*, *genelist*, *verb*):
+## extract
+
+```python
+extract(path, text, dictid, dicttaxo, genelist, verb)
+```
 
 ### INPUTS
 
@@ -180,7 +209,11 @@ It returns the list of the accession number for which a sequence have been found
 
 - a list of the accession numbers for which a gene (from genelist) have been found (LIST)
 
-## subextract(*seq*, *path*, *dictid*, *dicttaxo*, *genelist*)
+## subextract
+
+```python
+subextract(seq, path, dictid, dicttaxo, genelist)
+```
 
 This function is called by the extract function.
 
@@ -206,7 +239,11 @@ This function is called by the extract function.
 
 - returns the accession number(STRING)
 
-## genbankfields(*text*, *genelist*)
+## genbankfields
+
+```python
+genbankfields(text, genelist)
+```
 
 This function is called by the taxo function
 
@@ -228,7 +265,11 @@ This function is called by the taxo function
 - list of dictionnaries (LIST)
 - DNA sequence (STRING)
 
-## search(*dna*, *dictentry*, *s*):
+## search
+
+```pythhon
+search(dna, dictentry, s)
+```
 
 This function is called by the genbankfields function
 
