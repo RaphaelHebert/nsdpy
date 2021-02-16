@@ -1,6 +1,7 @@
 # NucleoPy
 
 - [Introduction](#introduction)
+- [workfolw](#workflow)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Google Colab](#on-google-colab)
@@ -23,6 +24,10 @@ Using NucleoPy the user can:
 - **Sort** the sequences based on their taxonomy
 - **Filter** the sequences based on the name of the gene by giving one or more regular expression as filter(s)
 
+## workflow
+
+![workflow](https://github.com/RaphaelHebert/Nucleopy/)
+
 
 ## Installation 
 
@@ -41,8 +46,9 @@ pip3 install nucleopy
 ### Command line
 
 ```bash
-command to be updated 
+      python3 main.py -r USER'S REQUEST [OPTIONS] 
 ```
+
 ## Authors and acknowledgment
 
 ## Support
@@ -53,6 +59,7 @@ to choose, probably: https://choosealicense.com/licenses/gpl-3.0/
 
 ## More Documentation
 
+For examples of usage and more detailed documentation check: 
 [Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing)
 
 
