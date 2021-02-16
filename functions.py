@@ -144,7 +144,7 @@ def dispatch(lineage, classif):
     'Tardigrada', 'Xenoturbella']
 
     ##no option selected
-    if classif == 3:
+    if classif == 3 or classif == 2:
         return "results"
     ##user gave list of taxonomic levels
     if isinstance(classif, list):
@@ -254,11 +254,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
             dicttemp['Lineage'] = lineage
 
             ##dispatch
-            if classif == 2 or classif == 3:
-                rank = "results"
-            else:
-                rank = dispatch(lineage, classif)
-            dicttemp['dispatch'] = rank
+            dicttemp['dispatch'] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
 
@@ -311,7 +307,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","")):
 
         ##append the feature table file in a text file
         if not dicttaxo and not genelist:
-            with open(path + "/fasta_cds.txt", 'a') as dl:
+            with open(path + "/fasta_cds.fasta", 'a') as dl:
                 dl.write(result)
             result = result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result]
@@ -350,9 +346,6 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
             dispatch = dicttaxo[TaxId]['dispatch']
         except KeyError:
             return
-        
-        if not Lineage or not Name:
-            return
 
         if not dispatch:
             dispatch = "results"
@@ -367,7 +360,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
         
         if dicttaxo:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-            description = description + ' |' + Name +  '|' + TaxId + '|' + Lineage
+            description = description + '|' + TaxId + ' |' + Name +  '|' + Lineage
 
         path = path + "/" + dispatch + ".fasta"
         with open(path, 'a') as new:
@@ -406,6 +399,7 @@ def extract(path, text, dictid, dicttaxo, genelist, verb=""):
 
     return found
 
+
 def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
     
     ##unpack parameters
@@ -438,10 +432,10 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
         parameters['rettype'] = "fasta"
         parameters['retmode'] = "text"
 
-
-        ##send requests to the API until getting a result
+        ##download
         result = download(parameters, efetchaddress)
         result = result.text
+
         if not dicttaxo:
             with open(path + "/fastafiles.fasta", "a") as f:
                 f.write(result)
@@ -473,7 +467,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
                     name = 'not found'
                     dispatch = 'results'
 
-                idline = idline + " |" + name + "|" + lineage 
+                idline = ">" + idline + " |" + taxid + " |" + name + "|" + lineage 
                 
                 with open(path + "/" + dispatch + ".fasta", 'a') as f:
                     f.write(f"{idline}\n")
