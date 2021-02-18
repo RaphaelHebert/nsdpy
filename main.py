@@ -94,7 +94,6 @@ if count < 1:
     sys.exit("No results found")
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
-count = 300
 params = (querykey, webenv, count)
 #comments
 if verb > 0:    
