@@ -56,11 +56,13 @@ def esearchquery(QUERY):
     y = download(parameters, esearchaddress)
     if y == 1:
         return ({"error": "wrong address for esearch"})  
-
     return (y.json())
 
 
-def taxids(params, path, OPTIONS=("","","","")):
+def taxids(params, path, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","")
 
     ##unpack parameters
     (querykey, webenv, count) = params
@@ -266,7 +268,10 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
 
 ##dl the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=("","","","")):
+def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","")
     
     ##unpack parameters
     (querykey, webenv, count) = params
@@ -400,7 +405,10 @@ def extract(path, text, dictid, dicttaxo, genelist, verb=""):
     return found
 
 
-def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=("","","","","")):
+def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","")
     
     ##unpack parameters
     (_, apikey) = QUERY
@@ -494,7 +502,11 @@ def duplicates(listofaccess, path):
     return(nb)
 
 
-def taxo(path, listofid, dictid, QUERY, OPTIONS=("","","","","")):
+def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","")
+
     if len(listofid) < 1:
         return []
 
