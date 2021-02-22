@@ -83,7 +83,7 @@ def taxids(params, path, OPTIONS=None):
     taxid = ''
     seqnb = ''
 
-    if count/retmax == float(count//retmax):
+    if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
@@ -198,7 +198,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
     #number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
-    if count/retmax == float(count//retmax):
+    if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
@@ -287,7 +287,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     found = []
     #number of accession numbers to be sent at each API query
     retmax = 100
-    if count/retmax == float(count//retmax):
+    if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
@@ -417,13 +417,13 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
     if verb and verb > 0:
         print("Downloading fasta files...")
 
-    retmax = 10
+    retmax = 200
     keys = []
     count = len(listofids)
-    if int(count/retmax) == count//retmax:
+    if count % retmax == 0:
         nb = count//retmax
     else: 
-        (count//retmax) + 1
+        nb = (count//retmax) + 1
     for x in range(nb):
         ##split the list of ids
         ids = listofids[x*retmax : (x*retmax) + retmax]
@@ -530,7 +530,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
     genefound = []      ##accessions with some cds foudn or matching the filter if filter(s)
     count = len(listofid)
     retmax = 10
-    if (count/retmax) == float(count//retmax):
+    if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
