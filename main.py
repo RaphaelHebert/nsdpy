@@ -95,6 +95,7 @@ if count < 1:
 webenv =  str(y["esearchresult"]["webenv"])
 querykey = str(y["esearchresult"]["querykey"])
 params = (querykey, webenv, count)
+
 #comments
 if verb > 0:    
     print(f'Number of results found: {count}')
