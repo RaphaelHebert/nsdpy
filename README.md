@@ -26,13 +26,9 @@ Using NucleoPy the user can:
 
 ## Workflow
 
-<img src="https://github.com/RaphaelHebert/Nucleopy/blob/options/workflow.png" alt="workflow" width="600"/>
+<img src="https://github.com/RaphaelHebert/nsdpy/blob/options/workflow.png" alt="workflow" width="600"/>
 
 ## Installation 
-
-The package will be available from PyPI soon. 
-
-exepected:
 
 ```bash
 pip3 install nucleopy
@@ -40,6 +36,7 @@ pip3 install nucleopy
 
 ## Usage
 ### On google colab:
+
 [Nucleopy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
 
 ### Command line
