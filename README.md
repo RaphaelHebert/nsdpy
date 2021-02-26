@@ -1,5 +1,10 @@
 # NucleoPy
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![pypi](https://img.shields.io/pypi/v/nsdpy)](https://pypi.org/project/nsdpy/)
+
+
+
 - [Introduction](#introduction)
 - [workfolw](#workflow)
 - [Installation](#installation)
@@ -10,8 +15,6 @@
 - [Support](#support)
 - [Licence](#license)
 - [More Documentation](#more-documentation)
-
-
 
 ## Introduction
 
@@ -24,15 +27,20 @@ Using NucleoPy the user can:
 - **Sort** the sequences based on their taxonomy
 - **Filter** the sequences based on the name of the gene by giving one or more regular expression as filter(s)
 
+## Quick start
+
+
+
+- Github: Clone the repo: git clone https://github.com/RaphaelHebert/nsdpy.git
+- pip: Install with pip: 
+```bash 
+pip install nsdpy
+```
+- Google Colab: save a copy of [this notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing) in your drive.
+
 ## Workflow
 
 <img src="workflow.png" alt="workflow" width="600"/>
-
-## Installation 
-
-```bash
-pip3 install nucleopy
-```
 
 ## Usage
 ### On google colab:
@@ -50,8 +58,8 @@ pip3 install nucleopy
 ## Support
 
 ## License
-to choose, probably: https://choosealicense.com/licenses/gpl-3.0/
 
+Code and documentation copyright 2021 the nsdpy Authors. Code released under the MIT License.
 
 ## More Documentation
 
