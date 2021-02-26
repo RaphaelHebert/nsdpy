@@ -43,14 +43,14 @@ pip install nsdpy
 <img src="workflow.png" alt="workflow" width="600"/>
 
 ## Usage
-### On google colab:
+### Google colab:
 
 [Nucleopy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
 
 ### Command line
 
 ```bash
-      python3 main.py -r USER'S REQUEST [OPTIONS] 
+      nsdpy -r USER'S REQUEST [OPTIONS] 
 ```
 
 ## Authors and acknowledgment
