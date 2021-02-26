@@ -26,7 +26,7 @@ Using NucleoPy the user can:
 
 ## Workflow
 
-<img src="https://github.com/RaphaelHebert/nsdpy/blob/options/workflow.png" alt="workflow" width="600"/>
+<img src="workflow.png" alt="workflow" width="600"/>
 
 ## Installation 
 
