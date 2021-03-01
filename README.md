@@ -18,7 +18,7 @@
 
 ## Introduction
 
-NucleoPy aims to ease the download and sort of big bacth of DNA sequences from the NCBI database. 
+nsdpy (nucleotide or NCBI sequence downloader) aims to ease the download and sort of big bacth of DNA sequences from the NCBI database. 
 It can also be usefull to filter the sequences based on their annotations.
 Using NucleoPy the user can:
 
