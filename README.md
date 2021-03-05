@@ -6,10 +6,10 @@
 
 
 - [Introduction](#introduction)
-- [workfolw](#workflow)
-- [Installation](#installation)
+- [Workfolw](#workflow)
+- [Quick start](#Quick-start)
 - [Usage](#usage)
-  - [Google Colab](#on-google-colab)
+  - [Google Colab](#google-colab)
   - [Command line](#command-line)
 - [Authors and acknowledgment](#authors-and-acknowledgment)
 - [Support](#support)
@@ -25,7 +25,8 @@ Using nsdpy the user can:
 - **Search** NCBI nucleotide database
 - **Download** the fasta files or the cds_fasta files corresponding to the result of the search
 - **Sort** the sequences based on their taxonomy
-- **Filter** the sequences based on the name of the gene by giving one or more regular expression as filter(s)
+- **Select** coding sequences from cds files based on the gene names using one or more regular expressions. 
+This can help the user retrieve some sequences for which the gene name is annotated in another field.
 
 ## Quick start
 
@@ -43,7 +44,7 @@ pip install nsdpy
 <img src="workflow.png" alt="workflow" width="600"/>
 
 ## Usage
-### Google colab:
+### Google colab
 
 [nsdpy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
 
@@ -64,6 +65,6 @@ Code and documentation copyright 2021 the nsdpy Authors. Code released under the
 ## More Documentation
 
 For examples of usage and more detailed documentation check: 
-[Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing =100)
+[Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing=100)
 
 
