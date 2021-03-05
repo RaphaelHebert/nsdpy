@@ -45,7 +45,7 @@ pip install nsdpy
 ## Usage
 ### Google colab:
 
-[Nucleopy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
+[nsdpy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
 
 ### Command line
 
