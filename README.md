@@ -7,7 +7,7 @@
 
 - [Introduction](#introduction)
 - [Workfolw](#workflow)
-- [Quick start](#Quick-start)
+- [Quick start](#quick-start)
 - [Usage](#usage)
   - [Google Colab](#google-colab)
   - [Command line](#command-line)
@@ -30,13 +30,13 @@ This can help the user retrieve some sequences for which the gene name is annota
 
 ## Quick start
 
-
-
 - Github: Clone the repo: git clone https://github.com/RaphaelHebert/nsdpy.git
-- pip: Install with pip: 
+- pip:  
 ```bash 
 pip install nsdpy
 ```
+*minimum python version for nsdpy: 3.8.2* 
+
 - Google Colab: save a copy of [this notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing) in your drive.
 
 ## Workflow
