@@ -20,7 +20,7 @@
 
 nsdpy (nucleotide or NCBI sequence downloader) aims to ease the download and sort of big bacth of DNA sequences from the NCBI database. 
 It can also be usefull to filter the sequences based on their annotations.
-Using NucleoPy the user can:
+Using nsdpy the user can:
 
 - **Search** NCBI nucleotide database
 - **Download** the fasta files or the cds_fasta files corresponding to the result of the search
