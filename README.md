@@ -54,7 +54,9 @@ pip install nsdpy
       nsdpy -r USER'S REQUEST [OPTIONS] 
 ```
 
-## Authors and acknowledgment
+## Authors and acknowledgment  
+
+[Raphael Hebert](https://github.com/RaphaelHebert)
 
 ## Support
 
