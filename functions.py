@@ -525,9 +525,9 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
     if verb and verb > 0:
         print("retreiving the GenBank files...")
 
-    remain = []         #accessions not downloead from previous iteration
+    remain = []         #accessions not downloaded from previous iteration
     analysed = []       #accessions successfully donwnloaded and found in the gb file
-    genefound = []      ##accessions with some cds foudn or matching the filter if filter(s)
+    genefound = []      ##accessions with some cds found or matching the filter if filter(s)
     count = len(listofid)
     retmax = 10
     if count % retmax == 0:

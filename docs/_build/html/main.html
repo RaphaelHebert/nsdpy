@@ -1,0 +1,441 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌ &#8212; NSDPY 0.1.16 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Welcome to NSDPY’s documentation!" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="tex2jax_ignore mathjax_ignore section" id="nsdpy-batch-downloading-from-ncbi-database-with-python3">
+<h1>NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌<a class="headerlink" href="#nsdpy-batch-downloading-from-ncbi-database-with-python3" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p><strong>nsdpy</strong> aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files with taxonomic information included in the description lines (see  examples).</p>
+</div>
+<div class="section" id="major-steps">
+<h2>Major steps<a class="headerlink" href="#major-steps" title="Permalink to this headline">¶</a></h2>
+<ol class="simple">
+<li><p>Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or cds_fasta format (see: cds_fasta).</p></li>
+<li><p>Optionally the program analyzes the results to extract the desired gene based on sequence annotation</p></li>
+<li><p>The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database.</p></li>
+<li><p>The output files are in fasta format and contain the informations as found in the raw file and if any of the taxonomic option is selected, the following information are added:</p>
+<ul class="simple">
+<li><p>TaxID</p></li>
+<li><p>organism name</p></li>
+<li><p>lineage</p></li>
+</ul>
+</li>
+</ol>
+</div>
+<div class="section" id="worlfow">
+<h2>Worlfow<a class="headerlink" href="#worlfow" title="Permalink to this headline">¶</a></h2>
+<p><img alt="workflow illustration" src="%22/workflow.png%22" /></p>
+</div>
+<div class="section" id="file-formats">
+<h2>File Formats<a class="headerlink" href="#file-formats" title="Permalink to this headline">¶</a></h2>
+<p>For more information on the different file formats:</p>
+<ul class="simple">
+<li><p>fasta file (.fasta): Wikipedia: fasta format</p></li>
+<li><p>cds_fasta (.fasta): a fasta file containing only the CDS, see: cds fasta example</p></li>
+<li><p>GenBank (.gb): NCBI: Genbank file</p></li>
+</ul>
+</div>
+<div class="section" id="motivations-for-the-programming-choices">
+<h2>Motivations for the programming choices<a class="headerlink" href="#motivations-for-the-programming-choices" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Keep the use simple to allow users with a minimum of programming knowledge to be comfortable using the script.</p></li>
+<li><p>Minimize the dependencies to minimize installation steps and maintenance issues.</p></li>
+<li><p>Keep the script simple, available and open source to allow the users to modify it if needed.
+-Find a simple way to download the results from a request to NCBI database keeping track of the  possible missing sequences.</p></li>
+</ul>
+<p>To comply with these objectives two ways to use the program are available:</p>
+<ul class="simple">
+<li><p>from the terminal: this allows the users to include the script in a pipeline and to run the script directly from their own computer. (see Instructions for use from the terminal)</p></li>
+<li><p>from a google colab notebook (see: what is google colab?): this allows the user to run the program online (from any web browser) and download the results automatically in their google drive without having to install anything on their own machine. (see Instruction for use from Google colab notebook).</p></li>
+</ul>
+</div>
+<div class="section" id="instructions-for-use-from-the-terminal">
+<h2>Instructions for use from the terminal<a class="headerlink" href="#instructions-for-use-from-the-terminal" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="requirements-and-installation">
+<h3>Requirements and installation<a class="headerlink" href="#requirements-and-installation" title="Permalink to this headline">¶</a></h3>
+<p><strong>nsdpy</strong> is a command line application written in Python3 that can be run from a terminal in most operating systems (Linux, Windows, Mac).</p>
+<div class="section" id="requirements">
+<h4>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h4>
+<ul class="simple">
+<li><p><a class="reference external" href="https://www.python.org/downloads/">python 3.8+</a> (Python Downloads)</p></li>
+<li><p><a class="reference external" href="https://pip.pypa.io/en/stable/installation/">pip</a></p></li>
+</ul>
+</div>
+<div class="section" id="install">
+<h4>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>pip3 install nsdpy
+</pre></div>
+</div>
+<p>To install the dependencies directly via pip3 (python3 package manager), download the requirements.txt file in your working directory then use the command:<br />
+pip3 install -r requirements.txt</p>
+<p>Alternatively, the script can be downloaded from <a class="reference external" href="https://github.com/RaphaelHebert/nsdpy">GitHub</a>. The user only needs to download the nsdpy.py and functions.py files and have python 3.8+ <a class="reference external" href="https://www.python.org/downloads/">Python Downloads</a> and the request library (see: <a class="reference external" href="https://requests.readthedocs.io/en/master/">requests</a>) installed. To install requests see <a class="reference external" href="https://pypi.org/project/requests/">install requests</a> (users may have to use the command pip3 instead of pip for python3 depending on their installation). This minimum installation should be enough to run the script. Otherwise, the requirements are listed in the requirements.txt file. (See below “Install the requirements”.)</p>
+<p>To run nsdpy.py the user needs to have functions.py and nsdpy.py in the same directory, then run it from this directory.</p>
+</div>
+</div>
+<div class="section" id="minimum-use">
+<h3>Minimum use<a class="headerlink" href="#minimum-use" title="Permalink to this headline">¶</a></h3>
+<p>Open a terminal and enter a <strong>nsdpy</strong> command with a compulsory -r argument
+nsdpy -r “This is a query to NCBI”</p>
+<p><ins>Example 1</ins></p>
+<p>The following command will download the fasta files for all results available in genbank with COX1 in the title:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r COX1[Title]  
+or  
+nsdpy --request COX1[Title]  
+</pre></div>
+</div>
+<p><em>These two requests are equivalent.</em></p>
+<p>Let’s break this down:</p>
+<ul class="simple">
+<li><p>nsdpy is the name of the command to be run by the application.</p></li>
+<li><p>-r or –request just two different ways to call the same option</p></li>
+<li><p>COX1[Title] is the user’s query. It is the same format as the one you would use to query the nucleotide database on NCBI from a web browser.</p></li>
+</ul>
+<p><ins>Example 2</ins></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”  
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="this-command-will-download-the-fasta-files-for-all-complete-mitochondrial-genomes-of-bryozoa-available-in-the-nucleotide-database">
+<h2>This command will download the fasta files for all complete mitochondrial genomes of Bryozoa available in the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/nucleotide/">nucleotide database</a><a class="headerlink" href="#this-command-will-download-the-fasta-files-for-all-complete-mitochondrial-genomes-of-bryozoa-available-in-the-nucleotide-database" title="Permalink to this headline">¶</a></h2>
+<p style="text-align: center;"> __GOOD TO KNOW__  </p>
+<ul class="simple">
+<li><p>Help can be displayed by using the    -h  or   –help  option:
+nsdpy -h or nsdpy –help</p></li>
+<li><p>Information on how to build a query to the NCBI search engine read the <strong>NCBI</strong> <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK44864/">Help Manual</a>.</p></li>
+<li><p>Note that if the query has some white spaces or any other special characters it must be wrapped in quotes. On Windows terminal users must use the double quotes only.</p></li>
+</ul>
+<hr class="docutils" />
+<div class="section" id="options">
+<h3>Options<a class="headerlink" href="#options" title="Permalink to this headline">¶</a></h3>
+<p>The options can be displayed by using the help    -h (or –help).</p>
+</div>
+<div class="section" id="api-key">
+<h3>API Key<a class="headerlink" href="#api-key" title="Permalink to this headline">¶</a></h3>
+<p>-a (or –apikey) provides an API key when calling the Entrez API. Users can get an API key by registering to the NCBI website (<a class="reference external" href="http://www.ncbi.nlm.nih.gov/account/">Register here</a>).
+If no API key is provided the program works as well (might be a little slower). To learn more about the API key see: <a class="reference external" href="https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/">New API Keys for the E-utilities</a> .</p>
+</div>
+<div class="section" id="verbose">
+<h3>Verbose<a class="headerlink" href="#verbose" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-v (or --verbose)  
+</pre></div>
+</div>
+<p>Displays more text output in the terminal, such as progression of downloads and analysis.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-q (or --quiet)  
+</pre></div>
+</div>
+<p>No text output is displayed in the terminal.</p>
+<p>The –verbose and –quiet options are mutually exclusive.</p>
+</div>
+<div class="section" id="gene-selection">
+<h3>Gene selection<a class="headerlink" href="#gene-selection" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c [PATTERNS] (or --cds [PATTERNS])  
+</pre></div>
+</div>
+<p>The program will download the cds_fasta files instead of the fasta files. The cds_fasta file is a FASTA format of the nucleotide sequences corresponding to all CDS features.
+PATTERNS is optional. PATTERNS: one or more <a class="reference external" href="https://www.debuggex.com/cheatsheet/regex/python">regular expressions</a> for filtering genes from the cds_fasta files and GenBank files corresponding to the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/genbank/sequenceids/">accession version identifiers</a> resulting from the user’s query.  The search is case insensitive.
+This option is particularly interesting when looking for a gene from organites whole genomes or from DNA sequences containing more than one gene.</p>
+<p>Example for the COX1 (or COI) gene:
+nsdpy -r “(mitochondrion[Title]) AND complete[Title]” -c COX[1I] CO[I1]<br />
+or<br />
+nsdpy –request “(mitochondrion[Title]) AND complete[Title]” –cds cox[1i] CO[I1]<br />
+The above commands are identical.</p>
+<p>Note that this option must be used separately form the others. For example to use the -cds option and the verbose option these commands will run normally:<br />
+nsdpy -r “This is a query to NCBI” -c -v<br />
+nsdpy -r “This is a query to NCBI” -c pattern1 pattern2 -v</p>
+<p>However, the following command will interpret the “v” as a pattern and not as the verbose option.<br />
+python3 nsdpy.py -r “This is a query to NCBI” -cv</p>
+</div>
+<div class="section" id="optional-output-files">
+<h3>Optional output files<a class="headerlink" href="#optional-output-files" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-T (or --taxids)  
+</pre></div>
+</div>
+<p>The program will write a text file with the accession version identifiers found and their corresponding TaxIDs separated by a tabulation.
+Example:<br />
+nsdpy -r “ITS2” -T</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-S (or --summary)  
+</pre></div>
+</div>
+<p>The program will write a table in the working directory that summarize the downloads made with the script. The file is a tab separated file. The columns describe the following parameters:</p>
+<ul class="simple">
+<li><p>user’s request</p></li>
+<li><p>starting and the ending time</p></li>
+<li><p>number of results from esearchquery</p></li>
+<li><p>number of sequences found</p></li>
+<li><p>number of TaxIDs</p></li>
+</ul>
+</div>
+<div class="section" id="taxonomy">
+<h3>Taxonomy<a class="headerlink" href="#taxonomy" title="Permalink to this headline">¶</a></h3>
+<p>If any of the following taxonomy options is selected the TaxID, organism name and lineage will be added to the information line of the sequences in the fasta files.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-i (or information)  
+</pre></div>
+</div>
+<p>Just add the TaxID, organism name and lineage to the information lines of the fasta files. All the sequences are still being written in one file.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-k (or --kingdom)  
+</pre></div>
+</div>
+<p>The program will write the results in four different fasta files (one for the Metazoa, one for the Fungi, one for the Plantae and one for Others containing the sequence that doesn’t correspond to the above three kingdom)<br />
+Example:<br />
+nsdpy -r “users query” -k<br />
+or<br />
+nsdpy -r “users query” –kingdom</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-p (or --phylum)  
+</pre></div>
+</div>
+<p>The program will write the results in different fasta files, one file per phylum.<br />
+Example:<br />
+nsdpy -r “users query” -p<br />
+or<br />
+nsdpy -r “users query” –phylum</p>
+<p>For the k and p options the phylums and kingdoms correspond to the following lists and can be modified by the user by adding or deleting entries directly in the <strong>functions.py</strong> script:
+<strong>Plantae</strong> = [‘Chlorophyta’, ‘Charophyta’, ‘Bryophyta’, ‘Marchantiophyta’, ‘Lycopodiophyta’, ‘Ophioglossophyta’, ‘Pteridophyta’,’Cycadophyta’, ‘Ginkgophyta’, ‘Gnetophyta’, ‘Pinophyta’, ‘Magnoliophyta’, ‘Equisetidae’, ‘Psilophyta’, ‘Bacillariophyta’,’Cyanidiophyta’, ‘Glaucophyta’, ‘Prasinophyceae’,’Rhodophyta’]
+<strong>Fungi</strong> = [‘Chytridiomycota’, ‘Zygomycota’, ‘Ascomycota’, ‘Basidiomycota’, ‘Glomeromycota’]
+<strong>Metazoa</strong> = [‘Acanthocephala’, ‘Acoelomorpha’, ‘Annelida’, ‘Arthropoda’, ‘Brachiopoda’, ‘Ectoprocta’, ‘Bryozoa’, ‘Chaetognatha’, ‘Chordata’, ‘Cnidaria’, ‘Ctenophora’, ‘Cycliophora’, ‘Echinodermata’, ‘Echiura’, ‘Entoprocta’, ‘Gastrotricha’, ‘Gnathostomulida’, ‘Hemichordata’, ‘Kinorhyncha’, ‘Loricifera’, ‘Micrognathozoa’, ‘Mollusca’, ‘Nematoda’, ‘Nematomorpha’, ‘Nemertea’, ‘Onychophora’,’Orthonectida’, ‘Phoronida’, ‘Placozoa’, ‘Plathelminthes’, ‘Porifera’, ‘Priapulida’, ‘Rhombozoa’, ‘Rotifera’, ‘Sipuncula’, ‘Tardigrada’, ‘Xenoturbella’]</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-l FILTERS  
+</pre></div>
+</div>
+<p>or<br />
+–levels FILTERS<br />
+The program will write the results in different fasta files corresponding to the match between the FILTERS and the taxonomy.<br />
+Example:<br />
+nsdpy -r “users query” -l Deuterostomia Protostomia<br />
+or
+nsdpy -r “users query” –levels Deuterostomia Protostomia<br />
+The program will write one file for the Deuterostomia and one file for for the Protostomia and one file for the others).</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-s (or --species)
+</pre></div>
+</div>
+<p>The program will write the results in different fasta files corresponding to the name of the organism.<br />
+Example:<br />
+nsdpy -r “users query” -s<br />
+or<br />
+nsdpy -r “users query” –species<br />
+The program will write one file for the each of the different lowest taxonomic level found.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “users query” -ssss  
+</pre></div>
+</div>
+<p>The program will write one file for the each of the 4th (notice the 4s) lowest taxonomic level found, if the lineage is For example: “ cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Spiralia, Lophotrochozoa, Annelida, Polychaeta, Errantia, Phyllodocida, Nereididae, Platynereis” the program will select “Errantia”).</p>
+<p><strong>The different  taxonomic options are mutually exclusive.</strong></p>
+</div>
+<div class="section" id="more-examples">
+<h3>More examples<a class="headerlink" href="#more-examples" title="Permalink to this headline">¶</a></h3>
+<p>Some options can be used together, for example a gene selection option can be used in combination with a taxonomy option and some file output options as well as a verbose option. Note that the order of the options does not matter.</p>
+<p>Example 1:<br />
+nsdpy -r “(mitochondrion[Title]) AND complete[Title]” -c -iT</p>
+</div>
+</div>
+<div class="section" id="with-these-options-the-program-will-download-the-fasta-files-containing-the-cds-sequences-c-for-every-result-of-the-users-query-r-download-and-append-the-taxids-organism-name-and-lineage-information-to-every-sequences-written-in-the-output-file-i-and-write-a-text-file-for-the-accession-version-identifiers-and-taxids-t">
+<h2>With these options the program will download the fasta files containing the CDS sequences (-c) for every result of the user’s query (-r), download and append the TaxIDs, organism name and lineage information to every sequences written in the output file (-i) and write a text file for the accession version identifiers and TaxIDs (-T)<a class="headerlink" href="#with-these-options-the-program-will-download-the-fasta-files-containing-the-cds-sequences-c-for-every-result-of-the-users-query-r-download-and-append-the-taxids-organism-name-and-lineage-information-to-every-sequences-written-in-the-output-file-i-and-write-a-text-file-for-the-accession-version-identifiers-and-taxids-t" title="Permalink to this headline">¶</a></h2>
+<p><strong>Note:</strong></p>
+<ul class="simple">
+<li><p>the -r option must be followed by the user’s query otherwise the program will return an error</p></li>
+<li><p>options -T and -i can be written together as -Ti</p></li>
+<li><p>-c option must be used separately.</p></li>
+</ul>
+<hr class="docutils" />
+<p>Example 2:<br />
+nsdpy -r “(mitochondrion[Title]) AND complete[Title]” -c CO[1Ii] COX[1i] -vk</p>
+<p>As in the Example1, the program will download the fasta files containing the CDS sequences for every result of the user’s query (-r) but as some filters are provided after the -c option (CO[1Ii] COX[1i]) the program will filter the results according to these regular expression.
+More information about the filtering process:<br />
+The sequences are filtered according to the information line of their fasta file: if the regex used to filter the sequence is in the information line then the sequence is kept, otherwise it is not kept in the final result. If the sequence has no fasta file for the coding sequences the program downloads and parses the Genbank file. In that file the program looks in the “product”, “gene” , “genesynonym” and “note” fields to find the regex used as filter. It extracts the sequence according to these annotations.</p>
+<p>The program will write information about the run and the number of sequences found in the terminal with the option -v.
+The sequences will be dispatched in different fasta files depending on their kingdom with the option -k.</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c CO[1Ii] COX[1i]  
+</pre></div>
+</div>
+<p>The program will filter the genes for which the annotation in the CDS fasta file or the genbank file match the following regular expressions (patterns): CO[1Ii] COX[1i].</p>
+<p>Example 3:<br />
+nsdpy –request “((‘CO1’ OR ‘COX1’) OR COI) OR COXI” -l Choradata Cnidaria<br />
+-l Choradata Cnidaria: the program will output three fasta files: one for the Choradata sequences, one for the Cnidaria sequences and one for the sequences that do not belong to the Chordata or the Cnidaria either.</p>
+<div class="section" id="output-files">
+<h3>Output files<a class="headerlink" href="#output-files" title="Permalink to this headline">¶</a></h3>
+<p>The script creates a folder named ‘results’ in the working directory and a subdirectory for each run named with the starting time of the run: /results/YYYY-MM-DD_HH-MM-SS/. In this last folder the script writes the fasta file(s) containing the results.<br />
+The description line of the output fasta  files are as follows:</p>
+<ul class="simple">
+<li><p>ACCESSION VERSION IDENTIFIER</p></li>
+<li><p>ORGANISM NAME</p></li>
+<li><p>TaxIDs</p></li>
+<li><p>LINEAGE</p></li>
+<li><p>LOCATION</p></li>
+</ul>
+<p>Different files are printed depending on the selected taxonomy options and filters. The following table summarize the different files and their attributes:
+<em>insert table</em></p>
+<p>Example:<br />
+The identification line of the output file:</p>
+<p>&gt;MW076458 |Chthamalus malayensis|316610|cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Ecdysozoa, Panarthropoda, Arthropoda, Mandibulata, Pancrustacea, Crustacea, Multicrustacea, Hexanauplia, Thecostraca, Cirripedia, Thoracica, Sessilia, Chthamalidae, Chthamalus|&lt;1..1536</p>
+<p><em>MW076458</em>: Accession number
+Chthamalus malayensis: Organism name<br />
+<em>316610</em>: TaxID<br />
+<em>cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Ecdysozoa, Panarthropoda, Arthropoda, Mandibulata, Pancrustacea, Crustacea, Multicrustacea, Hexanauplia, Thecostraca, Cirripedia, Thoracica, Sessilia, Chthamalidae, Chthamalus</em>: lineage<br />
+<em>&lt;1..1536</em>: location, the first number is the starting point and the second number the ending point.<br />
+The ‘&lt;’ sign before the starting point generally corresponds to the annotation such as ‘start codon not determined’ and the ‘&gt;’ sign to stop codon not determined. This later sign can lead to errors while parsing this kind of fasta file.</p>
+</div>
+</div>
+<div class="section" id="instruction-for-use-from-google-colab">
+<h2>Instruction for use from Google Colab<a class="headerlink" href="#instruction-for-use-from-google-colab" title="Permalink to this headline">¶</a></h2>
+<p>Using the notebook from Google colab doesn’t require any installation, it just needs a web browser. For an introduction about google colab see <a class="reference external" href="https://colab.research.google.com/notebooks/intro.ipynb">Welcome to Colaboratory</a>.</p>
+<p>The use of the notebook present the following advantages:</p>
+<ul class="simple">
+<li><p>users don’t need to remain connected while the code is running as the run is online</p></li>
+<li><p>the execution of the script doesn’t use the user’s RAM resources</p></li>
+<li><p>the results can be accessed from any computer connected to colab</p></li>
+</ul>
+<p>Note that the maximum lifetime of the runtime is 12 hours after this time the script will stop running and the files saved in colab will be deleted, that can be an issue for downloading very big datasets. The files can be saved directly to the user’s google drive to avoid having to download them manually. To save space and downloading time the user can choose to retrieve the file as a .zip file.<br />
+The notebook can be found <a class="reference external" href="https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing">here</a>. To use it just open it and follow the steps described in the notebook.</p>
+</div>
+<div class="section" id="additional-comments">
+<h2>Additional comments<a class="headerlink" href="#additional-comments" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="scripts">
+<h3>Scripts<a class="headerlink" href="#scripts" title="Permalink to this headline">¶</a></h3>
+<p>The <em>nsdpy.py</em> file contains the code to run from a terminal. It uses the functions in <em>functions.py</em>.</p>
+</div>
+<div class="section" id="algorithm-details">
+<h3>Algorithm details<a class="headerlink" href="#algorithm-details" title="Permalink to this headline">¶</a></h3>
+<p>The script uses the Entrez programming utilities to access the NCBI databases (see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25497/">A General Introduction to the E-utilities</a> and for more: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/">The E-utilities In-Depth: Parameters, Syntax and More</a>).<br />
+The script takes a user’s query as input, the query is the same as the user would enter it in the NCBI search engine (see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/">NCBI webpage</a> for NCBI search engine and <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK3837/#EntrezHelp.Entrez_Searching_Options">Entrez Searching Options</a> on how to make a query).<br />
+This query will be submitted to the esearch E-utility (see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_">ESearch</a>) in history mode by calling the <em>esearchquery</em> function from the functions.py file. The history mode will allow the program to get the ‘webenv’ and ‘query_key’ parameters. These parameters allow the program to later access the list of accession version identifiers corresponding to the results of the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_">ESearch</a> call and uses them to query esummary (see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESummary_">ESummary</a>) to retrieve the TaxIds and EFetch to retrieve the CDS in fasta format (rettype = ‘fasta_cds_na’, see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly">table1</a> ) or the fasta files.<br />
+The program then uses esummary to search the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/taxonomy">taxonomy database</a> calling the <em>taxids</em> function. The function finds the TaxIds corresponding to the accession version identifiers found by <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_">Esearch</a> and optionally writes a text file with for each line the accession version identifiers and its corresponding TaxId separated by a tab and returns a dictionary ([python doc on dictionaries](https://docs.python.org/3/tutorial/datastructures.  html#dictionaries), for a more friendly approach: <a class="reference external" href="https://www.w3schools.com/python/python_dictionaries.asp">w3school tutorial</a>) with the accession version identifiers as keys and TaxIDs as values.<br />
+<strong>nsdpy.py</strong> lists the TaxIds returned by the <em>taxids</em> function to search the <a class="reference external" href="https://www.ncbi.nlm.nih.gov/taxonomy">taxonomy database</a> with <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_">Efetch</a> and the default rettype and retmode parameters by calling the_completetaxo_ function if any of the <a class="reference external" href="https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.qno47lcdn9p7">Taxonomy options</a> is selected. This function will find the organism’s name (scientific name) and lineage of each TaxIds, then returns a dictionary with the TaxIds as keys and these information as values (yes.. a dict in a dict, it is called nested dictionaries).<br />
+If the option <a class="reference external" href="https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.xw94qejvco0f">cds</a> is not selected by main.py calls the <em>fasta</em> function to retrieve the fasta files and writes them in the output file(s). If the <a class="reference external" href="https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.xw94qejvco0f">cds</a> option is selected the Coding DNA Sequences (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC403693/#:~:text=CDS%20is%20a%20sequence%20of,open%20reading%20frame%20(ORF).">CDS</a>) are downloaded in fasta format from the nuccore (see <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly">table1</a>) database using <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_">Efetch</a> by calling the <em>cdsfasta</em> function. The program makes calls to <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_">Efetch</a> for 200 accession version identifiers at the time. For the cds option the results from Efetch are analyzed and filtered (optional) every time the program gets the result from a call. The analysis of the results from Efetch is made by the <em>extract</em> function (the call to this function is made directly by the cdsfasta function). The <em>extract</em> function looks for the genes specified by the user (the user can enter the gene as a regular expression. See this <a class="reference external" href="https://www.w3schools.com/python/python_regex.asp">tutorial</a> to learn about regular expressions and try your regular expression <a class="reference external" href="https://pythex.org/">here</a>), extract them and write them in a fasta file alongside.<br />
+If the cds option is selected the program compares the accession version identifiers returned by the taxids function (which are the accession version identifiers found by <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_">ESearch</a>) and the accession version identifiers for which a cds fasta file has been downloaded. It lists all the accession version identifiers for which no target gene has been found if a filter is provided or all the accession version identifiers for which no cds fasta file has been downloaded (if no filter provided) and sends this list to the <em>taxo</em> function.<br />
+The <em>taxo</em> function performs a supplementary check for the accessions, where the gene is not found in the CDS fasta file. It searches the nuccore database with <a class="reference external" href="https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_">Efetch</a> to get the genbank files (<a class="reference external" href="https://www.ncbi.nlm.nih.gov/genbank/samplerecord/">GenBank file format</a>) for the accession version identifiers listed previously. It looks for the CDS sequences and eventually filters them and taxonomy information from this file. If no CDS is found for a given accession version identifiers, the accession version identifiers is appended to a text file named notfound.txt, otherwise the CDS is appended to the text file(s) written previously.</p>
+</div>
+<div class="section" id="comments">
+<h3>Comments<a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h3>
+<p>The scripts could be simplified and output almost the same results by using only the taxo function instead of using the <em>cdsfasta</em> function and then using the <em>taxo</em> function. This protocol was tried first but the running time (mostly due to downloading time) was an order of magnitude longer. Minimizing the number of genbank files analyzed is found to be a good way to minimize the running time as well as minimizing the possible errors in retrieving the CDS from DNA sequence as in the cds fasta file the CDS are already isolated while in the genbank file the scripts has to find the location then extract the gene from the whole DNA sequence of the file.</p>
+</div>
+<div class="section" id="supplementary-material">
+<h3>SUpplementary material<a class="headerlink" href="#supplementary-material" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="about-filtering">
+<h4>About filtering<a class="headerlink" href="#about-filtering" title="Permalink to this headline">¶</a></h4>
+<p>When the -c option is used with one or more filters the program will use the filter(s) provided by the user and interpret them as regular expressions.<br />
+First it will look for a match in the gene field of the cds_fasta files it downloaded.<br />
+For example it the filter COX[1I] is used, the following sequence will be selected:<br />
+<img alt="MN372141 gene COX1 image" src="_images/." /></p>
+<p>while the following won’t be selected:
+<img alt="MN372141 gene ND2 image" src="_images/." /></p>
+<p>This filtering can mostly be achieved without using the filter of the -c  option by writing the correct request to NCBI.<br />
+Then if the program doesn’t find a match for an accession version number in the cds-fasta file, it will download the GenBank file and look for a match in this file. The GenBank files have different fields that can be checked for a match (see: <a class="reference external" href="https://www.ncbi.nlm.nih.gov/genbank/samplerecord/">GenBank file</a>). The program will first look for a match in the “gene”, “gene_synonym”, “note” and “product” fields from the CDS file. If a match is found the DNA sequence will be extracted based on the CDS location information.</p>
+<p>For example it the filter COX[1I] is used, the following “note” field of the CDS section will be selected:<br />
+<img alt="note COX1 field image" src="_images/." /></p>
+<p>“note” field of the gene section with matching location:<br />
+<img alt="note COX1 field image" src="_images/." /></p>
+<p><em>supplementary material to check on goodle doc and finish here</em></p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">NSDPY</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#major-steps">Major steps</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#worlfow">Worlfow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#file-formats">File Formats</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#motivations-for-the-programming-choices">Motivations for the programming choices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instructions-for-use-from-the-terminal">Instructions for use from the terminal</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#this-command-will-download-the-fasta-files-for-all-complete-mitochondrial-genomes-of-bryozoa-available-in-the-nucleotide-database">This command will download the fasta files for all complete mitochondrial genomes of Bryozoa available in the nucleotide database</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#with-these-options-the-program-will-download-the-fasta-files-containing-the-cds-sequences-c-for-every-result-of-the-users-query-r-download-and-append-the-taxids-organism-name-and-lineage-information-to-every-sequences-written-in-the-output-file-i-and-write-a-text-file-for-the-accession-version-identifiers-and-taxids-t">With these options the program will download the fasta files containing the CDS sequences (-c) for every result of the user’s query (-r), download and append the TaxIDs, organism name and lineage information to every sequences written in the output file (-i) and write a text file for the accession version identifiers and TaxIDs (-T)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instruction-for-use-from-google-colab">Instruction for use from Google Colab</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#additional-comments">Additional comments</a></li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Welcome to NSDPY’s documentation!</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Raphael Hebert.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/main.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
