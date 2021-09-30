@@ -1,0 +1,7 @@
+
+name: docs
+dependencies:
+  - myst-parser==0.15.2
+  - sphinx==4.2.0
+  - nbsphinx==0.8.7
+
