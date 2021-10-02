@@ -30,7 +30,9 @@ This can help the user retrieve some sequences for which the gene name is annota
 
 ## Quick start
 
-- Github: Clone the repo: git clone https://github.com/RaphaelHebert/nsdpy.git
+- Github: Clone the repo: 
+
+  git clone https://github.com/RaphaelHebert/nsdpy.git
 - pip:  
 ```bash 
 pip install nsdpy
