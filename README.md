@@ -72,7 +72,7 @@ Code and documentation copyright 2021 the nsdpy Authors. Code released under the
 Official documentation:  
 [Readthedocs](https://nsdpy.readthedocs.io/en/latest/main.html#overview)
   
-For examples of usage and more detailed documentation check: 
+On Google Doc:  
 [Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing=100)  
 
 
