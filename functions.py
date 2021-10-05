@@ -312,7 +312,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
 
         ##append the feature table file in a text file
         if not dicttaxo and not genelist:
-            with open(path + "/fasta_cds.fasta", 'a') as dl:
+            with open(path + "/results.fasta", 'a') as dl:
                 dl.write(result)
             result = result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result]
