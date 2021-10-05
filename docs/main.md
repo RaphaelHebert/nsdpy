@@ -373,17 +373,37 @@ The scripts could be simplified and output almost the same results by using only
 When the **-c** option is used with one or more filters the program will use the filter(s) provided by the user and interpret them as regular expressions.  
 First it will look for a match in the gene field of the cds_fasta files it downloaded.  
 For example it the filter COX\[1I\] is used, the following sequence will be selected:  
-![MN372141 gene COX1 image]()  
+![MN372141 gene COX1 image](./pictures/cds_file_filtering_ok.png)  
   
 while the following won’t be selected:
-![MN372141 gene ND2 image]()  
+![MN372141 gene ND2 image](./pictures/cds_file_filtering_not.png)
   
-This filtering can mostly be achieved without using the filter of the -c  option by writing the correct request to NCBI.  
+*This filtering can mostly be achieved without using the filter of the -c  option by writing the correct request to NCBI.*  
+</br>  
 Then if the program doesn’t find a match for an accession version number in the cds-fasta file, it will download the GenBank file and look for a match in this file. The GenBank files have different fields that can be checked for a match ( see: [GenBank file](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)). The program will first look for a match in the “gene”, “gene_synonym”, “note” and “product” fields from the CDS file. If a match is found the DNA sequence will be extracted based on the CDS location information.  
   
-For example it the filter COX\[1I\] is used, the following “note” field of the CDS section will be selected:  
-![note COX1 field image]()  
-  
-“note” field of the gene section with matching location:  
-![note COX1 field image]()  
-*supplementary material to check on google doc and finish here*
+For example it the filter 'CO\[1I\]' is used, the following “note” field of the CDS section will be selected:  
+![note COX1 field image](./pictures/note_cds_filter_2.png)  
+![note COX1 field image 1](./pictures/note_cds_filter_1.png)  
+
+“note” field of the gene section can returns a match as well, in the following file the filter  ‘COX\[1I\]’ was used:  
+![note gene COX1 field image](./pictures/note_gene_cox1.png)  
+
+“gene_synonym” field of the CDS section can be parsed as well to find a match. In the following sequence ( accession number: AB475096.1) the 'CO\[1I\]' was used:  
+![gene synonym field](./pictures/cds_gene_synonym.png)  
+
+Sometimes more than one match will be found, for example with the filter “COX\[1I\]”:  
+![more than one result](./pictures/more_than_one_result.png)  
+
+In the above example more than one result will be found for this reference. In the results.fasta file one sequence per match will be written. As well the accession number with more than one match will be displayed in the ‘duplicates.txt’ file with the number of matches it returned.
+
+In some case the user can add more filter to match the product field, for example in the following case, no match is found with the COX\[1I\] filter, but if the user add the filter “cytochrome c subunit oxidase 1” the sequence would be selected because of the match in the ‘product’ field:  
+![cytochrome c subunit oxidase 1](./pictures/cytochrome_c_subunit_oxidase.png)  
+
+#### Fasta files for the CDS  
+
+The following figure displays how the fasta files containing only the cds are presented:  
+![cds fasta file](./pictues/cds_fasta_file.png)  
+
+The following figure displays the how to select the fasta files containing the cds directly from NCBI user interface:  
+![cds fasta format](./pictures/cds_fasta_format.png)  
