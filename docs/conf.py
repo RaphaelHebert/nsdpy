@@ -56,12 +56,3 @@ html_static_path = ['_static']
 
 # Allow usage of markdown format
 extensions = ['myst_parser']
-
-html_theme_options = {
-    # Toc options
-    'collapse_navigation': True,
-    'sticky_navigation': True,
-    'navigation_depth': 4,
-    'includehidden': True,
-    'titles_only': False
-}
