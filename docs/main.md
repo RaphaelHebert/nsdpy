@@ -1,15 +1,16 @@
 # NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌  
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pypi](https://img.shields.io/pypi/v/nsdpy)](https://pypi.org/project/nsdpy/)
 [![Python 3.8](https://upload.wikimedia.org/wikipedia/commons/a/a5/Blue_Python_3.8_Shield_Badge.svg)](https://www.python.org/)  
 
-## Overview  
+# Overview  
 
 __nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files with taxonomic information included in the description lines (see  examples).
   
 </br>
 
-## Major steps
+# Major steps
 
 1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or cds_fasta format (see: cds_fasta).
 2. Optionally the program analyzes the results to extract the desired gene based on sequence annotation
@@ -19,13 +20,14 @@ __nsdpy__ aims to facilitate the download of large numbers of DNA sequences from
     - organism name
     - lineage
 
-## Worlfow  
+# Worlfow  
+
   
 ![workflow illustration](./pictures/workflow.png)  
 
 </br>
 
-## File Formats  
+# File Formats  
   
 For more information on the different file formats:  
 
@@ -35,7 +37,7 @@ For more information on the different file formats:
 
 </br>
 
-## Motivations for the programming choices  
+# Motivations for the programming choices  
 
 - Keep the use simple to allow users with a minimum of programming knowledge to be comfortable using the script.
 - Minimize the dependencies to minimize installation steps and maintenance issues.
@@ -49,7 +51,7 @@ To comply with these objectives two ways to use the program are available:
 
 </br>
 
-## Instructions for use from the terminal  
+# Instructions for use from the terminal  
 
 ### Requirements and installation  
 
@@ -266,8 +268,8 @@ The program will write one file for the each of the different lowest taxonomic l
   
     nsdpy -r “users query” -ssss  
 The program will write one file for the each of the 4th (notice the 4s) lowest taxonomic level found, if the lineage is,for example, *cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Spiralia, Lophotrochozoa, Annelida, Polychaeta, Errantia, Phyllodocida, Nereididae, Platynereis* the program will select *Errantia*).  
-  
-<div style="text-align: center; font-weight: bold; padding-bottom:3%">Note that the different taxonomic options are mutually exclusive. </div>  
+
+<div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>  
 
 #### More examples  
 
@@ -348,7 +350,7 @@ The use of the notebook present the following advantages:
 Note that the maximum lifetime of the runtime is 12 hours after this time the script will stop running and the files saved in colab will be deleted, that can be an issue for downloading very big datasets. The files can be saved directly to the user’s google drive to avoid having to download them manually. To save space and downloading time the user can choose to retrieve the file as a .zip file.  
 The notebook can be found [here](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing). To use it just open it and follow the steps described in the notebook.  
   
-## Additional comments  
+# Additional comments  
   
 ### Scripts  
   
