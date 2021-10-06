@@ -8,8 +8,20 @@ Welcome to NSDPY's documentation!
 
 .. toctree::
    main.md
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 3
+   :caption: Table of Contents:
+   
+   Overview
+   Major steps
+   Workflow
+   File formats
+   Motivation for the programming choices
+   Instruction for use from the terminal
+   Instruction for use from Google Colab
+   Additional comments
+
+   
+   
 
 
 
