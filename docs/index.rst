@@ -9,7 +9,7 @@ Welcome to NSDPY's documentation!
 .. toctree::
    main.md
    :maxdepth: 3
-   :caption: 
+   :caption: Table of Contents:
    
    Overview
    Major steps
