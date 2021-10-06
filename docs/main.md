@@ -53,16 +53,16 @@ To comply with these objectives two ways to use the program are available:
 
 # Instructions for use from the terminal  
 
-### Requirements and installation  
+## Requirements and installation  
 
 __nsdpy__ is a command line application written in Python3 that can be run from a terminal in most operating systems (Linux, Windows, Mac).  
 
-#### Requirements
+### Requirements
 
 - Python 3.8+: [Python Downloads](https://www.python.org/downloads/)
 - pip3: [pip installation](https://pip.pypa.io/en/stable/installation/)  
   
-#### Install
+### Install
 
     pip3 install nsdpy
 
@@ -74,7 +74,7 @@ Alternatively, the script can be downloaded from [GitHub NSDPY repository](https
 
 To run <b>nsdpy.py</b> the user needs to have <b>functions.py</b> and <b>nsdpy.py</b> files in the same directory, then run it from this directory.  
   
-### Minimum use  
+## Minimum use  
 
 Open a terminal and enter a __nsdpy__ command with a compulsory **-r** argument  
 
@@ -127,16 +127,16 @@ This command will download the fasta files for all complete mitochondrial genome
 </br>
 </br>  
 
-### Options  
+## Options  
   
   The options can be displayed by using the help as described above.
 
-#### API Key
+### API Key
 
 **-a** (or **--apikey**) provides an API key when calling the Entrez API. Users can get an API key by registering to the NCBI website ( [Register here](http://www.ncbi.nlm.nih.gov/account/) ).
 If no API key is provided the program works as well ( it might be a little slower). To learn more about the API key see: [New API Keys for the E-utilities](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) .  
   
-#### Verbose  
+### Verbose  
   
     -v 
 or..
@@ -152,7 +152,7 @@ No text output is displayed in the terminal.
 
 Note that the **--verbose** and **--quiet** options are mutually exclusive.  
   
-#### Gene selection  
+### Gene selection  
   
     -c PATTERNS
 or..
@@ -182,9 +182,9 @@ However, the following command will interpret the “v” as a pattern and not a
 
     python3 nsdpy.py -r “This is a query to NCBI” -cv  
   
-### Optional output files  
+## Optional output files  
 
-#### TaxIds
+### TaxIds
 
     -T 
 or..
@@ -195,7 +195,7 @@ Example:
 
     nsdpy -r “ITS2” -T  
 
-#### Summary
+### Summary
 
     -S 
 or..  
@@ -211,7 +211,7 @@ The program will write a table in the working directory that summarize the downl
 - number of TaxIDs  
   
 
-#### Taxonomy
+### Taxonomy
   
 If any of the following taxonomy options is selected the TaxID, organism name and lineage will be added to the information line of the sequences in the fasta files.
 
@@ -271,7 +271,7 @@ The program will write one file for the each of the 4th (notice the 4s) lowest t
 
 <div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>  
 
-#### More examples  
+### More examples  
 
 Some options can be used together, for example a gene selection option can be used in combination with a taxonomy option and some file output options as well as a verbose option. Note that the order of the options does not matter.  
   
@@ -312,7 +312,7 @@ Example 3:
     nsdpy --request “((‘CO1’ OR ‘COX1’) OR COI) OR COXI” -l Choradata Cnidaria  
 **-l Choradata Cnidaria**: the program will output three fasta files, one for the Choradata sequences, one for the Cnidaria sequences and one for the sequences that do not belong to the Chordata or the Cnidaria either.  
   
-#### Output files  
+### Output files  
   
 The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results.  
 The description line of the output fasta files are as follows:  
@@ -352,11 +352,11 @@ The notebook can be found [here](https://colab.research.google.com/drive/1UmxzRc
   
 # Additional comments  
   
-### Scripts  
+## Scripts  
   
 The *nsdpy.py* file contains the code to run from a terminal. It uses the functions located in the *functions.py* file.  
   
-### Algorithm details  
+## Algorithm details  
 
 The script uses the Entrez programming utilities to access the NCBI databases ( see: [A General Introduction to the E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25497/) and for more: [The E-utilities In-Depth: Parameters, Syntax and More](https://www.ncbi.nlm.nih.gov/books/NBK25499/)).  
 The script takes a user’s query as input, the query is the same as the user would enter it in the NCBI search engine ( see: [NCBI webpage](https://www.ncbi.nlm.nih.gov/) for NCBI search engine and [Entrez Searching Options](https://www.ncbi.nlm.nih.gov/books/NBK3837/#EntrezHelp.Entrez_Searching_Options) on how to make a query).  
@@ -367,13 +367,13 @@ If the option [cds](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8
 If the cds option is selected the program compares the accession version identifiers returned by the taxids function (which are the accession version identifiers found by [ESearch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_)) and the accession version identifiers for which a cds fasta file has been downloaded. It lists all the accession version identifiers for which no target gene has been found if a filter is provided or all the accession version identifiers for which no cds fasta file has been downloaded (if no filter provided) and sends this list to the *taxo* function.  
 The *taxo* function performs a supplementary check for the accessions, where the gene is not found in the CDS fasta file. It searches the nuccore database with [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) to get the genbank files ( [GenBank file format](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)) for the accession version identifiers listed previously. It looks for the CDS sequences and eventually filters them and taxonomy information from this file. If no CDS is found for a given accession version identifiers, the accession version identifiers is appended to a text file named notfound.txt, otherwise the CDS is appended to the text file(s) written previously.  
   
-### Comments  
+## Comments  
   
 The scripts could be simplified and output almost the same results by using only the *taxo* function instead of using the *cdsfasta* function and then using the *taxo* function. This protocol has been tried but the running time (mostly due to the downloading time) was an order of magnitude longer. Minimizing the number of Genbank files analyzed is found to be a good way to minimize the running time as well as minimizing the possible errors in retrieving the CDS from DNA sequences as in the cds fasta files the CDS are already isolated while in the Genbank file the script has to find the location then extract the gene from the whole DNA sequence of the file.
   
-### Supplementary material  
+## Supplementary material  
   
-#### About filtering  
+### About filtering  
   
 When the **-c** option is used with one or more filters the program will use the filter(s) provided by the user and interpret them as regular expressions.  
 First it will look for a match in the gene field of the cds_fasta files it downloaded.  
@@ -405,7 +405,7 @@ In the above example more than one result will be found for this reference. In t
 In some case the user can add more filter to match the product field, for example in the following case, no match is found with the COX\[1I\] filter, but if the user add the filter “cytochrome c subunit oxidase 1” the sequence would be selected because of the match in the ‘product’ field:  
 ![cytochrome c subunit oxidase 1](./pictures/cytochrome_c_subunit_oxidase.png)  
 
-#### Fasta files for the CDS  
+### Fasta files for the CDS  
 
 The following figure displays how the fasta files containing only the cds are presented:  
 ![cds fasta file](./pictues/cds_fasta_file.png)  
