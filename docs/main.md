@@ -2,24 +2,24 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![pypi](https://img.shields.io/pypi/v/nsdpy)](https://pypi.org/project/nsdpy/)
-[![Python 3.8](https://upload.wikimedia.org/wikipedia/commons/a/a5/Blue_Python_3.8_Shield_Badge.svg)](https://www.python.org/)  
+[![Python 3.8](https://upload.wikimedia.org/wikipedia/commons/a/a5/Blue_Python_3.8_Shield_Badge.svg)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/nsdpy/badge/?version=latest)](https://nsdpy.readthedocs.io/en/latest/?badge=latest)
 
 # Overview  
 
-__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files with taxonomic information included in the description lines (see  examples).
+__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
   
 </br>
 
 # Major steps
 
-1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or cds_fasta format (see: cds_fasta).
+1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or fasta format containing only the CDS (see: [Fasta files for the CDS](###FastafilesfortheCDS)).
 2. Optionally the program analyzes the results to extract the desired gene based on sequence annotation
 3. The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database.
 4. The output files are in fasta format and contain the informations as found in the raw file and if any of the taxonomic option is selected, the following information are added:
     - TaxID
     - organism name
-    - lineage
+    - lineage  
 
 # Worlfow  
 
@@ -33,7 +33,7 @@ __nsdpy__ aims to facilitate the download of large numbers of DNA sequences from
 For more information on the different file formats:  
 
 - fasta file ( .fasta ): [Wikipedia: fasta format](https://en.wikipedia.org/wiki/FASTA_format)
-- cds_fasta ( .fasta ): a fasta file containing only the [CDS](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC403693/#:~:text=CDS%20is%20a%20sequence%20of,open%20reading%20frame%20(ORF).), see: [cds fasta example](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.cvaneam59lws)
+- fasta for the cds ( .fasta ): a fasta file containing only the [CDS](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC403693/#:~:text=CDS%20is%20a%20sequence%20of,open%20reading%20frame%20(ORF).). See: [Select fasta cds from the GUI ](###FastafilesfortheCDS)
 - GenBank ( .gb ): [NCBI Genbank file](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)
 
 </br>
@@ -43,7 +43,7 @@ For more information on the different file formats:
 - Keep the use simple to allow users with a minimum of programming knowledge to be comfortable using the script.
 - Minimize the dependencies to minimize installation steps and maintenance issues.
 - Keep the script simple, available and open source to allow the users to modify it if needed.
--Find a simple way to download the results from a request to NCBI database keeping track of the  possible missing sequences.
+- Find a simple way to download the results from a request to NCBI database keeping track of the  possible missing sequences.
 
 To comply with these objectives two ways to use the program are available:  
 
@@ -71,7 +71,7 @@ To install the dependencies directly via pip3 (python3 package manager), downloa
 
     pip3 install -r requirements.txt
 
-Alternatively, the script can be downloaded from [GitHub NSDPY repository](https://github.com/RaphaelHebert/nsdpy). The user only needs to download the nsdpy.py and functions.py files and have python 3.8+ (see: [Python Downloads](https://www.python.org/downloads/) ) and the request library (see: [requests documentation](https://requests.readthedocs.io/en/master/) and [request installation](https://pypi.org/project/requests/)) installed (users may have to use the command pip3 instead of pip for python3 depending on their installation). This minimum installation should be enough to run the script. Otherwise, the requirements are listed in the **requirements.txt** file (see below: [Install the requirements](#install-the-requirements) ).  
+Alternatively, the script can be downloaded from [GitHub NSDPY repository](https://github.com/RaphaelHebert/nsdpy). The user only needs to download the nsdpy.py and functions.py files and have python 3.8+ (see: [Python Downloads](https://www.python.org/downloads/) ) and the request library (see: [requests documentation](https://requests.readthedocs.io/en/master/) and [request installation](https://pypi.org/project/requests/)) installed (users may have to use the command pip3 instead of pip for python3 depending on their installation). This minimum installation should be enough to run the script. Otherwise, the requirements are listed in the **requirements.txt** file (see above).  
 
 To run <b>nsdpy.py</b> the user needs to have <b>functions.py</b> and <b>nsdpy.py</b> files in the same directory, then run it from this directory.  
   
@@ -83,7 +83,7 @@ Open a terminal and enter a __nsdpy__ command with a compulsory **-r** argument
   
 <ins>Example 1</ins>  
 
-The following command will download the fasta files for all results available in genbank (see: [What is Genbank?](https://www.ncbi.nlm.nih.gov/genbank/)) with COX1 in the title:
+The following command will download the fasta files for all results available in genbank (see: [What is Genbank? ](https://www.ncbi.nlm.nih.gov/genbank/)) with COX1 in the title:
 
     nsdpy -r COX1[Title] 
 
@@ -164,7 +164,7 @@ The program will download the cds_fasta files instead of the fasta files. The cd
 PATTERNS is optional. PATTERNS: one or more [regular expressions](https://www.debuggex.com/cheatsheet/regex/python) for filtering genes from the cds_fasta files and GenBank files corresponding to the [accession version identifiers](https://www.ncbi.nlm.nih.gov/genbank/sequenceids/) resulting from the user’s query.  The search is case insensitive.
 This option is particularly interesting when looking for a gene from organites whole genomes or from DNA sequences containing more than one gene.  
   
-Example for the COX1 (or COI) gene:  
+Example for the COX1 (or COI ) gene:  
 
     nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c COX[1I] CO[I1]  
 or..  
@@ -176,6 +176,7 @@ or..
 Note that this option must be used separately form the others. For example to use the **--cds** option and the **--verbose** options these commands will run normally:  
 
     nsdpy -r “This is a query to NCBI” -c -v  
+        
 
     nsdpy -r “This is a query to NCBI” -c pattern1 pattern2 -v  
   
@@ -230,6 +231,8 @@ The program will write the results in four different fasta files (one for the Me
 Example:  
 
     nsdpy -r “users query” -k   
+  
+The phylum option works the same for the phyla.
 
     -p 
 or..
@@ -377,7 +380,7 @@ The scripts could be simplified and output almost the same results by using only
 ### About filtering  
   
 When the **-c** option is used with one or more filters the program will use the filter(s) provided by the user and interpret them as regular expressions.  
-First it will look for a match in the gene field of the cds_fasta files it downloaded.  
+First it will look for a match in the gene field of the fasta files it downloaded.  
 For example it the filter COX\[1I\] is used, the following sequence will be selected:  
 ![MN372141 gene COX1 image](./pictures/cds_file_filtering_ok.png)  
   
