@@ -25,7 +25,6 @@ def main():
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
-    parser.add_argument("-S", "--summary", help='summarize the process in a table', action="store_true")
     #Taxonomy
     group3 = parser.add_mutually_exclusive_group()
     group3.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
@@ -174,15 +173,12 @@ def main():
         filters = ",".join(args.cds)
         filetype = "cds_fasta"
 
-
-    if args.summary:
-        try:
-            y = open("report.txt")
-            y.close()
-            with open("report.txt", 'a') as r:
-                r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
-        except:
-            with open("report.txt", 'a') as r:
-                r.write(f"request   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
-                r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
-
+    try:
+        y = open("report.txt")
+        y.close()
+        with open("report.txt", 'a') as r:
+            r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
+    except:
+        with open("report.txt", 'a') as r:
+            r.write(f"request   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
+            r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
