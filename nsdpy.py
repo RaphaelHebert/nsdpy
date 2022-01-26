@@ -100,8 +100,9 @@ def main():
 
     ###Taxids
     dictid = taxids(params, path, OPTIONS)
+
     listofids = list(dictid.keys())
-    reverse = {value for value in dictid.values()}
+    reverse = set(dictid.values())
     listofTaxids = list(reverse)
 
     ###completetaxo2
@@ -182,3 +183,9 @@ def main():
         with open("report.txt", 'a') as r:
             r.write(f"request   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
             r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
+
+
+
+## to remove before pushing to production
+if __name__ == "__main__":
+    main()

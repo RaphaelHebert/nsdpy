@@ -129,7 +129,6 @@ def taxids(params, path, OPTIONS=None):
     if fileoutput:
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-   
     return dictid
 
 
@@ -365,7 +364,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
         
         if dicttaxo:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-            description = description + '|' + TaxId + ' |' + Name +  '|' + Lineage
+            description = Name + '|' + TaxId + '|' + Lineage + ' |' + description 
 
         path = path + "/" + dispatch + ".fasta"
         with open(path, 'a') as new:
@@ -417,7 +416,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
     if verb and verb > 0:
         print("Downloading fasta files...")
 
-    retmax = 200
+    retmax = 200    ##number of sequence per request to the API
     keys = []
     count = len(listofids)
     if count % retmax == 0:
@@ -444,12 +443,14 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
         result = download(parameters, efetchaddress)
         result = result.text
 
+        ##if no taxonomy option is selected
         if not dicttaxo:
             with open(path + "/fastafiles.fasta", "a") as f:
                 f.write(result)
             result = result.split('>')[1:]
             key = [i.split()[0] for i in result]
             keys = keys + key
+        ##if any of the taxonomy option is selected
         else:
             result = result.split('>')
             for seq in result:
@@ -475,7 +476,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
                     name = 'not found'
                     dispatch = 'results'
 
-                idline = ">" + idline + " |" + taxid + " |" + name + "|" + lineage 
+                idline = ">" + name + "-" + key + "-" + taxid + " | " + lineage + " | " + idline 
                 
                 with open(path + "/" + dispatch + ".fasta", 'a') as f:
                     f.write(f"{idline}\n")
