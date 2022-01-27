@@ -25,17 +25,21 @@ def main():
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
+    parser.add_argument("-t", "--tsv",default=None, help="create a tsv file based on fasta file output", action="store_true")
     #Taxonomy
     group3 = parser.add_mutually_exclusive_group()
-    group3.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
-    group3.add_argument("-k", "--kingdom", help="output three different file text (Plantae and Fungi, Metazoa, Others", action="store_true" )
+    group3.add_argument("-k", "--kingdom", help="output four different text files file: Plantae and Fungi, Metazoa and  Others", action="store_true" )
     group3.add_argument("-p", "--phylum", help="output one file text per phylum", action="store_true" )
     group3.add_argument("-l", "--levels", help="find only the taxon given by user", nargs="+")
     group3.add_argument("-s", "--species",\
         help="classify the results in different text file one for each specie+n level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
         action="count", default=3)
 
+    #information line\
+    parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
+
     args = parser.parse_args()
+
 
     #################################################
     #############   GLOBAL VARIABLES    #############
@@ -55,21 +59,19 @@ def main():
         classif = 0
     elif args.levels:
         classif = args.levels
-    elif args.information:
-        classif = 2
     elif args.species:
         classif = args.species
     else:
         classif = 3
 
-    OPTIONS = (verb, args.cds, classif, args.taxids)
+    OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
     QUERY = (args.request, args.apikey)
 
     ##foldername and path
     name = str(datetime.now())
     name = '_'.join(name.split())[:19]
     name = name.replace(":", "-")
-    path = "./results/" + name
+    path = "./NSDPY results/" + name
 
 
     ##############################################
@@ -106,7 +108,7 @@ def main():
     listofTaxids = list(reverse)
 
     ###completetaxo2
-    if classif != 3:
+    if classif != 3 or args.information:
         dicttaxo = completetaxo(listofTaxids, QUERY, OPTIONS)
     else:
         dicttaxo = {}
