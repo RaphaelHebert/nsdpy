@@ -7,3 +7,26 @@ request   start   end   results   type    esearch    filter   sequences    TaxID
 (COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_10-46-59  2022-01-26_10-47-19   fasta  768          768     1
 (COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_10-51-22  2022-01-26_10-51-41   fasta  768          768     1
 (COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_11-09-25  2022-01-26_11-09-46   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_11-20-35  2022-01-26_11-21-03   cds_fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_11-31-13  2022-01-26_11-35-20   cds_fasta  768     k     0     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_11-39-09  2022-01-26_11-39-40   cds_fasta  768          760     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_13-06-24  2022-01-26_13-06-42   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_13-10-13  2022-01-26_13-10-31   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_13-25-35  2022-01-26_13-25-54   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]-c    2022-01-26_13-31-30  2022-01-26_13-31-50   fasta  759          759     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_13-35-39  2022-01-26_13-35-59   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-09-53  2022-01-26_14-10-22   cds_fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-10-35  2022-01-26_14-11-05   cds_fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-22-08  2022-01-26_14-22-37   cds_fasta  768          760     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-28-09  2022-01-26_14-28-36   cds_fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-30-46  2022-01-26_14-31-05   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-32-23  2022-01-26_14-32-40   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_14-36-37  2022-01-26_14-36-56   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_15-02-52  2022-01-26_15-03-11   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_15-08-30  2022-01-26_15-08-56   cds_fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_15-10-32  2022-01-26_15-11-01   cds_fasta  768          760     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-26_15-17-09  2022-01-26_15-17-27   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-27_14-16-46  2022-01-27_14-17-03   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-27_14-34-00  2022-01-27_14-34-17   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-27_14-39-09  2022-01-27_14-39-26   fasta  768          768     1
+(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-27_14-45-33  2022-01-27_14-45-50   fasta  768          768     1
