@@ -1,5 +1,0 @@
-request   start   end   results   type    esearch    filter   sequences    TaxIDs
-(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-29_09-21-24  2022-01-29_09-21-42   fasta  768          768     1
-(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-29_09-23-41  2022-01-29_09-24-00   fasta  768          768     1
-(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-29_09-32-36  2022-01-29_09-32-53   fasta  768          768     1
-(COX1[Title] OR COI[Title]) AND homo-sapiens[ORGN]    2022-01-29_09-33-15  2022-01-29_09-33-33   fasta  768          768     1
