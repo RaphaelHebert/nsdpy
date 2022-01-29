@@ -25,7 +25,7 @@ def main():
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
-    parser.add_argument("-t", "--tsv",default=None, help="create a tsv file based on fasta file output", action="store_true")
+    parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
     #Taxonomy
     group3 = parser.add_mutually_exclusive_group()
     group3.add_argument("-k", "--kingdom", help="output four different text files file: Plantae and Fungi, Metazoa and  Others", action="store_true" )
@@ -35,11 +35,12 @@ def main():
         help="classify the results in different text file one for each specie+n level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
         action="count", default=3)
 
-    #information line\
+    #information line
     parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
 
     args = parser.parse_args()
 
+    print(f'args: {args}')
 
     #################################################
     #############   GLOBAL VARIABLES    #############
