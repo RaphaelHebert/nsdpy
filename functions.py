@@ -67,12 +67,7 @@ def taxids(params, path, OPTIONS=None):
 
     ##unpack parameters
     (querykey, webenv, count) = params
-    (verb, _, _, _, fileoutput, _) = OPTIONS
-
-    ##filename
-    filename = "TaxIDs.txt"
-    ##path to filename
-    path = path + "/" + filename
+    (verb, _, _, fileoutput, _, _) = OPTIONS
 
     #comments
     if verb and verb > 0:
@@ -128,8 +123,13 @@ def taxids(params, path, OPTIONS=None):
                     dictid[seqnb] = taxid 
 
     if fileoutput:
+        ##filename
+        filename = "TaxIDs.txt"
+        ##path to filename
+        path = path + "/" + filename
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
+            
     return dictid
 
 
