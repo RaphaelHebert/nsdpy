@@ -129,7 +129,7 @@ def taxids(params, path, OPTIONS=None):
         path = path + "/" + filename
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-
+            
     return dictid
 
 
@@ -314,7 +314,6 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
 
 
         ## Extract available information
-
         if not information and not genelist and classif == 3:
             result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
@@ -394,8 +393,20 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
 
         info_line = '>' + info_line.lstrip('>')
 
+        ## Create folders is tsv is selected
+        if tsv:
+            if not os.path.exists(path + "/fasta"):
+                os.makedirs(path + "/fasta")
+            if not os.path.exists(path + "/tsv"):
+                os.makedirs(path + "/tsv")
+            # Create paths
+            fasta_file = path + "/fasta/" + dispatch + ".fasta"
+            tsv_file = path + "/tsv/" + dispatch + ".tsv"
+        else:
+            fasta_file = path + "/" + dispatch + ".fasta"
+            tsv_file = path + "/" + dispatch + ".tsv"
+
         # write fasta file
-        fasta_file = path + "/" + dispatch + ".fasta"
         with open(fasta_file, 'a') as new:
             new.write(str(info_line) + "\n")
             new.write(str(dna)) 
@@ -403,15 +414,12 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
         # write tsv file
         
         if tsv:
-            # Build path
-            tsv_path = path + "/" + dispatch + ".tsv"
-
             # Format dna sequence 
             dna = "".join(dna.split("\n"))
 
             # write .tsv file
             data = (Name, SeqID, TaxId, Lineage, dna)
-            tsv_file_writer(tsv_path, data)
+            tsv_file_writer(tsv_file, data)
 
         return key
 
@@ -533,8 +541,19 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
                 dispatch = "sequences"
             
             data = (name, key, taxid, lineage, dna)
-            fasta_file = path + "/" + dispatch + ".fasta"
-            tsv_file = path + "/" + dispatch + ".tsv"
+
+            # Create folders for .tsv files and .fasta files
+            if tsv:
+                if not os.path.exists(path + "/fasta"):
+                    os.makedirs(path + "/fasta")
+                if not os.path.exists(path + "/tsv"):
+                    os.makedirs(path + "/tsv")
+                # Create paths
+                fasta_file = path + "/fasta/" + dispatch + ".fasta"
+                tsv_file = path + "/tsv/" + dispatch + ".tsv"
+            else:
+                fasta_file = path + "/" + dispatch + ".fasta"
+                tsv_file = path + "/" + dispatch + ".tsv"
 
 
             if information: 
