@@ -531,32 +531,6 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
         raw_result = download(parameters, efetchaddress)
         raw_result = raw_result.text
 
-
-
-            # if tsv:
-            #     tsv_file =  path + "/sequences.tsv"
-
-
-            #     tsv_file_writer(tsv_file, data)
-
-                # if not os.path.exists(tsv_file):
-                #     ##create new tsv file
-                #     with open(tsv_file, 'a') as outtsv:
-                #         writer = csv.writer(outtsv, delimiter='\t')
-                #         writer.writerow(['Information line', 'sequence'])
-
-                # for res in result:
-                #     (info, sequence) = res.split('\n', 1)
-                #     info = ">" + info.lstrip(">""")
-                #     sequence = "".join(sequence.split('\n'))
-                #     with open(tsv_file, "a") as outcsv:
-                #         writer = csv.writer(outcsv, delimiter='\t')
-                #         writer.writerow([info, sequence])
-
-
-        # If any of the taxonomy or the information option is selected
-        # else:
-
         ## Extract available informations
         result = raw_result.split('>')
         
@@ -614,7 +588,6 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
             if tsv:
                 # write tsv
                 tsv_file_writer(tsv_file, data)
-            
 
         if not information:
             # write fasta file
@@ -624,36 +597,6 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
             res = raw_result.split('>')[1:]
             key = [i.split()[0] for i in res]
             keys = keys + key
-
-
-
-
-
-            # if tsv:
-            #     # write tsv
-            #     tsv_file_writer(tsv_file, data)
-
-                # if not os.path.exists(tsv_file):
-                #     ##create new tsv file
-                #     with open(tsv_file, 'a') as outtsv:
-                #         writer = csv.writer(outtsv, delimiter='\t')
-                #         if information:
-                #             writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
-                #         else: 
-                #             writer.writerow(['Information line', 'sequence'])
-
-
-
-                # if tsv:
-                #     # write tsv file
-                #     idline = ">" + idline
-                #     dna = "".join(dna.split("\n"))
-                #     with open(tsv_file, "a") as outtsv:
-                #         writer = csv.writer(outtsv, delimiter='\t')
-                #         if information:
-                #             writer.writerow([name, key, taxid, lineage, idline, len(dna), dna])
-                #         else:
-                #             writer.writerow([idline, dna])
 
         if verb > 1:
             start = (x*retmax) + retmax
