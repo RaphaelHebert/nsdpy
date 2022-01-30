@@ -229,8 +229,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
         ##analyse the results from efetch
         result = result.text.split('</Taxon>\n<Taxon>')
 
-        print(f'RESULTS FOR THE TAXO: \n {result}')         #for testing only
-
         for seq in result:
             dicttemp = {}
             try:
@@ -280,7 +278,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     ##unpack parameters
     (querykey, webenv, count) = params
     (_, apikey) = QUERY
-    (verb, genelist, _, _, tsv, _)= OPTIONS
+    (verb, genelist, classif, _, _, information) = OPTIONS
 
     #comment:
     if verb and verb > 0:
@@ -311,44 +309,18 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
         parameters['rettype'] = "fasta_cds_na"
         parameters['retmode'] = "text"
         ##send requests to the API until getting a result
-        result = download(parameters, efetchaddress)
-        result = result.text
+        raw_result = download(parameters, efetchaddress)
+        raw_result = raw_result.text
 
-        ##append the feature table file in a text file
-        if not dicttaxo and not genelist:
 
-            # write fasta file
-            fasta_file = path + "/sequences.fasta"
-            with open(fasta_file, 'a') as dl:
-                dl.write(result)
-            result_fasta = result.split(">lcl|")[1:]
+        ## Extract available information
+
+        if not information and not genelist and classif == 3:
+            result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
-
-            # write .tsv file
-            if tsv:
-                tsv_file = path + "/sequences.tsv"
-                #check if the file already exists (if not write first line)
-                if not os.path.exists(tsv_file):
-                    with open(tsv_file, "a") as tsv_to_write:
-                        writer = csv.writer(tsv_to_write, delimiter="\t")
-                        writer.writerow(['Information line', 'sequence'])
-                result = result.split('\n>')
-                for res in result:
-                    try:
-                        (information_line, sequence) = res.split('\n', 1)
-                        sequence = "".join(sequence.split("\n"))
-                        information_line = ">" + information_line.lstrip(">")
-                    except:
-                        information_line = "not found"
-                        sequence = "not found"
-
-                    with open(tsv_file, "a") as tsv_to_write:
-                        writer = csv.writer(tsv_to_write, delimiter="\t")
-                        writer.writerow([information_line, sequence])
-
-        else:   
-            ##analyse the results     
-            sublist = extract(path, result, dictid, dicttaxo, genelist, OPTIONS, verb)
+  
+        ##analyse the results     
+        sublist = extract(path, raw_result, dictid, dicttaxo, genelist, OPTIONS, verb)
 
         found = found + sublist
         #comments
@@ -359,7 +331,13 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     return found
 
 
-def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
+def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","","","")
+
+    (_, _, classif, _, tsv, information) = OPTIONS
+
 
     ###find gene in a seq and write to ouput file
     ##extract accession number
@@ -368,29 +346,37 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
     except IndexError:
         return
 
+    ##extract SeqID
     try: 
         SeqID = seq.split(">lcl|")[1].split(" [")[0]
     except IndexError:
         return
 
-    ##build idline (retreive info)
+    ##build idline (retrieve info)
     try:
         TaxId = dictid[key]
     except KeyError:
         return 
 
-    ##if taxonomic option:
-    if dicttaxo:
-        try:
-            Lineage = dicttaxo[TaxId]['Lineage']
-            Name = dicttaxo[TaxId]['Name']  
-            dispatch = dicttaxo[TaxId]['dispatch']
-        except KeyError:
-            return
+    ## Extract info
+    #Lineage
+    try:                                                       
+        Lineage = dicttaxo[TaxId]['Lineage']
+    except KeyError:
+        Lineage = "no info"
 
-        if not dispatch:
-            dispatch = "no_taxid"
-    else:
+    #Name
+    try:
+        Name = dicttaxo[TaxId]['Name']  
+    except KeyError:
+        Name = "no info"
+
+    #dispatch
+    try:
+        dispatch = dicttaxo[TaxId]['dispatch']
+    except KeyError:
+        dispatch = "others"
+    if classif == 3:
         dispatch = "sequences"
 
     ##check if genes
@@ -399,7 +385,8 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
         ##get the Sequence
         _, dna = seq.split('\n', 1)
         
-        if dicttaxo and information:
+        # if dicttaxo and information:
+        if information:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
             info_line = Name + '-' + SeqID + ' | ' + TaxId + ' | ' + Lineage 
         else:
@@ -410,38 +397,21 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
         # write fasta file
         fasta_file = path + "/" + dispatch + ".fasta"
         with open(fasta_file, 'a') as new:
-            new.write('\n' + str(info_line) + '\n' + str(dna) +'\n') 
+            new.write(str(info_line) + "\n")
+            new.write(str(dna)) 
 
         # write tsv file
-        if tsv != None:
-            print(tsv)
-            print("DZSRYXFUGCHGIVJOBVGICFUXDTYZRXTUFCYIGUVOYIBPVOUCITYXUCIGUVOHIBPUOPIVYOUCTIYXUC")
-            tsv_file = path + "/" + dispatch + ".tsv"
         
+        if tsv:
+            # Build path
+            tsv_path = path + "/" + dispatch + ".tsv"
+
+            # Format dna sequence 
             dna = "".join(dna.split("\n"))
 
-            # write tsv file
-            # check if the file already exists (if not write first line)
-            if information:
-                if not os.path.exists(tsv_file):
-                    with open(tsv_file, "a") as tsv_to_write:
-                        writer = csv.writer(tsv_to_write, delimiter="\t")
-                        writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
-            
-                with open(tsv_file, "a") as tsv_to_write:
-                    writer = csv.writer(tsv_to_write, delimiter="\t")
-                    writer.writerow([Name, SeqID, TaxId, Lineage, len(dna), dna])
-
-            else:
-                if not os.path.exists(tsv_file):
-                    with open(tsv_file, "a") as tsv_to_write:
-                        writer = csv.writer(tsv_to_write, delimiter="\t")
-                        writer.writerow(['Information line', 'sequence'])
-            
-                with open(tsv_file, "a") as tsv_to_write:
-                    writer = csv.writer(tsv_to_write, delimiter="\t")
-                    writer.writerow([info_line, dna])
-
+            # write .tsv file
+            data = (Name, SeqID, TaxId, Lineage, dna)
+            tsv_file_writer(tsv_path, data)
 
         return key
 
@@ -451,27 +421,17 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
 
 def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
 
-    if OPTIONS is None:
-        OPTIONS = ("","","","","","")
-
-    (_, _, _, _, tsv, information) = OPTIONS
-
-    #comments
+    # Comments
     if verb and verb > 1:
         print('analyzing the results...')
     
     found = []
-    genelist = [ "=" + gene + "]" for gene in genelist]        
+
+    # Extract genes to filter
+    genelist = [ "=" + gene + "]" for gene in genelist]  
+
     seq = ''
     text = text.splitlines()
-
-    # if tsv != None and not information:  
-    #     tsv_path = path + "/sequences.tsv"
-    #     with open(tsv_path, "a") as tsv_to_write:
-    #         writer = csv.writer(tsv_to_write, delimiter="\t")
-    #         writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
-    # else:
-    #     tsv_path = None
 
     if not text:
         return
@@ -480,7 +440,7 @@ def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
         if len(line.split(">lcl|")) > 1:
             if seq:
                 try:
-                    result = subextract(seq, path, dictid, dicttaxo, genelist, tsv, information)
+                    result = subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS)
                     if result:
                         found.append(result)
                 except:

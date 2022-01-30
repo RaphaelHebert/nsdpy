@@ -64,9 +64,6 @@ def main():
         classif = 3
 
     OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
-
-    print(OPTIONS)      #for testing only
-
     QUERY = (args.request, args.apikey)
 
     ##foldername and path
