@@ -129,7 +129,7 @@ def taxids(params, path, OPTIONS=None):
         path = path + "/" + filename
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-            
+
     return dictid
 
 
@@ -228,6 +228,9 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
         ##analyse the results from efetch
         result = result.text.split('</Taxon>\n<Taxon>')
+
+        print(f'RESULTS FOR THE TAXO: \n {result}')         #for testing only
+
         for seq in result:
             dicttemp = {}
             try:
@@ -313,10 +316,15 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
 
         ##append the feature table file in a text file
         if not dicttaxo and not genelist:
-            with open(path + "/sequences.fasta", 'a') as dl:
+
+            # write fasta file
+            fasta_file = path + "/sequences.fasta"
+            with open(fasta_file, 'a') as dl:
                 dl.write(result)
             result_fasta = result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
+
+            # write .tsv file
             if tsv:
                 tsv_file = path + "/sequences.tsv"
                 #check if the file already exists (if not write first line)
@@ -324,20 +332,23 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
                     with open(tsv_file, "a") as tsv_to_write:
                         writer = csv.writer(tsv_to_write, delimiter="\t")
                         writer.writerow(['Information line', 'sequence'])
+                result = result.split('\n>')
+                for res in result:
+                    try:
+                        (information_line, sequence) = res.split('\n', 1)
+                        sequence = "".join(sequence.split("\n"))
+                        information_line = ">" + information_line.lstrip(">")
+                    except:
+                        information_line = "not found"
+                        sequence = "not found"
 
-                try:
-                    (information_line, sequence) = result.split('\n', 1)
-                except:
-                    information_line = "not found"
-                    sequence = "not found"
-
-                with open(tsv_file, "a") as tsv_to_write:
-                    writer = csv.writer(tsv_to_write, delimiter="\t")
-                    writer.writerow([information_line, sequence])
+                    with open(tsv_file, "a") as tsv_to_write:
+                        writer = csv.writer(tsv_to_write, delimiter="\t")
+                        writer.writerow([information_line, sequence])
 
         else:   
             ##analyse the results     
-            sublist = extract(path, result, dictid, dicttaxo, genelist, verb, OPTIONS, tsv)
+            sublist = extract(path, result, dictid, dicttaxo, genelist, OPTIONS, verb)
 
         found = found + sublist
         #comments
@@ -355,7 +366,12 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
     try:
         key = seq.split(">lcl|")[1].split("_cds")[0]
     except IndexError:
-        return    
+        return
+
+    try: 
+        SeqID = seq.split(">lcl|")[1].split(" [")[0]
+    except IndexError:
+        return
 
     ##build idline (retreive info)
     try:
@@ -385,21 +401,28 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
         
         if dicttaxo and information:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-            info_line = Name + '-' + key + ' | ' + TaxId + ' | ' + Lineage 
+            info_line = Name + '-' + SeqID + ' | ' + TaxId + ' | ' + Lineage 
         else:
             info_line = seq.split('\n', 1)[0]
 
+        info_line = '>' + info_line.lstrip('>')
+
+        # write fasta file
         fasta_file = path + "/" + dispatch + ".fasta"
-        
         with open(fasta_file, 'a') as new:
             new.write('\n' + str(info_line) + '\n' + str(dna) +'\n') 
 
+        # write tsv file
         if tsv != None:
-
+            print(tsv)
+            print("DZSRYXFUGCHGIVJOBVGICFUXDTYZRXTUFCYIGUVOYIBPVOUCITYXUCIGUVOHIBPUOPIVYOUCTIYXUC")
             tsv_file = path + "/" + dispatch + ".tsv"
+        
+            dna = "".join(dna.split("\n"))
 
+            # write tsv file
+            # check if the file already exists (if not write first line)
             if information:
-            #check if the file already exists (if not write first line)
                 if not os.path.exists(tsv_file):
                     with open(tsv_file, "a") as tsv_to_write:
                         writer = csv.writer(tsv_to_write, delimiter="\t")
@@ -407,7 +430,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
             
                 with open(tsv_file, "a") as tsv_to_write:
                     writer = csv.writer(tsv_to_write, delimiter="\t")
-                    writer.writerow([Name, key, TaxId, Lineage, len(dna), dna])
+                    writer.writerow([Name, SeqID, TaxId, Lineage, len(dna), dna])
 
             else:
                 if not os.path.exists(tsv_file):
@@ -426,9 +449,12 @@ def subextract(seq, path, dictid, dicttaxo, genelist, tsv, information):
         return
 
 
-def extract(path, text, dictid, dicttaxo, genelist, tsv, OPTIONS, verb="" ):
+def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
 
-    information = OPTIONS[-1]
+    if OPTIONS is None:
+        OPTIONS = ("","","","","","")
+
+    (_, _, _, _, tsv, information) = OPTIONS
 
     #comments
     if verb and verb > 1:
@@ -501,91 +527,133 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
         parameters['rettype'] = "fasta"
         parameters['retmode'] = "text"
 
-        ##download
-        result = download(parameters, efetchaddress)
-        result = result.text
-
-        ##if -i option is not selected or no taxonomy option writes original results
-        if not dicttaxo:
-            with open(path + "/sequences.fasta", "a") as f:
-                f.write(result)
-            result = result.split('>')[1:]
-            key = [i.split()[0] for i in result]
-            keys = keys + key
-
-            if tsv:
-                tsv_path =  path + "/sequences.tsv"
-                if not os.path.exists(tsv_path):
-                    ##create new tsv file
-                    with open(tsv_path, 'a') as outtsv:
-                        writer = csv.writer(outtsv, delimiter='\t')
-                        writer.writerow(['Information line', 'sequence'])
-
-                for res in result:
-                    (info, sequence) = res.split('\n', 1)
-                    with open(tsv_path, "a") as outcsv:
-                        writer = csv.writer(outcsv, delimiter='\t')
-                        writer.writerow([info, sequence])
+        ## Download
+        raw_result = download(parameters, efetchaddress)
+        raw_result = raw_result.text
 
 
-        ##if any of the taxonomy or the information option is selected
-        else:
-            result = result.split('>')
+
+            # if tsv:
+            #     tsv_file =  path + "/sequences.tsv"
+
+
+            #     tsv_file_writer(tsv_file, data)
+
+                # if not os.path.exists(tsv_file):
+                #     ##create new tsv file
+                #     with open(tsv_file, 'a') as outtsv:
+                #         writer = csv.writer(outtsv, delimiter='\t')
+                #         writer.writerow(['Information line', 'sequence'])
+
+                # for res in result:
+                #     (info, sequence) = res.split('\n', 1)
+                #     info = ">" + info.lstrip(">""")
+                #     sequence = "".join(sequence.split('\n'))
+                #     with open(tsv_file, "a") as outcsv:
+                #         writer = csv.writer(outcsv, delimiter='\t')
+                #         writer.writerow([info, sequence])
+
+
+        # If any of the taxonomy or the information option is selected
+        # else:
+
+        ## Extract available informations
+        result = raw_result.split('>')
+        
+        for seq in result:
+            try:
+                idline, dna = seq.split('\n', 1)
+            except ValueError:
+                continue
+
+            try:
+                key = idline.split()[0]
+            except IndexError:
+                print('no key found')
+                continue
             
-            for seq in result:
-                try:
-                    idline, dna = seq.split('\n', 1)
-                except ValueError:
-                    continue
-                try:
-                    key = idline.split()[0]
-                except IndexError:
-                    print('no key found')
-                    continue
-                
-                try:
-                    taxid = dictid[key]
-                    lineage = dicttaxo[taxid]['Lineage']
-                    name = dicttaxo[taxid]['Name']
-                    dispatch = dicttaxo[taxid]['dispatch']
-                    lineage = ", ".join(lineage)
-                except KeyError:
-                    taxid = 'not found'
-                    lineage = 'not found'
-                    name = 'not found'
-                    dispatch = 'others'
-                
-                if classif == 3:
-                    dispatch = "sequences"
-                
-                if tsv:
-                    ##check if a tsv file exists with the correct taxon name
-                    tsvPath = path + "/" + dispatch + ".tsv"
-                    if not os.path.exists(tsvPath):
-                        ##create new tsv file
-                        with open(tsvPath, 'a') as outtsv:
-                            writer = csv.writer(outtsv, delimiter='\t')
-                            if information:
-                                writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
-                            else: 
-                                writer.writerow(['Information line', 'sequence'])
-                if information:
-                    idline_fasta = ">" + name + "-" + key + "-" + taxid + " | " + lineage + " | " + idline
-                else:
-                    idline_fasta =  idline
-                
-                with open(path + "/" + dispatch + ".fasta", 'a') as f:
+            #from dictid
+            try:
+                taxid = dictid[key]
+            except KeyError:
+                taxid = 'not found'
+            
+            # from dicttaxo
+            try:
+                lineage = dicttaxo[taxid]['Lineage']
+                lineage = ", ".join(lineage)
+            except KeyError:
+                lineage = 'not found'
+            
+            try:
+                name = dicttaxo[taxid]['Name']
+            except KeyError:
+                name = 'not found'
+            
+            try:
+                dispatch = dicttaxo[taxid]['dispatch']
+            except KeyError:
+                name = 'others'
+            
+            if classif == 3:
+                dispatch = "sequences"
+            
+            data = (name, key, taxid, lineage, dna)
+            fasta_file = path + "/" + dispatch + ".fasta"
+            tsv_file = path + "/" + dispatch + ".tsv"
+
+
+            if information: 
+                idline_fasta = ">" + name + "-" + key + " | " + taxid + " | " + lineage + " | " + idline
+                with open(fasta_file, 'a') as f:
                     f.write(f"{idline_fasta}\n")
                     f.write(f"{dna}\n")
+
                 keys.append(key)
 
-                if tsv:
-                    with open(tsvPath, "a") as outtsv:
-                        writer = csv.writer(outtsv, delimiter='\t')
-                        if information:
-                            writer.writerow([name, key, taxid, lineage, idline, len(dna), dna])
-                        else:
-                            writer.writerow([idline, dna])
+            if tsv:
+                # write tsv
+                tsv_file_writer(tsv_file, data)
+            
+
+        if not information:
+            # write fasta file
+            with open(fasta_file, "a") as f:
+                f.write(raw_result)
+
+            res = raw_result.split('>')[1:]
+            key = [i.split()[0] for i in res]
+            keys = keys + key
+
+
+
+
+
+            # if tsv:
+            #     # write tsv
+            #     tsv_file_writer(tsv_file, data)
+
+                # if not os.path.exists(tsv_file):
+                #     ##create new tsv file
+                #     with open(tsv_file, 'a') as outtsv:
+                #         writer = csv.writer(outtsv, delimiter='\t')
+                #         if information:
+                #             writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+                #         else: 
+                #             writer.writerow(['Information line', 'sequence'])
+
+
+
+                # if tsv:
+                #     # write tsv file
+                #     idline = ">" + idline
+                #     dna = "".join(dna.split("\n"))
+                #     with open(tsv_file, "a") as outtsv:
+                #         writer = csv.writer(outtsv, delimiter='\t')
+                #         if information:
+                #             writer.writerow([name, key, taxid, lineage, idline, len(dna), dna])
+                #         else:
+                #             writer.writerow([idline, dna])
 
         if verb > 1:
             start = (x*retmax) + retmax
@@ -688,7 +756,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                         ###path
                         taxo = dictCDS["taxo"]
                         filename = dispatch(taxo, classif)
-                        output = path + "/" + filename + ".fasta"
+                        fasta_file = path + "/" + filename + ".fasta"
                         
                         ##information line 
                         taxo = ', '.join(taxo)
@@ -704,7 +772,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                             info_line = ">" + dictCDS["version"] + " |" + dictCDS["definition"]
 
                         ##append to file
-                        with open(output, 'a') as a:
+                        with open(fasta_file, 'a') as a:
                             a.write(f"{info_line}\n")
                             [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 80])}\n') for i in range(0, len(dictCDS["sequence"]), 80)]
 
@@ -764,10 +832,6 @@ def genbankfields(text, genelist):
     except IndexError:
         definition = "not found"
     dictfield["definition"] = definition
-
-
-
-
 
     ###DNA sequence
     try:
@@ -884,3 +948,25 @@ def search(dna ,dictentry, s):
     dict1["locustag"] = locustag
 
     return dict1
+
+
+
+def tsv_file_writer(path, data):
+
+    # check if the file already exists
+    if not os.path.exists(path):
+        with open(path, "a") as tsv_to_write:
+            writer = csv.writer(tsv_to_write, delimiter="\t")
+            writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+    
+    # unpack data
+    (name, seqid, taxid, lineage, dna) = data
+
+    dna = "".join(dna.split("\n"))
+
+    # write data
+    with open(path, "a") as outtsv:
+        writer = csv.writer(outtsv, delimiter='\t')
+        writer.writerow([name, seqid, taxid, lineage, len(dna), dna])
+    
+    return
