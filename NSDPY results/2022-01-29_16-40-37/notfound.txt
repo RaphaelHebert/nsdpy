@@ -1,0 +1,3 @@
+AA488848.1    No matching gene found in gb file
+JX218091.1    No matching gene found in gb file
+AW496829.1    No matching gene found in gb file
