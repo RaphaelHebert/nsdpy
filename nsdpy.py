@@ -40,26 +40,50 @@ def main():
 
     args = parser.parse_args()
 
+    print(args)             #for testing only
+
     #################################################
     #############   GLOBAL VARIABLES    #############
     #################################################
+
+    #list of chosen options to display in the report.txt
+    options_report = []
+    if args.tsv:
+        options_report.append("--tsv (-t)")
+    if args.information:
+        options_report.append("--information (-i)")
+    if args.taxids:
+        options_report.append("--taxids (-T)")
+    if args.cds:
+        options_report.append(f"--cds (-c) {args.cds[0]}")
+    if args.apikey:
+        options_report.append(f"--apikey (-a) {args.apikey[0]}")
+
+
     #verbose
     if args.verbose:
         verb = 2
+        options_report.append("--verbose (-v)")
     elif args.quiet:
         verb = 0
+        options_report.append("--quiet (-q)")
     else:
         verb = 1
 
     #taxonomy
     if args.kingdom:
         classif = 1
+        options_report.append("--kingdom (-k)")
     elif args.phylum:
         classif = 0
+        options_report.append("--phylum (-p)")
     elif args.levels:
         classif = args.levels
+        options_report.append(f"--levels (-l) {args.levels[0]}")
     elif args.species:
         classif = args.species
+        if args.species != 3:
+            options_report.append("--species (-", + "s"*(args.species - 3) + ")")
     else:
         classif = 3
 
@@ -165,8 +189,6 @@ def main():
                 print(f'see "notfound.txt"')
 
 
-
-
     ##write summary
     if args.cds is None:
         filters = ""
@@ -175,15 +197,17 @@ def main():
         filters = ",".join(args.cds)
         filetype = "cds_fasta"
 
+    options_report = ",".join(options_report)
+
     try:
         y = open("report.txt")
         y.close()
         with open("report.txt", 'a') as r:
-            r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
+            r.write(f"{args.request}    {options_report}  {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
     except:
         with open("report.txt", 'a') as r:
-            r.write(f"request   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
-            r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
+            r.write(f"request   options   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
+            r.write(f"{args.request}    {options_report}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
 
 
 
