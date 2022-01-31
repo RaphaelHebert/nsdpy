@@ -129,7 +129,7 @@ def taxids(params, path, OPTIONS=None):
         path = path + "/" + filename
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-            
+
     return dictid
 
 
@@ -419,7 +419,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
 
             # write .tsv file
             data = (Name, SeqID, TaxId, Lineage, dna)
-            tsv_file_writer(tsv_file, data)
+            tsv_file_writer(tsv_file, data, OPTIONS)
 
         return key
 
@@ -566,7 +566,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
 
             if tsv:
                 # write tsv
-                tsv_file_writer(tsv_file, data)
+                tsv_file_writer(tsv_file, data, OPTIONS)
 
         if not information:
             # write fasta file
@@ -873,13 +873,23 @@ def search(dna ,dictentry, s):
 
 
 
-def tsv_file_writer(path, data):
+def tsv_file_writer(path, data, OPTIONS=None):
 
+    if OPTIONS is None:
+        OPTIONS = ("","","","","","")
+
+    (_, _, _, _, _, information) = OPTIONS   
+
+        
     # check if the file already exists
     if not os.path.exists(path):
         with open(path, "a") as tsv_to_write:
             writer = csv.writer(tsv_to_write, delimiter="\t")
-            writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+            if information:
+                writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+            else:
+                writer.writerow(['SeqID', 'TaxID', 'sequence length', 'sequence'])
+
     
     # unpack data
     (name, seqid, taxid, lineage, dna) = data
@@ -889,6 +899,9 @@ def tsv_file_writer(path, data):
     # write data
     with open(path, "a") as outtsv:
         writer = csv.writer(outtsv, delimiter='\t')
-        writer.writerow([name, seqid, taxid, lineage, len(dna), dna])
-    
+        if information:
+            writer.writerow([name, seqid, taxid, lineage, len(dna), dna])
+        else:
+            writer.writerow([seqid, taxid, len(dna), dna])
+
     return
