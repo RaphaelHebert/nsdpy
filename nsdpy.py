@@ -23,6 +23,8 @@ def main():
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
     #gene selection
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
+    #file input
+    parser.add_argument("-L", "--list", help='input a .txt file as an external list of taxa ', nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
     parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
@@ -43,6 +45,21 @@ def main():
     #################################################
     #############   GLOBAL VARIABLES    #############
     #################################################
+
+    #taxa list
+    if args.list:
+        # Check that a file is provided
+        if len(args.list) == 0:
+            sys.exit("The --list (-L) requires at list one .txt file")
+
+        # Check if files exists
+        for file in args.list:
+            if not os.path.exists(file):
+                sys.exit(f"The file {file} cannot be found")
+            if file[-4:] != ".txt":
+                sys.exit(f"The list of taxa {file} must be a .txt file")
+
+
 
     #list of chosen options to display in the report.txt
     options_report = []
@@ -105,6 +122,8 @@ def main():
 
     ###esearchquery
     y = esearchquery(QUERY)
+
+    ###for development: https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
     ##check errors (if bad API key etc) errors returned by the Entrez API
     if "error" in y.keys():
         errors = y["error"]
