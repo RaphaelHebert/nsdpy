@@ -59,8 +59,6 @@ def main():
             if file[-4:] != ".txt":
                 sys.exit(f"The list of taxa {file} must be a .txt file")
 
-
-
     #list of chosen options to display in the report.txt
     options_report = []
     if args.tsv:
@@ -116,6 +114,12 @@ def main():
     #########  RUN THE RUN!!  ####################
     ##############################################
 
+    if args.list:
+        for file in args.list:
+            taxa_list = []
+            with open(file, "r") as data:
+                taxa_list = taxa_list + data.read().splitlines()
+    
     #create the directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
