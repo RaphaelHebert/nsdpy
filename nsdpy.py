@@ -123,43 +123,91 @@ def main():
         for file in args.list:
             with open(file, "r") as data:
                 taxa_list = taxa_list + data.read().splitlines()
-
-        # Add the taxa to the query
-        taxa_list = [ " OR " + taxon + "[ORGN])" for taxon in taxa_list]
-        args.request = args.request + "AND" + "(" * len(taxa_list) + "".join(taxa_list)
         
+        # Add the taxa to the query
+        taxa_list = [ taxon + "[ORGN] OR " for taxon in taxa_list]
+
+        # Base URL with params
+        esearch_address = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
+        base_URL_length = len(esearch_address) + 100 # Keep 100 chars for params
+
+        # Base query
+        base_query = args.request + " AND ("
+        
+        # Remaining space for the taxa list 
+        taxa_max_length = 2048 - ( len(base_query) + base_URL_length )
+
+        # Include taxa in the QUERY and make a list of queries <= 2048 chars
+        remaining_space = taxa_max_length
+        queries_list = []
+        new_query = base_query
+
+        for taxon in taxa_list:
+            if (remaining_space - len(taxon) + 4 ) <= 0:
+                # Delete the last "[ORGN] OR " and close parenthesis
+                queries_list.append(new_query[:-4] + ')')
+                # Start another query
+                new_query = base_query
+                remaining_space = taxa_max_length
+            else:
+                new_query = new_query + taxon
+                if queries_list:
+                    queries_list[-1] = new_query
+                else:
+                    queries_list.append(new_query)
+                print(f'new_query: {new_query}')
+                print(f'queries_list: {queries_list}')
+        queries_list[-1] = queries_list[-1][:-4] + ')'
+    else:
+        queries_list = [args.request]
+
+    print(f'queries_list: {queries_list}')
     
-    QUERY = (args.request, args.apikey)
-    print(QUERY[0])
 
-    ###esearchquery
-    esearch_address = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
-    max_query_string = 2048     #query + base URL
-    #TODO: output a warning message if the user makes a a query longer than max_query_string (without using the --taxa option)?
-    max_query_length = max_query_string - len(esearch_address)
+    ### Retrieving results from esearch and the related TaxIDs
+    total_number_of_results = 0
+    dictid = {}
 
-    y = esearchquery(QUERY)
+    #TODO modify report.txt to display base query and input files
 
-    ###for development: https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
-    ##check errors (if bad API key etc) errors returned by the Entrez API
-    if "error" in y.keys():
-        errors = y["error"]
-        sys.exit(errors)
+    for query in queries_list:
+        QUERY = (query, args.apikey)
+        if verb != 0:
+            print(f"retrieving results for {query} ....")         #for testing only
 
-    count = int(y["esearchresult"]["count"])
-    if count < 1: 
+        ## esearchquery
+        y = esearchquery(QUERY)
+
+        ##check errors (if bad API key etc) errors returned by the Entrez API
+        if "error" in y.keys():
+            errors = y["error"]
+            sys.exit(errors)
+
+        count = int(y["esearchresult"]["count"])
+        total_number_of_results = total_number_of_results + count
+        if count < 1:
+            continue
+        webenv =  str(y["esearchresult"]["webenv"])
+        querykey = str(y["esearchresult"]["querykey"])
+        params = (querykey, webenv, count)
+
+        #comments
+        if verb > 0:    
+            print(f'Number of results found: {count}')
+
+        ###Taxids
+        if verb != 0:
+            print("retreiving the corresponding TaxIDs...")
+   
+        dictid = {**dictid, **taxids(params, path, OPTIONS)}
+
+    if total_number_of_results < 1: 
         sys.exit("No results found")
-    webenv =  str(y["esearchresult"]["webenv"])
-    querykey = str(y["esearchresult"]["querykey"])
-    params = (querykey, webenv, count)
 
-    #comments
-    if verb > 0:    
-        print(f'Number of results found: {count}')
+    if verb != 0:
+        print(f"Total number of results: {total_number_of_results}")
 
-    ###Taxids
-    dictid = taxids(params, path, OPTIONS)
-
+    #make a set of TaxIDs
     listofids = list(dictid.keys())
     reverse = set(dictid.values())
     listofTaxids = list(reverse)
