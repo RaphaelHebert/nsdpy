@@ -142,27 +142,24 @@ def main():
         queries_list = []
         new_query = base_query
 
+        #TODO: a bit of cleanup in this for loop...
         for taxon in taxa_list:
-            if (remaining_space - len(taxon) + 4 ) <= 0:
+            if (remaining_space - len(taxon) + 4) <= 0:
                 # Delete the last "[ORGN] OR " and close parenthesis
-                queries_list.append(new_query[:-4] + ')')
+                queries_list.append(new_query[:-8] + ')')
                 # Start another query
                 new_query = base_query
                 remaining_space = taxa_max_length
             else:
+                remaining_space = remaining_space - len(taxon)
                 new_query = new_query + taxon
                 if queries_list:
                     queries_list[-1] = new_query
                 else:
                     queries_list.append(new_query)
-                print(f'new_query: {new_query}')
-                print(f'queries_list: {queries_list}')
         queries_list[-1] = queries_list[-1][:-4] + ')'
     else:
-        queries_list = [args.request]
-
-    print(f'queries_list: {queries_list}')
-    
+        queries_list = [args.request]    
 
     ### Retrieving results from esearch and the related TaxIDs
     total_number_of_results = 0
@@ -171,9 +168,10 @@ def main():
     #TODO modify report.txt to display base query and input files
 
     for query in queries_list:
+        query = query.rstrip('0').rstrip(' OR ') + ')'
         QUERY = (query, args.apikey)
         if verb != 0:
-            print(f"retrieving results for {query} ....")         #for testing only
+            print(f"retrieving results for {query} ....")        
 
         ## esearchquery
         y = esearchquery(QUERY)
