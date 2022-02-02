@@ -101,7 +101,6 @@ def main():
         classif = 3
 
     OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
-    QUERY = (args.request, args.apikey)
 
     ##foldername and path
     name = str(datetime.now())
@@ -113,18 +112,32 @@ def main():
     ##############################################
     #########  RUN THE RUN!!  ####################
     ##############################################
-
-    if args.list:
-        for file in args.list:
-            taxa_list = []
-            with open(file, "r") as data:
-                taxa_list = taxa_list + data.read().splitlines()
     
-    #create the directory to store the results
+    # Create the directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
 
+    # Read the taxa list files 
+    if args.list:
+        taxa_list = []
+        for file in args.list:
+            with open(file, "r") as data:
+                taxa_list = taxa_list + data.read().splitlines()
+
+        # Add the taxa to the query
+        taxa_list = [ " OR " + taxon + "[ORGN])" for taxon in taxa_list]
+        args.request = args.request + "AND" + "(" * len(taxa_list) + "".join(taxa_list)
+        
+    
+    QUERY = (args.request, args.apikey)
+    print(QUERY[0])
+
     ###esearchquery
+    esearch_address = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
+    max_query_string = 2048     #query + base URL
+    #TODO: output a warning message if the user makes a a query longer than max_query_string (without using the --taxa option)?
+    max_query_length = max_query_string - len(esearch_address)
+
     y = esearchquery(QUERY)
 
     ###for development: https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
