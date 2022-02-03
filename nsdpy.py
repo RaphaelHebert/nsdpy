@@ -46,8 +46,12 @@ def main():
     #############   GLOBAL VARIABLES    #############
     #################################################
 
+    # list the selected option to make it appear in report.txt
+    options_report = []
+
     #taxa list
     if args.list:
+        options_report.append(f" -list (-L) {args.list}")
         # Check that a file is provided
         if len(args.list) == 0:
             sys.exit("The --list (-L) requires at list one .txt file")
@@ -60,7 +64,7 @@ def main():
                 sys.exit(f"The list of taxa {file} must be a .txt file")
 
     #list of chosen options to display in the report.txt
-    options_report = []
+    
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -136,6 +140,9 @@ def main():
         
         # Remaining space for the taxa list 
         taxa_max_length = 2048 - ( len(base_query) + base_URL_length )
+        ##see these threads;
+        #https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers?noredirect=1&lq=1
+        #https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
 
         # Include taxa in the QUERY and make a list of queries <= 2048 chars
         remaining_space = taxa_max_length
@@ -143,6 +150,7 @@ def main():
         new_query = base_query
 
         #TODO: a bit of cleanup in this for loop...
+        #TODO: add the option taxa to report.txt
         for taxon in taxa_list:
             if (remaining_space - len(taxon) + 4) <= 0:
                 # Delete the last "[ORGN] OR " and close parenthesis
@@ -164,8 +172,6 @@ def main():
     ### Retrieving results from esearch and the related TaxIDs
     total_number_of_results = 0
     dictid = {}
-
-    #TODO modify report.txt to display base query and input files
 
     for query in queries_list:
         query = query.rstrip('0').rstrip(' OR ') + ')'
@@ -258,7 +264,7 @@ def main():
 
     else:
         if verb > 0:
-            print(f'number of results from NCBI:                                        {count}')
+            print(f'number of results from NCBI:                                        {total_number_of_results}')
             print(f'number of unique accession version identifiers:                     {len(listofids)}')
             print(f'total number of sequences retrieved:                                {len(genes)}')
             print(f'number with more than one sequences:                                {duplicates(genes, path)}')
