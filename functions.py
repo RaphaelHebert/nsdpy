@@ -415,7 +415,6 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
             new.write(str(dna).rstrip("\n") + "\n") 
 
         # write tsv file
-        
         if tsv:
             # Format dna sequence 
             dna = "".join(dna.split("\n"))
@@ -602,7 +601,7 @@ def duplicates(listofaccess, path):
     return(nb)
 
 
-def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
+def taxo(path, listofid, dictid, QUERY, dict_taxo=None, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
@@ -642,7 +641,6 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
         ##if some ids haven't been dl at the last call add them to this call
         if remain:
             ids = ids + remain
-        foundlist = []
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
 
@@ -683,7 +681,10 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                         ###path
                         taxo = dictCDS["taxo"]
                         filename = dispatch(taxo, classif)
-                        fasta_file = path + "/" + filename + ".fasta"
+                        if tsv:
+                            fasta_file = path + "/fasta/" + filename + ".fasta"
+                        else:
+                            fasta_file = path + "/" + filename + ".fasta"
                         
                         ##information line 
                         taxo = ', '.join(taxo)
@@ -692,14 +693,19 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                             taxid = dictid[dictCDS["version"]]
                         except IndexError:
                             taxid = ""
+
                         if information:
-                            info_line = ">" + dictCDS["version"] + " | [locus_tag=" + dictCDS["locustag"] + '] | [product=' + dictCDS["product"] + '] | [gene=' + dictCDS["gene"] + '] | [protein_id='\
-                                + dictCDS["proteinid"] +  '] | [location=' + dictCDS["loc"].strip() + "] | " + dictCDS["note"] + " | [gbkey=CDS]" + "| " + taxid + "| " + "".join(taxo)
+                            try:
+                                name = dict_taxo[taxid]['Name']
+                            except:
+                                name = "not found"
+                            info_line = ">" + name + "-" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " | " + taxid + " | " +  "".join(taxo).rstrip(".")
+                     
                         else:
-                            info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"] + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
+                            info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
                                 "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
 
-                        ##append to file
+                        ## append to file
                         with open(fasta_file, 'a') as a:
                             a.write(f"{info_line}\n")
                             [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 70]).upper()}\n') for i in range(0, len(dictCDS["sequence"]), 70)]
