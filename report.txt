@@ -1,6 +1,0 @@
-request   options   start   end   results   type    esearch    filter   sequences    TaxIDs
-COX1[Title] OR COI[Title] AND homo sapiens[ORGN]        2022-02-04_20-00-33  2022-02-04_20-01-01   fasta  768          768     1
-COX1[Title] OR COI[Title]     -list (-L) ['species_list_clean_small.txt']  2022-02-04_20-15-10  2022-02-04_20-15-22   fasta  9          122     57
-COX1[Title] OR COI[Title]     -list (-L) ['species_list_clean_small.txt', 'species_list_clean_small.txt']  2022-02-04_20-21-01  2022-02-04_20-21-19   fasta  9          122     57
-COX1[Title] OR COI[Title]     -list (-L) ['species_list_clean_small.txt'],--phylum (-p)  2022-02-04_20-29-14  2022-02-04_20-29-26   fasta  9          122     57
-COX1[Title] OR COI[Title]     -list (-L) ['species_list_clean_small.txt'],--information (-i)  2022-02-04_20-34-13  2022-02-04_20-34-27   fasta  9          122     57
