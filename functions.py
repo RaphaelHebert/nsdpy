@@ -13,14 +13,14 @@ def download(parameters, address):
             result = requests.get(address, params = parameters, timeout = 60)
             break
         except requests.exceptions.HTTPError as errh:
-            print("Http Error:",errh)
+            print("Http Error:", errh)
             return(1)
 
         except requests.exceptions.Timeout as to:
             print(f'Connection Timed out\n{to}')
             continue
 
-        except requests.exceptions.ConnectionError as errc:
+        except requests.exceptions.ConnectionError as _:
             if connect == 1:
                 continue
             elif connect == 0:
@@ -270,7 +270,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
 
 ##dl the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
+def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
@@ -282,7 +282,7 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
 
     #comment:
     if verb and verb > 0:
-        print("retrieving the cds fasta files...")
+        print("Downloading the CDS fasta files...")
     
 
     #list of accession number for wich a gene is found or the file has been retrieve if no gene filter:
@@ -470,7 +470,7 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
     (verb, _, classif, _, tsv, information)= OPTIONS
 
     if verb and verb > 0:
-        print("Downloading fasta files...")
+        print("Downloading the fasta files...")
 
     retmax = 200    ##number of sequence per request to the API
     keys = []
