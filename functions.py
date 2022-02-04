@@ -289,6 +289,7 @@ def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     found = []
     #number of accession numbers to be sent at each API query
     retmax = 100
+
     if count % retmax == 0:
         nb = count//retmax
     else: 
@@ -308,10 +309,10 @@ def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
             parameters["api_key"] = apikey
         parameters['rettype'] = "fasta_cds_na"
         parameters['retmode'] = "text"
-        ##send requests to the API until getting a result
+
+        ## Download
         raw_result = download(parameters, efetchaddress)
         raw_result = raw_result.text
-
 
         ## Extract available information
         if not information and not genelist and classif == 3:
@@ -391,7 +392,9 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
         else:
             info_line = seq.split('\n', 1)[0]
 
-        info_line = '>' + info_line.lstrip('>')
+        # Make only one > and \n
+        info_line = '>' + info_line.lstrip(">")
+        info_line = info_line.rstrip("\n") + "\n"
 
         ## Create folders is tsv is selected
         if tsv:
@@ -408,8 +411,8 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
 
         # write fasta file
         with open(fasta_file, 'a') as new:
-            new.write(str(info_line) + "\n")
-            new.write(str(dna)) 
+            new.write(str(info_line))
+            new.write(str(dna).rstrip("\n") + "\n") 
 
         # write tsv file
         
@@ -475,10 +478,12 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
     retmax = 200    ##number of sequence per request to the API
     keys = []
     count = len(listofids)
+
     if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
+
     for x in range(nb):
         ##split the list of ids
         ids = listofids[x*retmax : (x*retmax) + retmax]
@@ -618,7 +623,7 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
 
     #comments
     if verb and verb > 0:
-        print("retreiving the GenBank files...")
+        print("Downloading the GenBank files...")
 
     remain = []         #accessions not downloaded from previous iteration
     analysed = []       #accessions successfully donwnloaded and found in the gb file
@@ -691,12 +696,13 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                             info_line = ">" + dictCDS["version"] + " | [locus_tag=" + dictCDS["locustag"] + '] | [product=' + dictCDS["product"] + '] | [gene=' + dictCDS["gene"] + '] | [protein_id='\
                                 + dictCDS["proteinid"] +  '] | [location=' + dictCDS["loc"].strip() + "] | " + dictCDS["note"] + " | [gbkey=CDS]" + "| " + taxid + "| " + "".join(taxo)
                         else:
-                            info_line = ">" + dictCDS["version"] + " |" + dictCDS["definition"]
+                            info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"] + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
+                                "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
 
                         ##append to file
                         with open(fasta_file, 'a') as a:
                             a.write(f"{info_line}\n")
-                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 80])}\n') for i in range(0, len(dictCDS["sequence"]), 80)]
+                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 70]).upper()}\n') for i in range(0, len(dictCDS["sequence"]), 70)]
 
         remain = list(set(accessionlist) - set(ids))
         analysed = analysed + accessionlist
@@ -753,7 +759,7 @@ def genbankfields(text, genelist):
         definition = definition.split('ACCESSION', 1)[0]
     except IndexError:
         definition = "not found"
-    dictfield["definition"] = definition
+    dictfield["definition"] = "".join(definition.split("\n"))
 
     ###DNA sequence
     try:
