@@ -45,7 +45,7 @@ pip install nsdpy
 
 ## Workflow
 
-<img src="workflow.png" alt="workflow" width="600"/>
+<img src="https://docs.google.com/drawings/d/e/2PACX-1vRD4h7l0S57op_4j-5xsz8iv1j1XBliw-jEdtnWOIq-JAU2l8kSV6d1NmkHd5Q4zhUmZCA3SHUSuHJw/pub?w=801&amp;h=744" width="600" />
 
 ## Usage
 ### Google colab
