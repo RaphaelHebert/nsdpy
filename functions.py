@@ -592,13 +592,13 @@ def duplicates(listofaccess, path):
     return(nb)
 
 
-def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
+def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
 
-    if len(listofid) < 1:
-        return []
+    if len(list_of_ids) < 1:
+        return ([],[])
 
     ##unpack params
     (verb, genelist, classif, _, tsv, information) = OPTIONS
@@ -618,7 +618,7 @@ def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
     remain = []         #accessions not downloaded from previous iteration
     analysed = []       #accessions successfully donwnloaded and found in the gb file
     genefound = []      ##accessions with some cds found or matching the filter if filter(s)
-    count = len(listofid)
+    count = len(list_of_ids)
     retmax = 10
     if count % retmax == 0:
         nb = count//retmax
@@ -628,7 +628,7 @@ def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
     for x in range(nb):
         ###################  API CALL  ##################
         ##slice the list of ids passed to the function
-        ids = listofid[x * retmax:(x+1) * retmax]
+        ids = list_of_ids[x * retmax:(x+1) * retmax]
         ##if some ids haven't been dl at the last call add them to this call
         if remain:
             ids = ids + remain
