@@ -1,6 +1,0 @@
-request   options   starting_time   ending_time  results   type    esearch    filter   sequences    TaxIDs
-(Parnasius mnemosyne[Organism] OR Mus musculus[Orgnaism]) AND COI[Title]    --tsv (-t),--phylum (-p)    2022-02-07_08-14-50  2022-02-07_08-15-00   fasta  158          158     22
-(Parnasius mnemosyne[Organism] OR Mus musculus[Orgnaism]) AND COI[Title]    --tsv (-t),--phylum (-p)  2022-02-07_08-27-09  2022-02-07_08-27-28   fasta  158          158     22
-(Parnasius mnemosyne[Organism] OR Mus musculus[Orgnaism]) AND COI[Title]    --tsv (-t),--phylum (-p)  2022-02-07_08-31-04  2022-02-07_08-31-14   fasta  158          158     22
-(Parnasius mnemosyne[Organism] OR Mus musculus[Orgnaism]) AND COI[Title]    --tsv (-t),--phylum (-p)  2022-02-07_08-31-46  2022-02-07_08-31-56   fasta  158          158     22
-(Parnasius mnemosyne[Organism] OR Mus musculus[Orgnaism]) AND COI[Title]    --tsv (-t),--phylum (-p)  2022-02-07_08-32-11  2022-02-07_08-32-22   fasta  158          158     22

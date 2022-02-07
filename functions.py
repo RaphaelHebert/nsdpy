@@ -37,14 +37,14 @@ def download(parameters, address):
 
 def esearchquery(QUERY):
     ##unpack QUERY:
-    (query, apikey) = QUERY
+    (query, api_key) = QUERY
 
     ##build api address
     esearchaddress = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
     #parameters
     parameters = {}
-    if apikey:
-        parameters["api_key"] = str(apikey)
+    if api_key:
+        parameters["api_key"] = str(api_key)
     parameters["db"] = "nucleotide"
     parameters["idtype"] = "acc"
     parameters["retmode"] = "json"
@@ -186,7 +186,7 @@ def dispatch(lineage, classif):
 def completetaxo(idlist, QUERY, OPTIONS):
 
     ##unpack parameters
-    (_, apikey) = QUERY
+    (_, api_key) = QUERY
     (verb, _, classif, _, _, _) = OPTIONS
 
     if verb and verb > 0:
@@ -216,8 +216,8 @@ def completetaxo(idlist, QUERY, OPTIONS):
         #parameters 
         parameters['db'] = "taxonomy"
         parameters['id'] = idsublist
-        if apikey:
-            parameters['api_key'] = apikey
+        if api_key:
+            parameters['api_key'] = api_key
 
         ##loop until download is correct
         result = download(parameters, efetchaddress)
@@ -277,7 +277,7 @@ def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
     
     ## Unpack parameters
     (querykey, webenv, count) = params
-    (_, apikey) = QUERY
+    (_, api_key) = QUERY
     (verb, genelist, classif, _, _, information) = OPTIONS
 
     # Comment:
@@ -305,8 +305,8 @@ def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
         parameters['WebEnv'] = webenv
         parameters['retstart'] = str(x * retmax)
         parameters['retmax'] = str(retmax)
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         parameters['rettype'] = "fasta_cds_na"
         parameters['retmode'] = "text"
 
@@ -352,7 +352,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
     except IndexError:
         return
 
-    ##build idline (retrieve info)
+    ##build id_line (retrieve info)
     try:
         TaxId = dict_ids[key]
     except KeyError:
@@ -468,7 +468,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         OPTIONS = ("","","","","","")
     
     ## Unpack parameters
-    (_, apikey) = QUERY
+    (_, api_key) = QUERY
     (verb, _, classif, _, tsv, information)= OPTIONS
 
     if verb and verb > 0:
@@ -494,8 +494,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         # Parameters 
         parameters['db'] = "nuccore"
         parameters['id'] = ",".join(ids)
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         parameters['rettype'] = "fasta"
         parameters['retmode'] = "text"
 
@@ -505,15 +505,16 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
         ## Extract available informations
         result = raw_result.split('>')
-        
+
+        ## Store analyzed Accession version numbers
         for seq in result:
             try:
-                idline, dna = seq.split('\n', 1)
+                id_line, dna = seq.split('\n', 1)
             except ValueError:
                 continue
 
             try:
-                key = idline.split()[0]
+                key = id_line.split()[0]
             except IndexError:
                 continue
             
@@ -559,30 +560,21 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
                 tsv_file = path + "/" + dispatch + ".tsv"
 
 
+            # Write fasta file
             if information: 
-                idline_fasta = ">" + name + "-" + key + " | " + taxid + " | " + lineage + " | " + idline
-                with open(fasta_file, 'a') as f:
-                    f.write(f"{idline_fasta}\n")
-                    f.write(f"{dna}\n")
-
-                keys.append(key)
+                id_line = name + "-" + key + " | " + taxid + " | " + lineage + " | " + id_line
+            with open(fasta_file, 'a') as f:
+                f.write(f">{id_line}\n")
+                f.write(f"{dna}\n")
 
             if tsv:
-                # write tsv
                 tsv_file_writer(tsv_file, data, OPTIONS)
 
-        if not information:
-            # write fasta file
-            with open(fasta_file, "a") as f:
-                f.write(raw_result)
-
-            res = raw_result.split('>')[1:]
-            key = [i.split()[0] for i in res]
-            keys = keys + key
+            keys.append(key)
 
         if verb > 1:
-            start = (x*retmax) + retmax
-            print(f'{round((start/count)*100, 1)} %  of the fasta files downloaded')
+            start = (x * retmax) + retmax
+            print(f'{round((start / count) * 100, 1)} %  of the fasta files downloaded')
 
     return keys
 
@@ -610,7 +602,7 @@ def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
     ##unpack params
     (verb, genelist, classif, _, tsv, information) = OPTIONS
-    (_, apikey) = QUERY
+    (_, api_key) = QUERY
 
     ##build output unique filename
     notfound = path + "/notfound.txt"
@@ -651,8 +643,8 @@ def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
         parameters['id'] = ids1
         parameters['rettype'] = "gb"
         parameters['retmode'] = "text"
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         
         ##loop until dl is correct
         result = download(parameters, efetchaddress)
