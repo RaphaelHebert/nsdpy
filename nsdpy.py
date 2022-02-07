@@ -40,7 +40,6 @@ def main():
 
     args = parser.parse_args()
 
-
     #################################################
     #############   GLOBAL VARIABLES    #############
     #################################################
@@ -55,8 +54,8 @@ def main():
         options_report.append("--information (-i)")
     if args.taxids:
         options_report.append("--taxids (-T)")
-    if args.cds:
-        options_report.append(f"--cds (-c) {args.cds[0]}")
+    if args.cds is not None:
+        options_report.append(f"--cds (-c) {' '.join(args.cds)}")
     if args.apikey:
         options_report.append(f"--apikey (-a) {args.apikey[0]}")
 
@@ -208,14 +207,14 @@ def main():
     options_report = ",".join(options_report)
 
     try:
-        y = open("report.txt")
+        y = open("report.tsv")
         y.close()
-        with open("report.txt", 'a') as r:
-            r.write(f"{args.request}    {options_report}  {starting_time}  {ending_time}   {filetype}  {count}     {filters}     {len(found)}     {len(list_of_TaxIDs)}\n")
+        with open("report.tsv", 'a') as r:
+            r.write(f"{args.request}\t{options_report}\t{starting_time}\t{ending_time}\t{filetype}\t{count}\t{filters}\t{len(found)}\t{len(list_of_TaxIDs)}\n")
     except:
-        with open("report.txt", 'a') as r:
-            r.write(f"request   options   starting_time   ending_time  results   type    esearch    filter   sequences    TaxIDs\n")
-            r.write(f"{args.request}    {options_report}    {starting_time}  {ending_time}   {filetype}  {count}     {filters}     {len(found)}     {len(list_of_TaxIDs)}\n")
+        with open("report.tsv", 'a') as r:
+            r.write(f"request\toptions\tstarting_time\tending_time\tresults type\tesearch\tGene filters\tsequences\tTaxIDs\n")
+            r.write(f"{args.request}\t{options_report}\t{starting_time}\t{ending_time}\t{filetype}\t{count}\t{filters}\t{len(found)}\t{len(list_of_TaxIDs)}\n")
 
 
 
