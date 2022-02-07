@@ -7,21 +7,21 @@
 
 # Overview  
 
-__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
+__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files (and optionally tsv files) with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
   
 </br>
 
 # Major steps
 
-1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or fasta format containing only the CDS (see: [Fasta files for the CDS](###FastafilesfortheCDS)).
+1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or fasta format containing only the CDS (see: [Fasta files for the CDS](###FastafilesfortheCDS)). The user has the possibility to add one or more text files containing a list of taxa to be added to the query.
 2. Optionally the program analyzes the results to extract the desired gene based on sequence annotation
-3. The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database.
-4. The output files are in fasta format and contain the informations as found in the raw file and if any of the taxonomic option is selected, the following information are added:
+3. The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database. The user can choose to add the taxonomic information to the information lines of the sequences.
+4. The output files are in fasta format (and optionally tsv) and contain the information as found in the raw file and if information option is selected, the following information are added:
     - TaxID
     - organism name
     - lineage  
 
-# Worlfow  
+# Workflow  
 
   
 ![workflow illustration](./pictures/workflow.png)  
@@ -34,7 +34,9 @@ For more information on the different file formats:
 
 - fasta file ( .fasta ): [Wikipedia: fasta format](https://en.wikipedia.org/wiki/FASTA_format)
 - fasta for the cds ( .fasta ): a fasta file containing only the [CDS](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC403693/#:~:text=CDS%20is%20a%20sequence%20of,open%20reading%20frame%20(ORF).). See: [Select fasta cds from the GUI ](###FastafilesfortheCDS)
-- GenBank ( .gb ): [NCBI Genbank file](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)
+- GenBank ( .gb ): [NCBI GenBank file](https://www.ncbi.nlm.nih.gov/GenBank/samplerecord/)
+- Tab-separated value file ( .tsv ): [Wikipedia: Tab-separated value](https://en.wikipedia.org/wiki/Tab-separated_values)
+- Text file ( .txt ): [File info](https://fileinfo.com/extension/txt#:~:text=A%20TXT%20file%20is%20a,editing%20or%20word%2Dprocessing%20program.&text=TXT%20files%20are%20simple%20text,and%20other%20text%2Dbased%20information.) 
 
 </br>
 
@@ -43,7 +45,8 @@ For more information on the different file formats:
 - Keep the use simple to allow users with a minimum of programming knowledge to be comfortable using the script.
 - Minimize the dependencies to minimize installation steps and maintenance issues.
 - Keep the script simple, available and open source to allow the users to modify it if needed.
-- Find a simple way to download the results from a request to NCBI database keeping track of the  possible missing sequences.
+- Find a simple way to download the results from a request to NCBI database keeping track of the possible missing sequences.
+- Retrieve additional taxonomic information and automatically sort the results to save the user time-consuming manipulations.
 
 To comply with these objectives two ways to use the program are available:  
 
@@ -71,6 +74,7 @@ To install the dependencies directly via pip3 (python3 package manager), downloa
 
     pip3 install -r requirements.txt
 
+_Note that depending on user environment **pip3** may be replaced by **pip**_  
 Alternatively, the script can be downloaded from [GitHub NSDPY repository](https://github.com/RaphaelHebert/nsdpy). The user only needs to download the nsdpy.py and functions.py files and have python 3.8+ (see: [Python Downloads](https://www.python.org/downloads/) ) and the request library (see: [requests documentation](https://requests.readthedocs.io/en/master/) and [request installation](https://pypi.org/project/requests/)) installed (users may have to use the command pip3 instead of pip for python3 depending on their installation). This minimum installation should be enough to run the script. Otherwise, the requirements are listed in the **requirements.txt** file (see above).  
 
 To run <b>nsdpy.py</b> the user needs to have <b>functions.py</b> and <b>nsdpy.py</b> files in the same directory, then run it from this directory.  
@@ -83,13 +87,13 @@ Open a terminal and enter a __nsdpy__ command with a compulsory **-r** argument
   
 <ins>Example 1</ins>  
 
-The following command will download the fasta files for all results available in genbank (see: [What is Genbank? ](https://www.ncbi.nlm.nih.gov/genbank/)) with COX1 in the title:
+The following command will download the fasta files for all results available in GenBank (see: [What is GenBank? ](https://www.ncbi.nlm.nih.gov/GenBank/)) with COX1 in the title:
 
-    nsdpy -r COX1[Title] 
+    nsdpy -r "COX1[Title]" 
 
 or..
 
-    nsdpy --request COX1[Title]  
+    nsdpy --request "COX1[Title]"  
 
 _These two requests are equivalent._  
   
@@ -97,11 +101,11 @@ _These two requests are equivalent._
 
 - **nsdpy** is the name program called by the terminal.
 - **-r** or **--request** just two different ways to call the same option, the first one being the shorthand notation of the second one.
-- **COX1[Title]** is the user’s query to NCBI. It is the same format as the one you would use to query the nucleotide database on [NCBI website](https://www.ncbi.nlm.nih.gov/).  
+- **"COX1[Title]"** is the user’s query to NCBI in double quotes. It is the same format as the one you would use to query the nucleotide database on [NCBI website](https://www.ncbi.nlm.nih.gov/).  
   
 <ins>Example 2</ins>  
 
-The following command will download the fasta files for all results available in genbank with COX1 in the title:
+The following command will download the fasta files for all results available in GenBank with COX1 in the title:
 
     nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”  
   
@@ -135,7 +139,7 @@ This command will download the fasta files for all complete mitochondrial genome
 ### API Key
 
 **-a** (or **--apikey**) provides an API key when calling the Entrez API. Users can get an API key by registering to the NCBI website ( [Register here](http://www.ncbi.nlm.nih.gov/account/) ).
-If no API key is provided the program works as well ( it might be a little slower). To learn more about the API key see: [New API Keys for the E-utilities](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) .  
+If no API key is provided the program works as well (it might be a little slower). To learn more about the API key see: [New API Keys for the E-utilities](https://ncbiinsights.ncbi.nlm.nih.gov/2017/11/02/new-api-keys-for-the-e-utilities/) .  
   
 ### Verbose  
   
@@ -155,21 +159,22 @@ Note that the **--verbose** and **--quiet** options are mutually exclusive.
   
 ### Gene selection  
   
-    -c PATTERNS
+    -c 'PATTERN 1' 'PATTERN 2' ...
 or..
 
-    --cds PATTERNS
+    --cds 'PATTERN 1' 'PATTERN 2' ...
 
+_note that single quotes can be avoided if the pattern does not include any special characters such as ., +, *, ?, ^, $, (, ), [, ], {, }, |, or \\.
 The program will download the cds_fasta files instead of the fasta files. The cds_fasta file is a FASTA format of the nucleotide sequences corresponding to all CDS features.
-PATTERNS is optional. PATTERNS: one or more [regular expressions](https://www.debuggex.com/cheatsheet/regex/python) for filtering genes from the cds_fasta files and GenBank files corresponding to the [accession version identifiers](https://www.ncbi.nlm.nih.gov/genbank/sequenceids/) resulting from the user’s query.  The search is case insensitive.
+PATTERNS are optional. PATTERNS: [regular expression](https://www.debuggex.com/cheatsheet/regex/python) for filtering genes from the cds_fasta files and GenBank files corresponding to the [accession version identifiers](https://www.ncbi.nlm.nih.gov/GenBank/sequenceids/) resulting from the user’s query.  The search is case insensitive.
 This option is particularly interesting when looking for a gene from organites whole genomes or from DNA sequences containing more than one gene.  
   
 Example for the COX1 (or COI ) gene:  
 
-    nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c COX[1I] CO[I1]  
+    nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c 'COX[1I]' 'CO[I1]'  
 or..  
 
-    nsdpy --request "(mitochondrion[Title]) AND complete[Title]" --cds cox[1i] CO[I1] 
+    nsdpy --request "(mitochondrion[Title]) AND complete[Title]" --cds 'cox[1i]' 'CO[I1]' 
 
 *The above commands are identical.*  
   
@@ -178,7 +183,7 @@ Note that this option must be used separately form the others. For example to us
     nsdpy -r “This is a query to NCBI” -c -v  
         
 
-    nsdpy -r “This is a query to NCBI” -c pattern1 pattern2 -v  
+    nsdpy -r “This is a query to NCBI” -c 'pattern1' 'pattern2' -v  
   
 However, the following command will interpret the “v” as a pattern and not as the verbose option.
 
@@ -196,32 +201,20 @@ The program will write a text file with the accession version identifiers found 
 Example:  
 
     nsdpy -r “ITS2” -T  
-
-### Summary
-
-    -S 
-or..  
-
-    --summary
-
-The program will write a table in the working directory that summarize the downloads made with the script. The file is a tab separated file. The columns describe the following parameters:  
-
-- the user’s request
-- starting and the ending time
-- number of results from esearchquery
-- number of sequences found
-- number of TaxIDs  
   
 
-### Taxonomy
+### Information
   
-If any of the following taxonomy options is selected the TaxID, organism name and lineage will be added to the information line of the sequences in the fasta files.
+Add the taxonomic information the the information lines of the sequences written in the output files.
 
     -i 
 or..
 
     --information 
-Just add the TaxIDs, organism name and lineage to the information lines of the fasta files. All the sequences are still written in one file.  
+Add the TaxIDs, organism name and lineage to the information lines of the fasta files.   
+  
+
+### Taxonomy
   
     -k 
 or  
@@ -301,7 +294,7 @@ As in the first example, the program will download the fasta files containing th
 <div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b>About the filtering process: </b></p>
 
 The sequences are filtered according to the information line of their fasta file: if the regular expression used to filter the sequence is in the information line then the sequence is kept, otherwise it is not kept in the final result.  
-If the sequence has no fasta file for the coding sequences the program downloads and parses the Genbank file ( **.gb**). In that file the program looks in the *“product”*, *“gene”* , *“genesynonym”* and *“note”* fields to find the regex used as filter. It extracts the sequences according to these annotations.  
+If the sequence has no fasta file for the coding sequences the program downloads and parses the GenBank file ( **.gb**). In that file the program looks in the *“product”*, *“gene”* , *“genesynonym”* and *“note”* fields to find the regex used as filter. It extracts the sequences according to these annotations.  
 </div>  
 </br>  
 
@@ -309,7 +302,7 @@ The program will write information about the run and the number of sequences fou
 The sequences will be dispatched in different fasta files depending on their kingdom with the option **-k**.
   
     -c CO[1Ii] COX[1i]  
-The program will filter the genes for which the annotation in the CDS fasta file or the Genbank file match the following regular expressions ( patterns): CO[1Ii] COX[1i].  
+The program will filter the genes for which the annotation in the CDS fasta file or the GenBank file match the following regular expressions ( patterns): CO[1Ii] COX[1i].  
   
 Example 3:  
 
@@ -318,16 +311,25 @@ Example 3:
   
 ### Output files  
   
-The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results.  
-The description line of the output fasta files are as follows:  
+The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option have been selected one folder called 'tsv' to store the results in tsv format and one folder 'fasta' is created to store the results in fasta format.
+If the --information option is selected, the information line of the output fasta files are as follows:  
 
-- ACCESSION VERSION IDENTIFIER
 - ORGANISM NAME
+- ACCESSION VERSION IDENTIFIER
+- \_cds\_ (if the --cds option is selected)
+- protein_id  (if the --cds option is selected)
 - TaxIDs
-- LINEAGE
-- LOCATION
-
-Different files are printed depending on the selected taxonomy options and filters. The following table summarize the different files and their attributes:
+- LINEAGE  
+  
+If the --information option is selected, the information in the tsv files are as follows:  
+- Name	
+- SeqID	
+- TaxID	
+- Lineage	
+- sequence length	
+- sequence  
+  
+Different files are printed depending on the selected taxonomy options and filters and the tsv option. The following table summarize the different files and their attributes:
 ![files](./pictures/outputfile.png)
   
 Example:  
@@ -369,11 +371,11 @@ The program then uses esummary to search the [taxonomy database](https://www.ncb
 __nsdpy.py__ lists the TaxIds returned by the *taxids* function to search the [taxonomy database](https://www.ncbi.nlm.nih.gov/taxonomy) with [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) and the default rettype and retmode parameters by calling the_completetaxo_ function if any of the [Taxonomy options](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.qno47lcdn9p7) is selected. This function will find the organism's name (scientific name) and lineage of each TaxIds, then returns a dictionary with the TaxIds as keys and these information as values (yes.. a dict in a dict, it is called nested dictionaries).  
 If the option [cds](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.xw94qejvco0f) is not selected by main.py calls the *fasta* function to retrieve the fasta files and writes them in the output file(s). If the [cds](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit#heading=h.xw94qejvco0f) option is selected the Coding DNA Sequences ([CDS](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC403693/#:~:text=CDS%20is%20a%20sequence%20of,open%20reading%20frame%20(ORF).)) are downloaded in fasta format from the nuccore (see [table1](https://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly)) database using [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) by calling the *cdsfasta* function. The program makes calls to [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) for 200 accession version identifiers at the time. For the cds option the results from Efetch are analyzed and filtered (optional) every time the program gets the result from a call. The analysis of the results from Efetch is made by the *extract* function (the call to this function is made directly by the cdsfasta function). The *extract* function looks for the genes specified by the user (the user can enter the gene as a regular expression. See this [tutorial](https://www.w3schools.com/python/python_regex.asp) to learn about regular expressions and try your regular expression [here](https://pythex.org/)), extract them and write them in a fasta file alongside.  
 If the cds option is selected the program compares the accession version identifiers returned by the taxids function (which are the accession version identifiers found by [ESearch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_)) and the accession version identifiers for which a cds fasta file has been downloaded. It lists all the accession version identifiers for which no target gene has been found if a filter is provided or all the accession version identifiers for which no cds fasta file has been downloaded (if no filter provided) and sends this list to the *taxo* function.  
-The *taxo* function performs a supplementary check for the accessions, where the gene is not found in the CDS fasta file. It searches the nuccore database with [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) to get the genbank files ( [GenBank file format](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)) for the accession version identifiers listed previously. It looks for the CDS sequences and eventually filters them and taxonomy information from this file. If no CDS is found for a given accession version identifiers, the accession version identifiers is appended to a text file named notfound.txt, otherwise the CDS is appended to the text file(s) written previously.  
+The *taxo* function performs a supplementary check for the accessions, where the gene is not found in the CDS fasta file. It searches the nuccore database with [Efetch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_EFetch_) to get the GenBank files ( [GenBank file format](https://www.ncbi.nlm.nih.gov/GenBank/samplerecord/)) for the accession version identifiers listed previously. It looks for the CDS sequences and eventually filters them and taxonomy information from this file. If no CDS is found for a given accession version identifiers, the accession version identifiers is appended to a text file named notfound.txt, otherwise the CDS is appended to the text file(s) written previously.  
   
 ## Comments  
   
-The scripts could be simplified and output almost the same results by using only the *taxo* function instead of using the *cdsfasta* function and then using the *taxo* function. This protocol has been tried but the running time (mostly due to the downloading time) was an order of magnitude longer. Minimizing the number of Genbank files analyzed is found to be a good way to minimize the running time as well as minimizing the possible errors in retrieving the CDS from DNA sequences as in the cds fasta files the CDS are already isolated while in the Genbank file the script has to find the location then extract the gene from the whole DNA sequence of the file.
+The scripts could be simplified and output almost the same results by using only the *taxo* function instead of using the *cdsfasta* function and then using the *taxo* function. This protocol has been tried but the running time (mostly due to the downloading time) was an order of magnitude longer. Minimizing the number of GenBank files analyzed is found to be a good way to minimize the running time as well as minimizing the possible errors in retrieving the CDS from DNA sequences as in the cds fasta files the CDS are already isolated while in the GenBank file the script has to find the location then extract the gene from the whole DNA sequence of the file.
   
 ## Supplementary material  
   
@@ -389,7 +391,7 @@ while the following won’t be selected:
   
 *This filtering can mostly be achieved without using the filter of the -c  option by writing the correct request to NCBI.*  
 </br>  
-Then if the program doesn’t find a match for an accession version number in the cds-fasta file, it will download the GenBank file and look for a match in this file. The GenBank files have different fields that can be checked for a match ( see: [GenBank file](https://www.ncbi.nlm.nih.gov/genbank/samplerecord/)). The program will first look for a match in the “gene”, “gene_synonym”, “note” and “product” fields from the CDS file. If a match is found the DNA sequence will be extracted based on the CDS location information.  
+Then if the program doesn’t find a match for an accession version number in the cds-fasta file, it will download the GenBank file and look for a match in this file. The GenBank files have different fields that can be checked for a match ( see: [GenBank file](https://www.ncbi.nlm.nih.gov/GenBank/samplerecord/)). The program will first look for a match in the “gene”, “gene_synonym”, “note” and “product” fields from the CDS file. If a match is found the DNA sequence will be extracted based on the CDS location information.  
   
 For example it the filter 'CO\[1I\]' is used, the following “note” field of the CDS section will be selected:  
 ![note COX1 field image](./pictures/note_cds_filter_2.png)  
