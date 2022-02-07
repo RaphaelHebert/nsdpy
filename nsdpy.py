@@ -161,7 +161,7 @@ def main():
 
 
     ### taxo (call EFETCH to query the nuccore database to get the .gb files) 
-    if args.cds is not None and remaining:
+    if args.cds is not None:
         analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
 
 
