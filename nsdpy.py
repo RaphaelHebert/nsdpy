@@ -51,7 +51,7 @@ def main():
 
     #taxa list
     if args.list:
-        options_report.append(f" -list (-L) {args.list}")
+        options_report.append(f" -list (-L) {' '.join(args.list)}")
         # Check that a file is provided
         if len(args.list) == 0:
             sys.exit("The --list (-L) requires at list one .txt file")
