@@ -131,7 +131,7 @@ def main():
     ### Taxids (call ESUMMARY to query the taxonomy database)
     dict_ids = taxids(params, path, OPTIONS)
 
-    # accession version numbers found 
+    # Accession version numbers found 
     list_of_ids = list(dict_ids.keys())
     # TaxIDs found
     reverse = set(dict_ids.values())
@@ -149,7 +149,7 @@ def main():
     if args.cds is None:
         found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
-        found = cds_fasta(params, path, dict_ids, dict_taxo, QUERY, OPTIONS)
+        found = cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS)
 
     ### List the remaining access ids:
     remaining = set(list_of_ids) - set(found)
