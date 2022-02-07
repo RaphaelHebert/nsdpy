@@ -75,7 +75,7 @@ def taxids(params, path, OPTIONS=None):
 
     ##retreive the taxids sending batches of accession numbers to esummary
     retmax = 100
-    dictid = {}
+    dict_ids = {}
     taxid = ''
     seqnb = ''
 
@@ -102,7 +102,7 @@ def taxids(params, path, OPTIONS=None):
             ret = parameters['retstart']
             print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
 
-        ###extract the TaxIDs and accession numbers (record in text file and in dictid)
+        ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
             if len(line.split('<DocSum>')) > 1:
@@ -120,7 +120,7 @@ def taxids(params, path, OPTIONS=None):
                     taxid = TaxId[1].split("<")[0].strip()
                 
                 if seqnb:
-                    dictid[seqnb] = taxid 
+                    dict_ids[seqnb] = taxid 
 
     if fileoutput:
         ##filename
@@ -128,9 +128,9 @@ def taxids(params, path, OPTIONS=None):
         ##path to filename
         path = path + "/" + filename
         with open(path, 'a') as summary:
-            [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
+            [summary.write(f'{key}  {value}\n') for key, value in dict_ids.items()]
 
-    return dictid
+    return dict_ids
 
 
 def dispatch(lineage, classif):
@@ -264,30 +264,30 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
     #comments
     if verb and verb > 0:
-        print(f'number of taxids:{len(data.keys())}')
+        print(f'number of taxids:\t{len(data.keys())}')
 
     return data
 
 
-##dl the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
+## Download the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
+def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
     
-    ##unpack parameters
+    ## Unpack parameters
     (querykey, webenv, count) = params
     (_, apikey) = QUERY
     (verb, genelist, classif, _, _, information) = OPTIONS
 
-    #comment:
+    # Comment:
     if verb and verb > 0:
         print("Downloading the CDS fasta files...")
     
 
-    #list of accession number for wich a gene is found or the file has been retrieve if no gene filter:
+    # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
-    #number of accession numbers to be sent at each API query
+    # Number of accession numbers to be sent at each API query
     retmax = 100
 
     if count % retmax == 0:
@@ -296,10 +296,10 @@ def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        ##build API address
+        ## Build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
-        #parameters 
+        # Parameters 
         parameters['db'] = "nuccore"
         parameters['query_key'] = querykey
         parameters['WebEnv'] = webenv
@@ -320,7 +320,7 @@ def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
             sublist = [r.split("_cds")[0] for r in result_fasta]
   
         ##analyse the results     
-        sublist = extract(path, raw_result, dictid, dicttaxo, genelist, OPTIONS, verb)
+        sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
 
         found = found + sublist
         #comments
@@ -331,7 +331,7 @@ def cds_fasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     return found
 
 
-def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
+def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
@@ -354,26 +354,26 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
 
     ##build idline (retrieve info)
     try:
-        TaxId = dictid[key]
+        TaxId = dict_ids[key]
     except KeyError:
         return 
 
     ## Extract info
     #Lineage
     try:                                                       
-        Lineage = dicttaxo[TaxId]['Lineage']
+        Lineage = dict_taxo[TaxId]['Lineage']
     except KeyError:
         Lineage = "no info"
 
     #Name
     try:
-        Name = dicttaxo[TaxId]['Name']  
+        Name = dict_taxo[TaxId]['Name']  
     except KeyError:
         Name = "no info"
 
     #dispatch
     try:
-        dispatch = dicttaxo[TaxId]['dispatch']
+        dispatch = dict_taxo[TaxId]['dispatch']
     except KeyError:
         dispatch = "others"
     if classif == 3:
@@ -385,7 +385,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
         ##get the Sequence
         _, dna = seq.split('\n', 1)
         
-        # if dicttaxo and information:
+        # if dict_taxo and information:
         if information:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
             info_line = Name + '-' + SeqID + ' | ' + TaxId + ' | ' + Lineage 
@@ -429,7 +429,7 @@ def subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS=None):
         return
 
 
-def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
+def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
     # Comments
     if verb and verb > 1:
@@ -450,7 +450,7 @@ def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
         if len(line.split(">lcl|")) > 1:
             if seq:
                 try:
-                    result = subextract(seq, path, dictid, dicttaxo, genelist, OPTIONS)
+                    result = subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS)
                     if result:
                         found.append(result)
                 except:
@@ -462,21 +462,21 @@ def extract(path, text, dictid, dicttaxo, genelist, OPTIONS=None, verb=""):
     return found
 
 
-def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
+def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
     
-    ##unpack parameters
+    ## Unpack parameters
     (_, apikey) = QUERY
     (verb, _, classif, _, tsv, information)= OPTIONS
 
     if verb and verb > 0:
         print("Downloading the fasta files...")
 
-    retmax = 200    ##number of sequence per request to the API
+    retmax = 200    ## Number of sequences per request to the API
     keys = []
-    count = len(listofids)
+    count = len(list_of_ids)
 
     if count % retmax == 0:
         nb = count//retmax
@@ -484,14 +484,14 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        ##split the list of ids
-        ids = listofids[x*retmax : (x*retmax) + retmax]
-        ##check that id parameters is not empty
+        ## Split the list of ids
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ##build API address
+        ## Build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
-        #parameters 
+        # Parameters 
         parameters['db'] = "nuccore"
         parameters['id'] = ",".join(ids)
         if apikey:
@@ -515,29 +515,28 @@ def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
             try:
                 key = idline.split()[0]
             except IndexError:
-                print('no key found')
                 continue
             
-            #from dictid
+            #from dict_ids
             try:
-                taxid = dictid[key]
+                taxid = dict_ids[key]
             except KeyError:
                 taxid = 'not found'
             
-            # from dicttaxo
+            # from dict_taxo
             try:
-                lineage = dicttaxo[taxid]['Lineage']
+                lineage = dict_taxo[taxid]['Lineage']
                 lineage = ", ".join(lineage)
             except KeyError:
                 lineage = 'not found'
             
             try:
-                name = dicttaxo[taxid]['Name']
+                name = dict_taxo[taxid]['Name']
             except KeyError:
                 name = 'not found'
             
             try:
-                dispatch = dicttaxo[taxid]['dispatch']
+                dispatch = dict_taxo[taxid]['dispatch']
             except KeyError:
                 name = 'others'
             
@@ -601,7 +600,7 @@ def duplicates(listofaccess, path):
     return(nb)
 
 
-def taxo(path, listofid, dictid, QUERY, dict_taxo=None, OPTIONS=None):
+def taxo(path, listofid, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
@@ -690,7 +689,7 @@ def taxo(path, listofid, dictid, QUERY, dict_taxo=None, OPTIONS=None):
                         taxo = ', '.join(taxo)
                         
                         try:
-                            taxid = dictid[dictCDS["version"]]
+                            taxid = dict_ids[dictCDS["version"]]
                         except IndexError:
                             taxid = ""
 
