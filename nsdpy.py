@@ -23,6 +23,8 @@ def main():
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
     #gene selection
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
+    #file input
+    parser.add_argument("-L", "--list", help='input a .txt file as an external list of taxa ', nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
     parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
@@ -44,9 +46,24 @@ def main():
     #############   GLOBAL VARIABLES    #############
     #################################################
 
-    #list of chosen options to display in the report.txt
+    # list the selected option to make it appear in report.txt
     options_report = []
 
+    #taxa list
+    if args.list:
+        options_report.append(f" -list (-L) {args.list}")
+        # Check that a file is provided
+        if len(args.list) == 0:
+            sys.exit("The --list (-L) requires at list one .txt file")
+
+        # Check if files exists
+        for file in args.list:
+            if not os.path.exists(file):
+                sys.exit(f"The file {file} cannot be found")
+            if file[-4:] != ".txt":
+                sys.exit(f"The list of taxa {file} must be a .txt file")
+
+    #list of chosen options to display in the report.tsv
     ##parse options
     if args.tsv:
         options_report.append("--tsv (-t)")
@@ -87,7 +104,6 @@ def main():
         classif = 3
 
     OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
-    QUERY = (args.request, args.apikey)
 
     ##foldername and path
     starting_time = str(datetime.now())
@@ -99,40 +115,102 @@ def main():
     ##############################################
     #########  RUN THE RUN!!  ####################
     ##############################################
-
-    # Create the main directory to store the results
+    
+    # Create the directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
 
-    ### esearchquery (call to ESEARCH)
-    search_result = esearchquery(QUERY)
+    # Read the taxa list files 
+    if args.list:
+        taxa_list = []
+        for file in args.list:
+            with open(file, "r") as data:
+                taxa_list = taxa_list + data.read().splitlines()
+        
+        # Add the taxa to the query
+        taxa_list = [ taxon + "[ORGN] OR " for taxon in taxa_list]
 
-    ## Check if the NCBI API returned any error (in case of bad API key, URL, etc..)
-    if "error" in search_result.keys():
-        errors = search_result["error"]
-        sys.exit(errors)
+        # Base URL with params
+        esearch_address = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
+        base_URL_length = len(esearch_address) + 100 # Keep 100 chars for params
 
-    ## Check that some results have been found by the esearch with the provided query
-    count = int(search_result["esearchresult"]["count"])
-    if count < 1: 
+        # Base query
+        base_query = args.request + " AND ("
+        
+        # Remaining space for the taxa list 
+        taxa_max_length = 2048 - ( len(base_query) + base_URL_length )
+        ##see these threads;
+        #https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers?noredirect=1&lq=1
+        #https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
+
+        # Include taxa in the QUERY and make a list of queries <= 2048 chars
+        remaining_space = taxa_max_length
+        queries_list = []
+        new_query = base_query
+
+        #TODO: a bit of cleanup in this for loop...
+        for taxon in taxa_list:
+            if (remaining_space - len(taxon) + 4) <= 0:
+                # Delete the last "[ORGN] OR " and close parenthesis
+                queries_list.append(new_query[:-8] + ')')
+                # Start another query
+                new_query = base_query
+                remaining_space = taxa_max_length
+            else:
+                remaining_space = remaining_space - len(taxon)
+                new_query = new_query + taxon
+                if queries_list:
+                    queries_list[-1] = new_query
+                else:
+                    queries_list.append(new_query)
+        queries_list[-1] = queries_list[-1][:-4] + ')'
+    else:
+        queries_list = [args.request]    
+
+    ### Retrieving results from esearch and the related TaxIDs
+    total_number_of_results = 0
+    dict_ids = {}
+
+    for query in queries_list:
+        query = query.rstrip('0').rstrip(' OR ') + ')'
+        QUERY = (query, args.apikey)
+        if verb != 0:
+            print(f"retrieving results for {query} ....")        
+
+        ## esearchquery
+        y = esearchquery(QUERY)
+
+        ##check errors (if bad API key etc) errors returned by the Entrez API
+        if "error" in y.keys():
+            errors = y["error"]
+            sys.exit(errors)
+
+        count = int(y["esearchresult"]["count"])
+        total_number_of_results = total_number_of_results + count
+        if count < 1:
+            continue
+        webenv =  str(y["esearchresult"]["webenv"])
+        querykey = str(y["esearchresult"]["querykey"])
+        params = (querykey, webenv, count)
+
+        #comments
+        if verb > 0:    
+            print(f'Number of results found: {count}')
+
+        ###Taxids
+        if verb != 0:
+            print("retreiving the corresponding TaxIDs...")
+   
+        dict_ids = {**dict_ids, **taxids(params, path, OPTIONS)}
+
+    if total_number_of_results < 1: 
         sys.exit("No results found")
 
-    ## Get the references of the results to access them in the server history 
-    webenv =  str(search_result["esearchresult"]["webenv"])             # refers to WebEnv parameter needed in the URL to call efetch 
-    querykey = str(search_result["esearchresult"]["querykey"])          # refers to the query_key parameter needed in the URL to call esummary
-    params = (querykey, webenv, count)
+    if verb != 0:
+        print(f"Total number of results: {total_number_of_results}")
 
-    # Comments
-    if verb > 0:    
-        print(f'Number of results found: {count}')
-
-
-    ### Taxids (call ESUMMARY to query the taxonomy database)
-    dict_ids = taxids(params, path, OPTIONS)
-
-    # Accession version numbers found 
+    #make a set of TaxIDs
     list_of_ids = list(dict_ids.keys())
-    # TaxIDs found
     reverse = set(dict_ids.values())
     list_of_TaxIDs = list(reverse)
 
@@ -171,10 +249,10 @@ def main():
     ending_time= ending_time.replace(":", "-")        
 
     ### Comments
+    genes = found + sequences
+    total = list(set(analyse) | set(found)) 
+    notfound = list(set(list_of_ids) - (set(sequences) | set(found)))
     if args.cds is not None:
-        genes = found + sequences
-        total = list(set(analyse) | set(found)) 
-        notfound = list(set(list_of_ids) - (set(sequences) | set(found)))
         if verb > 0:
             print(f'number of results from NCBI:                                                                {count}')
             print(f'number of unique accession version identifiers:                                             {len(list_of_ids)}')
@@ -190,11 +268,15 @@ def main():
 
     else:
         if verb > 0:
-            print(f'number of results from NCBI:                                        {count}')
+            print(f'number of results from NCBI:                                        {total_number_of_results}')
             print(f'number of unique accession version identifiers:                     {len(list_of_ids)}')
-            print(f'total number of sequences retrieved:                                {len(found)}')
-            print(f'number with more than one sequences:                                {duplicates(found, path)}')
+            print(f'total number of sequences retrieved:                                {len(genes)}')
+            print(f'number with more than one sequences:                                {duplicates(genes, path)}')
+            print(f'total number of accession version identifiers analysed:             {len(total)}')
             print(f'ended:                                                              {ending_time}')
+            print(f'number of accession version identifiers analysed with no sequences downloaded:             {len(notfound)}')
+            if len(notfound) > 0:
+                print(f'see "notfound.txt"')
 
     ##write summary
     if args.cds is None:
