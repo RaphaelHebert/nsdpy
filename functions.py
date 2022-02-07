@@ -1,6 +1,7 @@
 import requests             #https://requests.readthedocs.io/en/master/
 import os
 import re
+import csv
 from collections import Counter
 
 
@@ -12,14 +13,14 @@ def download(parameters, address):
             result = requests.get(address, params = parameters, timeout = 60)
             break
         except requests.exceptions.HTTPError as errh:
-            print("Http Error:",errh)
+            print("Http Error:", errh)
             return(1)
 
         except requests.exceptions.Timeout as to:
             print(f'Connection Timed out\n{to}')
             continue
 
-        except requests.exceptions.ConnectionError as errc:
+        except requests.exceptions.ConnectionError as _:
             if connect == 1:
                 continue
             elif connect == 0:
@@ -28,7 +29,7 @@ def download(parameters, address):
                 continue
 
         except requests.exceptions.RequestException as e:
-            print(f'An exception occured:\n{e}')
+            print(f'An exception occurred:\n{e}')
             continue
 
     return result
@@ -36,14 +37,14 @@ def download(parameters, address):
 
 def esearchquery(QUERY):
     ##unpack QUERY:
-    (query, apikey) = QUERY
+    (query, api_key) = QUERY
 
     ##build api address
     esearchaddress = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
     #parameters
     parameters = {}
-    if apikey:
-        parameters["api_key"] = str(apikey)
+    if api_key:
+        parameters["api_key"] = str(api_key)
     parameters["db"] = "nucleotide"
     parameters["idtype"] = "acc"
     parameters["retmode"] = "json"
@@ -62,16 +63,11 @@ def esearchquery(QUERY):
 def taxids(params, path, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","")
+        OPTIONS = ("","","","","","")
 
     ##unpack parameters
     (querykey, webenv, count) = params
-    (verb, _, _, fileoutput) = OPTIONS
-
-    ##filename
-    filename = "TaxIDs.txt"
-    ##path to filename
-    path = path + "/" + filename
+    (verb, _, _, fileoutput, _, _) = OPTIONS
 
     #comments
     if verb and verb > 0:
@@ -79,7 +75,7 @@ def taxids(params, path, OPTIONS=None):
 
     ##retreive the taxids sending batches of accession numbers to esummary
     retmax = 100
-    dictid = {}
+    dict_ids = {}
     taxid = ''
     seqnb = ''
 
@@ -106,7 +102,7 @@ def taxids(params, path, OPTIONS=None):
             ret = parameters['retstart']
             print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
 
-        ###extract the TaxIDs and accession numbers (record in text file and in dictid)
+        ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
             if len(line.split('<DocSum>')) > 1:
@@ -124,13 +120,17 @@ def taxids(params, path, OPTIONS=None):
                     taxid = TaxId[1].split("<")[0].strip()
                 
                 if seqnb:
-                    dictid[seqnb] = taxid 
+                    dict_ids[seqnb] = taxid 
 
     if fileoutput:
+        ##filename
+        filename = "TaxIDs.txt"
+        ##path to filename
+        path = path + "/" + filename
         with open(path, 'a') as summary:
-            [summary.write(f'{key}  {value}\n') for key, value in dictid.items()]
-   
-    return dictid
+            [summary.write(f'{key}  {value}\n') for key, value in dict_ids.items()]
+
+    return dict_ids
 
 
 def dispatch(lineage, classif):
@@ -147,7 +147,7 @@ def dispatch(lineage, classif):
 
     ##no option selected
     if classif == 3 or classif == 2:
-        return "results"
+        return "sequences"
     ##user gave list of taxonomic levels
     if isinstance(classif, list):
         try:
@@ -186,11 +186,12 @@ def dispatch(lineage, classif):
 def completetaxo(idlist, QUERY, OPTIONS):
 
     ##unpack parameters
-    (_, apikey) = QUERY
-    (verb, _, classif, _) = OPTIONS
+    (_, api_key) = QUERY
+    (verb, _, classif, _, _, _) = OPTIONS
 
     if verb and verb > 0:
         print("retrieving taxonomy...")
+
     ##dictionnary that will be returned
     data = {}
     idlist = [i.split(".")[0] for i in idlist]
@@ -215,8 +216,8 @@ def completetaxo(idlist, QUERY, OPTIONS):
         #parameters 
         parameters['db'] = "taxonomy"
         parameters['id'] = idsublist
-        if apikey:
-            parameters['api_key'] = apikey
+        if api_key:
+            parameters['api_key'] = api_key
 
         ##loop until download is correct
         result = download(parameters, efetchaddress)
@@ -227,6 +228,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
         ##analyse the results from efetch
         result = result.text.split('</Taxon>\n<Taxon>')
+
         for seq in result:
             dicttemp = {}
             try:
@@ -262,63 +264,63 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
     #comments
     if verb and verb > 0:
-        print(f'number of taxids:{len(data.keys())}')
+        print(f'number of taxids:\t{len(data.keys())}')
 
     return data
 
 
-##dl the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
+## Download the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
+def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","")
+        OPTIONS = ("","","","","","")
     
-    ##unpack parameters
+    ## Unpack parameters
     (querykey, webenv, count) = params
-    (_, apikey) = QUERY
-    (verb, genelist, _, _)= OPTIONS
+    (_, api_key) = QUERY
+    (verb, genelist, classif, _, _, information) = OPTIONS
 
-    #comment:
+    # Comment:
     if verb and verb > 0:
-        print("retrieving the cds fasta files...")
+        print("Downloading the CDS fasta files...")
     
 
-    #list of accession number for wich a gene is found or the file has been retrieve if no gene filter:
+    # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
-    #number of accession numbers to be sent at each API query
+    # Number of accession numbers to be sent at each API query
     retmax = 100
+
     if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        ##build API address
+        ## Build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
-        #parameters 
+        # Parameters 
         parameters['db'] = "nuccore"
         parameters['query_key'] = querykey
         parameters['WebEnv'] = webenv
         parameters['retstart'] = str(x * retmax)
         parameters['retmax'] = str(retmax)
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         parameters['rettype'] = "fasta_cds_na"
         parameters['retmode'] = "text"
-        ##send requests to the API until getting a result
-        result = download(parameters, efetchaddress)
-        result = result.text
 
-        ##append the feature table file in a text file
-        if not dicttaxo and not genelist:
-            with open(path + "/results.fasta", 'a') as dl:
-                dl.write(result)
-            result = result.split(">lcl|")[1:]
-            sublist = [r.split("_cds")[0] for r in result]
-        else:   
-            ##analyse the results     
-            sublist = extract(path, result, dictid, dicttaxo, genelist, verb)
+        ## Download
+        raw_result = download(parameters, efetchaddress)
+        raw_result = raw_result.text
+
+        ## Extract available information
+        if not information and not genelist and classif == 3:
+            result_fasta = raw_result.split(">lcl|")[1:]
+            sublist = [r.split("_cds")[0] for r in result_fasta]
+  
+        ##analyse the results     
+        sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
 
         found = found + sublist
         #comments
@@ -329,47 +331,97 @@ def cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS=None):
     return found
 
 
-def subextract(seq, path, dictid, dicttaxo, genelist):
+def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","","","")
+
+    (_, _, classif, _, tsv, information) = OPTIONS
+
+
     ###find gene in a seq and write to ouput file
     ##extract accession number
     try:
         key = seq.split(">lcl|")[1].split("_cds")[0]
     except IndexError:
-        return    
+        return
 
-    ##build idline (retreive info)
+    ##extract SeqID
+    try: 
+        SeqID = seq.split(">lcl|")[1].split(" [")[0]
+    except IndexError:
+        return
+
+    ##build id_line (retrieve info)
     try:
-        TaxId = dictid[key]
+        TaxId = dict_ids[key]
     except KeyError:
         return 
 
-    ##if taxonomic option:
-    if dicttaxo:
-        try:
-            Lineage = dicttaxo[TaxId]['Lineage']
-            Name = dicttaxo[TaxId]['Name']  
-            dispatch = dicttaxo[TaxId]['dispatch']
-        except KeyError:
-            return
+    ## Extract info
+    #Lineage
+    try:                                                       
+        Lineage = dict_taxo[TaxId]['Lineage']
+    except KeyError:
+        Lineage = "no info"
 
-        if not dispatch:
-            dispatch = "no_taxid"
-    else:
-        dispatch = "results"
+    #Name
+    try:
+        Name = dict_taxo[TaxId]['Name']  
+    except KeyError:
+        Name = "no info"
+
+    #dispatch
+    try:
+        dispatch = dict_taxo[TaxId]['dispatch']
+    except KeyError:
+        dispatch = "others"
+    if classif == 3:
+        dispatch = "sequences"
 
     ##check if genes
-    check = [1 for co in genelist if len(re.split(co, seq, flags=re.IGNORECASE)) > 1]
+    check = [1 for reg_exp in genelist if len(re.split(reg_exp, seq, flags=re.IGNORECASE)) > 1]
     if 1 in check or not genelist:
         ##get the Sequence
-        description, dna = seq.split('\n', 1)
+        _, dna = seq.split('\n', 1)
         
-        if dicttaxo:
+        # if dict_taxo and information:
+        if information:
             Lineage = ", ".join(Lineage)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-            description = description + '|' + TaxId + ' |' + Name +  '|' + Lineage
+            info_line = Name + '-' + SeqID + ' | ' + TaxId + ' | ' + Lineage 
+        else:
+            info_line = seq.split('\n', 1)[0]
 
-        path = path + "/" + dispatch + ".fasta"
-        with open(path, 'a') as new:
-            new.write('\n' + str(description) + '\n' + str(dna) +'\n') 
+        # Make only one > and \n
+        info_line = '>' + info_line.lstrip(">")
+        info_line = info_line.rstrip("\n") + "\n"
+
+        ## Create folders is tsv is selected
+        if tsv:
+            if not os.path.exists(path + "/fasta"):
+                os.makedirs(path + "/fasta")
+            if not os.path.exists(path + "/tsv"):
+                os.makedirs(path + "/tsv")
+            # Create paths
+            fasta_file = path + "/fasta/" + dispatch + ".fasta"
+            tsv_file = path + "/tsv/" + dispatch + ".tsv"
+        else:
+            fasta_file = path + "/" + dispatch + ".fasta"
+            tsv_file = path + "/" + dispatch + ".tsv"
+
+        # write fasta file
+        with open(fasta_file, 'a') as new:
+            new.write(str(info_line))
+            new.write(str(dna).rstrip("\n") + "\n") 
+
+        # write tsv file
+        if tsv:
+            # Format dna sequence 
+            dna = "".join(dna.split("\n"))
+
+            # write .tsv file
+            data = (Name, SeqID, TaxId, Lineage, dna)
+            tsv_file_writer(tsv_file, data, OPTIONS)
 
         return key
 
@@ -377,15 +429,20 @@ def subextract(seq, path, dictid, dicttaxo, genelist):
         return
 
 
-def extract(path, text, dictid, dicttaxo, genelist, verb=""):
-    #comments
+def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
+
+    # Comments
     if verb and verb > 1:
         print('analyzing the results...')
     
     found = []
-    genelist = [ "=" + gene + "]" for gene in genelist]        
+
+    # Extract genes to filter
+    genelist = [ "=" + gene + "]" for gene in genelist]  
+
     seq = ''
     text = text.splitlines()
+
     if not text:
         return
 
@@ -393,7 +450,7 @@ def extract(path, text, dictid, dicttaxo, genelist, verb=""):
         if len(line.split(">lcl|")) > 1:
             if seq:
                 try:
-                    result = subextract(seq, path, dictid, dicttaxo, genelist)
+                    result = subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS)
                     if result:
                         found.append(result)
                 except:
@@ -405,87 +462,120 @@ def extract(path, text, dictid, dicttaxo, genelist, verb=""):
     return found
 
 
-def fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS=None):
+def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","")
+        OPTIONS = ("","","","","","")
     
-    ##unpack parameters
-    (_, apikey) = QUERY
-    (verb, _, _, _)= OPTIONS
+    ## Unpack parameters
+    (_, api_key) = QUERY
+    (verb, _, classif, _, tsv, information)= OPTIONS
 
     if verb and verb > 0:
-        print("Downloading fasta files...")
+        print("Downloading the fasta files...")
 
-    retmax = 200
+    retmax = 200    ## Number of sequences per request to the API
     keys = []
-    count = len(listofids)
+    count = len(list_of_ids)
+
     if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
+
     for x in range(nb):
-        ##split the list of ids
-        ids = listofids[x*retmax : (x*retmax) + retmax]
-        ##check that id parameters is not empty
+        ## Split the list of ids
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ##build API address
+        ## Build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
-        #parameters 
+        # Parameters 
         parameters['db'] = "nuccore"
         parameters['id'] = ",".join(ids)
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         parameters['rettype'] = "fasta"
         parameters['retmode'] = "text"
 
-        ##download
-        result = download(parameters, efetchaddress)
-        result = result.text
+        ## Download
+        raw_result = download(parameters, efetchaddress)
+        raw_result = raw_result.text
 
-        if not dicttaxo:
-            with open(path + "/fastafiles.fasta", "a") as f:
-                f.write(result)
-            result = result.split('>')[1:]
-            key = [i.split()[0] for i in result]
-            keys = keys + key
-        else:
-            result = result.split('>')
-            for seq in result:
-                try:
-                    idline, dna = seq.split('\n', 1)
-                except ValueError:
-                    continue
-                try:
-                    key = idline.split()[0]
-                except IndexError:
-                    print('no key found')
-                    continue
-                
-                try:
-                    taxid = dictid[key]
-                    lineage = dicttaxo[taxid]['Lineage']
-                    name = dicttaxo[taxid]['Name']
-                    dispatch = dicttaxo[taxid]['dispatch']
-                    lineage = ", ".join(lineage)
-                except KeyError:
-                    taxid = 'not found'
-                    lineage = 'not found'
-                    name = 'not found'
-                    dispatch = 'results'
+        ## Extract available informations
+        result = raw_result.split('>')
 
-                idline = ">" + idline + " |" + taxid + " |" + name + "|" + lineage 
-                
-                with open(path + "/" + dispatch + ".fasta", 'a') as f:
-                    f.write(f"{idline}\n")
-                    f.write(f"{dna}\n")
-                keys.append(key)
+        ## Store analyzed Accession version numbers
+        for seq in result:
+            try:
+                id_line, dna = seq.split('\n', 1)
+            except ValueError:
+                continue
+
+            try:
+                key = id_line.split()[0]
+            except IndexError:
+                continue
+            
+            #from dict_ids
+            try:
+                taxid = dict_ids[key]
+            except KeyError:
+                taxid = 'not found'
+            
+            # from dict_taxo
+            try:
+                lineage = dict_taxo[taxid]['Lineage']
+                lineage = ", ".join(lineage)
+            except KeyError:
+                lineage = 'not found'
+            
+            try:
+                name = dict_taxo[taxid]['Name']
+            except KeyError:
+                name = 'not found'
+            
+            try:
+                dispatch = dict_taxo[taxid]['dispatch']
+            except KeyError:
+                name = 'others'
+            
+            if classif == 3:
+                dispatch = "sequences"
+            
+            data = (name, key, taxid, lineage, dna)
+
+            # Create folders for .tsv files and .fasta files
+            if tsv:
+                if not os.path.exists(path + "/fasta"):
+                    os.makedirs(path + "/fasta")
+                if not os.path.exists(path + "/tsv"):
+                    os.makedirs(path + "/tsv")
+                # Create paths
+                fasta_file = path + "/fasta/" + dispatch + ".fasta"
+                tsv_file = path + "/tsv/" + dispatch + ".tsv"
+            else:
+                fasta_file = path + "/" + dispatch + ".fasta"
+                tsv_file = path + "/" + dispatch + ".tsv"
+
+
+            # Write fasta file
+            if information: 
+                id_line = name + "-" + key + " | " + taxid + " | " + lineage + " | " + id_line
+            with open(fasta_file, 'a') as f:
+                f.write(f">{id_line}\n")
+                f.write(f"{dna}\n")
+
+            if tsv:
+                tsv_file_writer(tsv_file, data, OPTIONS)
+
+            keys.append(key)
 
         if verb > 1:
-            start = (x*retmax) + retmax
-            print(f'{round((start/count)*100, 1)} %  of the fasta files downloaded')
- 
+            start = (x * retmax) + retmax
+            print(f'{round((start / count) * 100, 1)} %  of the fasta files downloaded')
+
     return keys
 
 
@@ -502,17 +592,17 @@ def duplicates(listofaccess, path):
     return(nb)
 
 
-def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
+def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","")
+        OPTIONS = ("","","","","","")
 
-    if len(listofid) < 1:
-        return []
+    if len(list_of_ids) < 1:
+        return ([],[])
 
     ##unpack params
-    (verb, genelist, classif, _) = OPTIONS
-    (_, apikey) = QUERY
+    (verb, genelist, classif, _, tsv, information) = OPTIONS
+    (_, api_key) = QUERY
 
     ##build output unique filename
     notfound = path + "/notfound.txt"
@@ -523,12 +613,12 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
 
     #comments
     if verb and verb > 0:
-        print("retreiving the GenBank files...")
+        print("Downloading the GenBank files...")
 
     remain = []         #accessions not downloaded from previous iteration
     analysed = []       #accessions successfully donwnloaded and found in the gb file
     genefound = []      ##accessions with some cds found or matching the filter if filter(s)
-    count = len(listofid)
+    count = len(list_of_ids)
     retmax = 10
     if count % retmax == 0:
         nb = count//retmax
@@ -538,11 +628,10 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
     for x in range(nb):
         ###################  API CALL  ##################
         ##slice the list of ids passed to the function
-        ids = listofid[x * retmax:(x+1) * retmax]
+        ids = list_of_ids[x * retmax:(x+1) * retmax]
         ##if some ids haven't been dl at the last call add them to this call
         if remain:
             ids = ids + remain
-        foundlist = []
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
 
@@ -554,20 +643,25 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
         parameters['id'] = ids1
         parameters['rettype'] = "gb"
         parameters['retmode'] = "text"
-        if apikey:
-            parameters["api_key"] = apikey
+        if api_key:
+            parameters["api_key"] = api_key
         
         ##loop until dl is correct
         result = download(parameters, efetchaddress)
         result = result.text
 
-        #######################   RESULT ANALYZING   ##########################
+
+        ########################################################################
+        #######################   ANALYZING RESULTS   ##########################
+        ########################################################################
+
         result = result.split('\n//')
         ###extract the CDS for each asscession version number
         accessionlist = []
         for i, seq in enumerate(result[:-1]):
             ##search in CDS
             listCDS, dna = genbankfields(seq, genelist)
+
             for dictCDS in listCDS:
                 if dictCDS:
                     accessionlist.append(dictCDS["version"])
@@ -578,21 +672,34 @@ def taxo(path, listofid, dictid, QUERY, OPTIONS=None):
                         ###path
                         taxo = dictCDS["taxo"]
                         filename = dispatch(taxo, classif)
-                        output = path + "/" + filename + ".fasta"
+                        if tsv:
+                            fasta_file = path + "/fasta/" + filename + ".fasta"
+                        else:
+                            fasta_file = path + "/" + filename + ".fasta"
                         
                         ##information line 
                         taxo = ', '.join(taxo)
                         
                         try:
-                            taxid = dictid[dictCDS["version"]]
+                            taxid = dict_ids[dictCDS["version"]]
                         except IndexError:
                             taxid = ""
-                        infoline = ">" + dictCDS["version"] + "| [locus_tag=" + dictCDS["locustag"] + '] | [product=' + dictCDS["product"] + '] | [gene=' + dictCDS["gene"] + '] | [protein_id='\
-                            + dictCDS["proteinid"] +  '] | [location=' + dictCDS["loc"].strip() + "] | " + dictCDS["note"] + " | [gbkey=CDS]" + "| " + taxid + "| " + "".join(taxo)
-                        ##append to file
-                        with open(output, 'a') as a:
-                            a.write(f"{infoline}\n")
-                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 80])}\n') for i in range(0, len(dictCDS["sequence"]), 80)]
+
+                        if information:
+                            try:
+                                name = dict_taxo[taxid]['Name']
+                            except:
+                                name = "not found"
+                            info_line = ">" + name + "-" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " | " + taxid + " | " +  "".join(taxo).rstrip(".")
+                     
+                        else:
+                            info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
+                                "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
+
+                        ## append to file
+                        with open(fasta_file, 'a') as a:
+                            a.write(f"{info_line}\n")
+                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 70]).upper()}\n') for i in range(0, len(dictCDS["sequence"]), 70)]
 
         remain = list(set(accessionlist) - set(ids))
         analysed = analysed + accessionlist
@@ -642,6 +749,14 @@ def genbankfields(text, genelist):
         taxo, organism = "not found", "not found"
     dictfield["taxo"] = taxo
     dictfield["organism"] = organism    
+
+    ###Definition line (to use if information option is not selected)
+    try:
+        definition = text.split('DEFINITION', 1)[1]
+        definition = definition.split('ACCESSION', 1)[0]
+    except IndexError:
+        definition = "not found"
+    dictfield["definition"] = "".join(definition.split("\n"))
 
     ###DNA sequence
     try:
@@ -758,3 +873,38 @@ def search(dna ,dictentry, s):
     dict1["locustag"] = locustag
 
     return dict1
+
+
+
+def tsv_file_writer(path, data, OPTIONS=None):
+
+    if OPTIONS is None:
+        OPTIONS = ("","","","","","")
+
+    (_, _, _, _, _, information) = OPTIONS   
+
+        
+    # check if the file already exists
+    if not os.path.exists(path):
+        with open(path, "a") as tsv_to_write:
+            writer = csv.writer(tsv_to_write, delimiter="\t")
+            if information:
+                writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+            else:
+                writer.writerow(['SeqID', 'TaxID', 'sequence length', 'sequence'])
+
+    
+    # unpack data
+    (name, seqid, taxid, lineage, dna) = data
+
+    dna = "".join(dna.split("\n"))
+
+    # write data
+    with open(path, "a") as outtsv:
+        writer = csv.writer(outtsv, delimiter='\t')
+        if information:
+            writer.writerow([name, seqid, taxid, lineage, len(dna), dna])
+        else:
+            writer.writerow([seqid, taxid, len(dna), dna])
+
+    return
