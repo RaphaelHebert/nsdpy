@@ -380,7 +380,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         dispatch = "sequences"
 
     ##check if genes
-    check = [1 for co in genelist if len(re.split(co, seq, flags=re.IGNORECASE)) > 1]
+    check = [1 for reg_exp in genelist if len(re.split(reg_exp, seq, flags=re.IGNORECASE)) > 1]
     if 1 in check or not genelist:
         ##get the Sequence
         _, dna = seq.split('\n', 1)
