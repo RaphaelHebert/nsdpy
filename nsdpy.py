@@ -1,4 +1,4 @@
-from functions import esearchquery, completetaxo, taxids, cdsfasta, extract, taxo, fasta, duplicates
+from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 import sys
 import os
 import argparse             #parsing command line arguments
@@ -25,128 +25,165 @@ def main():
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
-    parser.add_argument("-S", "--summary", help='summarize the process in a table', action="store_true")
+    parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
     #Taxonomy
     group3 = parser.add_mutually_exclusive_group()
-    group3.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
-    group3.add_argument("-k", "--kingdom", help="output three different file text (Plantae and Fungi, Metazoa, Others", action="store_true" )
+    group3.add_argument("-k", "--kingdom", help="output four different text files file: Plantae and Fungi, Metazoa and  Others", action="store_true" )
     group3.add_argument("-p", "--phylum", help="output one file text per phylum", action="store_true" )
     group3.add_argument("-l", "--levels", help="find only the taxon given by user", nargs="+")
     group3.add_argument("-s", "--species",\
         help="classify the results in different text file one for each specie+n level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
         action="count", default=3)
 
+    #information line
+    parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
+
     args = parser.parse_args()
 
     #################################################
     #############   GLOBAL VARIABLES    #############
     #################################################
+
+    #list of chosen options to display in the report.txt
+    options_report = []
+
+    ##parse options
+    if args.tsv:
+        options_report.append("--tsv (-t)")
+    if args.information:
+        options_report.append("--information (-i)")
+    if args.taxids:
+        options_report.append("--taxids (-T)")
+    if args.cds is not None:
+        options_report.append(f"--cds (-c) {' '.join(args.cds)}")
+    if args.apikey:
+        options_report.append(f"--apikey (-a) {args.apikey[0]}")
+
     #verbose
     if args.verbose:
         verb = 2
+        options_report.append("--verbose (-v)")
     elif args.quiet:
         verb = 0
+        options_report.append("--quiet (-q)")
     else:
         verb = 1
 
     #taxonomy
     if args.kingdom:
         classif = 1
+        options_report.append("--kingdom (-k)")
     elif args.phylum:
         classif = 0
+        options_report.append("--phylum (-p)")
     elif args.levels:
         classif = args.levels
-    elif args.information:
-        classif = 2
+        options_report.append(f"--levels (-l) {args.levels[0]}")
     elif args.species:
         classif = args.species
+        if args.species != 3:
+            options_report.append("--species (-", + "s" * ( args.species - 3 ) + ")")
     else:
         classif = 3
 
-    OPTIONS = (verb, args.cds, classif, args.taxids)
+    OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
     QUERY = (args.request, args.apikey)
 
     ##foldername and path
-    name = str(datetime.now())
-    name = '_'.join(name.split())[:19]
-    name = name.replace(":", "-")
-    path = "./results/" + name
+    starting_time = str(datetime.now())
+    starting_time = '_'.join(starting_time.split())[:19]
+    starting_time = starting_time.replace(":", "-")
+    path = "./NSDPY results/" + starting_time
 
 
     ##############################################
-    ###########RUN THE RUN!!######################
+    #########  RUN THE RUN!!  ####################
     ##############################################
 
-    #create the directory to store the results
+    # Create the main directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
 
-    ###esearchquery
-    y = esearchquery(QUERY)
-    ##check errors (if bad API key etc) errors returned by the Entrez API
-    if "error" in y.keys():
-        errors = y["error"]
+    ### esearchquery (call to ESEARCH)
+    search_result = esearchquery(QUERY)
+
+    ## Check if the NCBI API returned any error (in case of bad API key, URL, etc..)
+    if "error" in search_result.keys():
+        errors = search_result["error"]
         sys.exit(errors)
 
-    count = int(y["esearchresult"]["count"])
+    ## Check that some results have been found by the esearch with the provided query
+    count = int(search_result["esearchresult"]["count"])
     if count < 1: 
         sys.exit("No results found")
-    webenv =  str(y["esearchresult"]["webenv"])
-    querykey = str(y["esearchresult"]["querykey"])
+
+    ## Get the references of the results to access them in the server history 
+    webenv =  str(search_result["esearchresult"]["webenv"])             # refers to WebEnv parameter needed in the URL to call efetch 
+    querykey = str(search_result["esearchresult"]["querykey"])          # refers to the query_key parameter needed in the URL to call esummary
     params = (querykey, webenv, count)
 
-    #comments
+    # Comments
     if verb > 0:    
         print(f'Number of results found: {count}')
 
-    ###Taxids
-    dictid = taxids(params, path, OPTIONS)
-    listofids = list(dictid.keys())
-    reverse = {value for value in dictid.values()}
-    listofTaxids = list(reverse)
 
-    ###completetaxo2
-    if classif != 3:
-        dicttaxo = completetaxo(listofTaxids, QUERY, OPTIONS)
-    else:
-        dicttaxo = {}
+    ### Taxids (call ESUMMARY to query the taxonomy database)
+    dict_ids = taxids(params, path, OPTIONS)
 
-    ###CDS fasta file
+    # Accession version numbers found 
+    list_of_ids = list(dict_ids.keys())
+    # TaxIDs found
+    reverse = set(dict_ids.values())
+    list_of_TaxIDs = list(reverse)
+
+
+    ### completetaxo (call EFETCH to query the taxonomy database)
+    # Check that an option that requires the taxonomic information has been selected
+    dict_taxo = {}
+    if classif != 3 or args.information:
+        dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
+
+
+    ### Download the sequences (call to EFETCH to query the nuccore database)
     if args.cds is None:
-        found = fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS)
+        found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
-        found = cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTIONS)
+        found = cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS)
 
-    ###list the remaining access id:
-    remaining = set(listofids) - set(found)
+    ### List the remaining access ids:
+    remaining = set(list_of_ids) - set(found)
     remaining = list(remaining)
+
+    # Comments
     if verb > 0 and args.cds is not None:
-        print(f'number of remaining accession numbers with no sequence found: {len(remaining)}')
+        print(f'number of remaining accession numbers with sequence to be found in GenBank files: {len(remaining)}')
 
-    ###if filter 
-    if args.cds is not None and remaining:
-        analyse, sequences = taxo(path, remaining, dictid, QUERY, OPTIONS)
-    else:
-        analyse, sequences = [], []
-    end = str(datetime.now())
-    end = '_'.join(end.split())[:19]
-    end = end.replace(":", "-")
 
-    genes = found + sequences
-    total = list(set(analyse) | set(found)) 
-    notfound = list(set(listofids) - (set(sequences) | set(found)))
-
-    ###comments
+    ### taxo (call EFETCH to query the nuccore database to get the .gb files) 
     if args.cds is not None:
+        analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
+
+
+    ### summarise
+    # Get the ending time of the run
+    ending_time= str(datetime.now())
+    ending_time= '_'.join(ending_time.split())[:19]
+    ending_time= ending_time.replace(":", "-")        
+
+    ### Comments
+    if args.cds is not None:
+        genes = found + sequences
+        total = list(set(analyse) | set(found)) 
+        notfound = list(set(list_of_ids) - (set(sequences) | set(found)))
         if verb > 0:
             print(f'number of results from NCBI:                                                                {count}')
-            print(f'number of unique accession version identifiers:                                             {len(listofids)}')
+            print(f'number of unique accession version identifiers:                                             {len(list_of_ids)}')
             print(f'number of genes found in the cds_fasta file:                                                {len(found)}')
             print(f'number of genes found in the genbank file:                                                  {len(sequences)}')
             print(f'total number of sequences retrieved:                                                        {len(genes)}')
             print(f'number with more than one sequences:                                                        {duplicates(genes, path)}')
             print(f'total number of accession version identifiers analysed:                                     {len(total)}')
-            print(f'ended:                                                                                      {end}')
+            print(f'ended:                                                                                      {ending_time}')
         if notfound and verb > 0:
             print(f"total number of accession version identifiers \nfor which no gene has been retrieved:                                                  {len(notfound)}")
             print("see the notfound.txt for the detail")
@@ -154,17 +191,10 @@ def main():
     else:
         if verb > 0:
             print(f'number of results from NCBI:                                        {count}')
-            print(f'number of unique accession version identifiers:                     {len(listofids)}')
-            print(f'total number of sequences retrieved:                                {len(genes)}')
-            print(f'number with more than one sequences:                                {duplicates(genes, path)}')
-            print(f'total number of accession version identifiers analysed:             {len(total)}')
-            print(f'ended:                                                              {end}')
-            print(f'number of accession version identifiers analysed with no sequences downloaded:             {len(notfound)}')
-            if len(notfound) > 0:
-                print(f'see "notfound.txt"')
-
-
-
+            print(f'number of unique accession version identifiers:                     {len(list_of_ids)}')
+            print(f'total number of sequences retrieved:                                {len(found)}')
+            print(f'number with more than one sequences:                                {duplicates(found, path)}')
+            print(f'ended:                                                              {ending_time}')
 
     ##write summary
     if args.cds is None:
@@ -174,15 +204,20 @@ def main():
         filters = ",".join(args.cds)
         filetype = "cds_fasta"
 
+    options_report = ",".join(options_report)
 
-    if args.summary:
-        try:
-            y = open("report.txt")
-            y.close()
-            with open("report.txt", 'a') as r:
-                r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
-        except:
-            with open("report.txt", 'a') as r:
-                r.write(f"request   start   end   results   type    esearch    filter   sequences    TaxIDs\n")
-                r.write(f"{args.request}    {name}  {end}   {filetype}  {count}     {filters}     {len(found)}     {len(listofTaxids)}\n")
+    try:
+        y = open("report.tsv")
+        y.close()
+        with open("report.tsv", 'a') as r:
+            r.write(f"{args.request}\t{options_report}\t{starting_time}\t{ending_time}\t{filetype}\t{count}\t{filters}\t{len(found)}\t{len(list_of_TaxIDs)}\n")
+    except:
+        with open("report.tsv", 'a') as r:
+            r.write(f"request\toptions\tstarting_time\tending_time\tresults type\tesearch\tGene filters\tsequences\tTaxIDs\n")
+            r.write(f"{args.request}\t{options_report}\t{starting_time}\t{ending_time}\t{filetype}\t{count}\t{filters}\t{len(found)}\t{len(list_of_TaxIDs)}\n")
 
+
+
+## to remove before pushing to production
+if __name__ == "__main__":
+    main()
