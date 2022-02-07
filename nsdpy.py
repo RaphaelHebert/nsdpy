@@ -24,7 +24,7 @@ def main():
     #gene selection
     parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     #file input
-    parser.add_argument("-L", "--list", help='input a .txt file as an external list of taxa ', nargs="*")
+    parser.add_argument("-L", "--list", help='input one or more .txt file as an external list of taxa: path/to/file.txt', nargs="*")
     #file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
     parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
