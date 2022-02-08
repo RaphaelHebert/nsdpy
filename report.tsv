@@ -1,0 +1,6 @@
+request	options	starting_time	ending_time	results type	esearch	Gene filters	sequences	TaxIDs
+COX1[Title] OR COI[Title]	 -list (-L) species_list_test.txt,--tsv (-t),--cds (-c) 	2022-02-08_12-45-43	2022-02-08_12-46-34	cds_fasta	195		590	142
+COX1[Title] OR COI[Title]	 -list (-L) species_list_test.txt,--tsv (-t),--cds (-c) 	2022-02-08_12-50-03	2022-02-08_12-50-50	cds_fasta	195		590	142
+COX1[Title] OR COI[Title]	 -list (-L) species_list_test.txt,--tsv (-t)	2022-02-08_12-52-28	2022-02-08_12-53-08	fasta	195		639	142
+COX1[Title] OR COI[Title]	 -list (-L) species_list_test.txt,--tsv (-t)	2022-02-08_12-53-37	2022-02-08_12-54-20	fasta	195		639	142
+COX1[Title] OR COI[Title]	 -list (-L) species_list_test.txt,--tsv (-t),--cds (-c) 	2022-02-08_12-54-35	2022-02-08_12-55-19	cds_fasta	195		590	142
