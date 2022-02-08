@@ -27,6 +27,7 @@ Using nsdpy the user can:
 - **Sort** the sequences based on their taxonomy
 - **Select** coding sequences from cds files based on the gene names using one or more regular expressions. 
 This can help the user retrieve some sequences for which the gene name is annotated in another field.
+- **Retrieve** the taxonomic information and add it to the output sequences.  
 
 ## Quick start
 
@@ -35,7 +36,7 @@ This can help the user retrieve some sequences for which the gene name is annota
 git clone https://github.com/RaphaelHebert/nsdpy.git
   ```
 - pip:  
-_pip may be replaced by pip3 if pip3 is used_
+_depending on the user environment pip may be replaced by pip3 if pip3 is used_
 ```bash 
 pip install nsdpy
 ```  
@@ -55,7 +56,7 @@ pip install nsdpy
 ### Command line
 
 ```bash
-nsdpy -r USER'S REQUEST [OPTIONS] 
+nsdpy -r "USER'S REQUEST" [OPTIONS] 
 ```
 
 ## Authors and acknowledgment  
@@ -73,8 +74,6 @@ Code and documentation copyright 2021 the nsdpy Authors. Code released under the
 Official documentation:  
 [Readthedocs](https://nsdpy.readthedocs.io/en/latest/main.html#overview)
   
-On Google Doc:  
-[Users manual on google doc](https://docs.google.com/document/d/1CJQg2Cv3P0lgWZRYd9xJQfj8qwIY4a-wtXa4VERdH2c/edit?usp=sharing=100)  
 
 
 
