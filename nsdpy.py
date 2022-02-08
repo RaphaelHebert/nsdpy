@@ -171,6 +171,7 @@ def main():
     ### Retrieving results from esearch and the related TaxIDs
     dict_ids = {}
 
+    total_number_of_results = 0
     for query in queries_list:
         query = query.rstrip('0').rstrip(' OR ') + ')'
         QUERY = (query, args.apikey)
