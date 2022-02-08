@@ -51,7 +51,8 @@ def main():
 
     #taxa list
     if args.list:
-        options_report.append(f" -list (-L) {' '.join(args.list)}")
+        input_files = ' '.join(args.list)
+        options_report.append(f" -list (-L) {input_files}")
         # Check that a file is provided
         if len(args.list) == 0:
             sys.exit("The --list (-L) requires at list one .txt file")
@@ -168,7 +169,6 @@ def main():
         queries_list = [args.request]    
 
     ### Retrieving results from esearch and the related TaxIDs
-    total_number_of_results = 0
     dict_ids = {}
 
     for query in queries_list:
@@ -186,22 +186,24 @@ def main():
             sys.exit(errors)
 
         count = int(y["esearchresult"]["count"])
-        total_number_of_results = total_number_of_results + count
+        #comments
+        if verb > 0:    
+            print(f'Number of results found: {count}')
+
         if count < 1:
             continue
         webenv =  str(y["esearchresult"]["webenv"])
         querykey = str(y["esearchresult"]["querykey"])
         params = (querykey, webenv, count)
 
-        #comments
-        if verb > 0:    
-            print(f'Number of results found: {count}')
-
         ###Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
    
-        dict_ids = {**dict_ids, **taxids(params, path, OPTIONS)}
+        subdictids = taxids(params, path, OPTIONS)
+        dict_ids = {**dict_ids, **subdictids}
+
+        total_number_of_results = len(set(dict_ids.keys()))
 
     if total_number_of_results < 1: 
         sys.exit("No results found")
@@ -226,7 +228,7 @@ def main():
     if args.cds is None:
         found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
-        found = cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS)
+        found = cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
 
     ### List the remaining access ids:
     remaining = set(list_of_ids) - set(found)
@@ -253,8 +255,7 @@ def main():
     notfound = list(set(list_of_ids) - (set(sequences) | set(found)))
     if args.cds is not None:
         if verb > 0:
-            print(f'number of results from NCBI:                                                                {count}')
-            print(f'number of unique accession version identifiers:                                             {len(list_of_ids)}')
+            print(f'number of unique results from NCBI:                                                          {count}')
             print(f'number of genes found in the cds_fasta file:                                                {len(found)}')
             print(f'number of genes found in the genbank file:                                                  {len(sequences)}')
             print(f'total number of sequences retrieved:                                                        {len(genes)}')
@@ -267,8 +268,7 @@ def main():
 
     else:
         if verb > 0:
-            print(f'number of results from NCBI:                                        {total_number_of_results}')
-            print(f'number of unique accession version identifiers:                     {len(list_of_ids)}')
+            print(f'number of unique results from NCBI:                                  {total_number_of_results}')
             print(f'total number of sequences retrieved:                                {len(genes)}')
             print(f'number with more than one sequences:                                {duplicates(genes, path)}')
             print(f'total number of accession version identifiers analysed:             {len(total)}')

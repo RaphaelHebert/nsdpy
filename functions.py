@@ -69,10 +69,6 @@ def taxids(params, path, OPTIONS=None):
     (querykey, webenv, count) = params
     (verb, _, _, fileoutput, _, _) = OPTIONS
 
-    #comments
-    if verb and verb > 0:
-        print("retrieving TaxIds...")
-
     ##retreive the taxids sending batches of accession numbers to esummary
     retmax = 100
     dict_ids = {}
@@ -270,25 +266,24 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
 
 ## Download the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
-def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
+def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
     
     ## Unpack parameters
-    (querykey, webenv, count) = params
     (_, api_key) = QUERY
-    (verb, genelist, classif, _, _, information) = OPTIONS
+    (verb, genelist, classif, _, tsv, information)= OPTIONS
 
     # Comment:
     if verb and verb > 0:
         print("Downloading the CDS fasta files...")
-    
 
+    # Number of accession numbers to be sent at each API query
+    retmax = 200    
     # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
-    # Number of accession numbers to be sent at each API query
-    retmax = 100
+    count = len(list_of_ids)
 
     if count % retmax == 0:
         nb = count//retmax
@@ -296,15 +291,16 @@ def cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS=None):
         nb = (count//retmax) + 1
 
     for x in range(nb):
+        ## Split the list of ids
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
+        ids = [i for i in ids if i]
         ## Build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
         # Parameters 
+        parameters['id'] = ",".join(ids)
         parameters['db'] = "nuccore"
-        parameters['query_key'] = querykey
-        parameters['WebEnv'] = webenv
-        parameters['retstart'] = str(x * retmax)
-        parameters['retmax'] = str(retmax)
         if api_key:
             parameters["api_key"] = api_key
         parameters['rettype'] = "fasta_cds_na"
