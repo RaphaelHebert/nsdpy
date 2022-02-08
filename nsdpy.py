@@ -51,7 +51,8 @@ def main():
 
     #taxa list
     if args.list:
-        options_report.append(f" -list (-L) {' '.join(args.list)}")
+        input_files = ' '.join(args.list)
+        options_report.append(f" -list (-L) {input_files}")
         # Check that a file is provided
         if len(args.list) == 0:
             sys.exit("The --list (-L) requires at list one .txt file")
@@ -186,22 +187,33 @@ def main():
             sys.exit(errors)
 
         count = int(y["esearchresult"]["count"])
-        total_number_of_results = total_number_of_results + count
+        #comments
+        if verb > 0:    
+            print(f'Number of results found: {count}')
+
         if count < 1:
             continue
         webenv =  str(y["esearchresult"]["webenv"])
         querykey = str(y["esearchresult"]["querykey"])
         params = (querykey, webenv, count)
 
-        #comments
-        if verb > 0:    
-            print(f'Number of results found: {count}')
+        total_number_of_results = total_number_of_results + count
 
         ###Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
    
-        dict_ids = {**dict_ids, **taxids(params, path, OPTIONS)}
+        subdictids = taxids(params, path, OPTIONS)
+        print(f'dict_ids: {len(dict_ids.keys())}')
+        print(f'subdictids: {len(subdictids.keys())}')
+        test=0
+        for key in subdictids.keys():
+            if key in dict_ids.keys():
+                test += 1
+        print('test :', test)
+        dict_ids = {**dict_ids, **subdictids}
+
+        print(f'dict_ids: {len(dict_ids.keys())}')
 
     if total_number_of_results < 1: 
         sys.exit("No results found")
@@ -226,7 +238,7 @@ def main():
     if args.cds is None:
         found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
-        found = cds_fasta(path, params, dict_ids, dict_taxo, QUERY, OPTIONS)
+        found = cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
 
     ### List the remaining access ids:
     remaining = set(list_of_ids) - set(found)

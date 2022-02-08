@@ -7,24 +7,26 @@
 
 # Overview  
 
-__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files (and optionally tsv files) with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
+__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files (.fasta) and optionally Tab-separated value files (.tsv) with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
   
 </br>
 
 # Major steps
 
-1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities) to download the results available in the nucleotide database in fasta or fasta format containing only the CDS (see: [Fasta files for the CDS](###FastafilesfortheCDS)). The user has the possibility to add one or more text files containing a list of taxa to be added to the query.
+1. Based on a user’s query the program queries the Entrez API from NCBI using the e-utilities tools (Entrez Programming Utilities, see [this page](https://www.ncbi.nlm.nih.gov/home/develop/api/) for more information) to download the results available in the nucleotide database in fasta or fasta format containing only the coding DNA sequences (CDS) (see: [Fasta files for the CDS](###FastafilesfortheCDS)).  The user has the possibility to add one or more text files containing a list of taxa to be added to the query.
 2. Optionally the program analyzes the results to extract the desired gene based on sequence annotation
-3. The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database. The user can choose to add the taxonomic information to the information lines of the sequences.
-4. The output files are in fasta format (and optionally tsv) and contain the information as found in the raw file and if information option is selected, the following information are added:
-    - TaxID
+3. The sequences are sorted to files according to the taxonomic precision required. To accomplish this sorting the program first downloads the taxonomic information for each sequence from the NCBI Taxonomy database.  The user can choose to add the taxonomic information to the information lines of the sequences.
+4. The output files are in fasta format (and optionally tsv) and contain the information as found in the raw file and optionally, the following information can be added:
     - organism name
+    - protein ID (in the case of CDS)
+    - TaxID
     - lineage  
+    - sequence length (for the tsv format)
 
 # Workflow  
 
   
-![workflow illustration](./pictures/workflow.png)  
+<img src="https://docs.google.com/drawings/d/e/2PACX-1vRD4h7l0S57op_4j-5xsz8iv1j1XBliw-jEdtnWOIq-JAU2l8kSV6d1NmkHd5Q4zhUmZCA3SHUSuHJw/pub?w=801&amp;h=744" width="600" />
 
 </br>
 
@@ -59,28 +61,34 @@ To comply with these objectives two ways to use the program are available:
 
 ## Requirements and installation  
 
-__nsdpy__ is a command line application written in Python3 that can be run from a terminal in most operating systems (Linux, Windows, Mac).  
+__nsdpy__ is a command line application written in Python3 that can be run from a terminal in most operating systems (Linux, Windows, Mac). 
+It is available on [PyPI website](https://pypi.org/project/nsdpy/) and can be installed from the terminal.
 
 ### Requirements
 
 - Python 3.8+: [Python Downloads](https://www.python.org/downloads/)
 - pip3: [pip installation](https://pip.pypa.io/en/stable/installation/)  
   
-### Install
+### Install  
+
+#### As a package (simplest)  
+_Note that for the following commands, depending on user environment **pip3** may be replaced by **pip**_ 
 
     pip3 install nsdpy
 
-To install the dependencies directly via pip3 (python3 package manager), download the requirements.txt file in your working directory then use the following command:  
+To install the dependencies directly via pip3 (python3 package manager), download the requirements.txt file (available [here](https://github.com/RaphaelHebert/nsdpy/blob/main/requirements.txt)) in your working directory then use the following command:  
 
     pip3 install -r requirements.txt
-
-_Note that depending on user environment **pip3** may be replaced by **pip**_  
+ 
+  
+#### Download from GitHub  
 Alternatively, the script can be downloaded from [GitHub NSDPY repository](https://github.com/RaphaelHebert/nsdpy). The user only needs to download the nsdpy.py and functions.py files and have python 3.8+ (see: [Python Downloads](https://www.python.org/downloads/) ) and the request library (see: [requests documentation](https://requests.readthedocs.io/en/master/) and [request installation](https://pypi.org/project/requests/)) installed (users may have to use the command pip3 instead of pip for python3 depending on their installation). This minimum installation should be enough to run the script. Otherwise, the requirements are listed in the **requirements.txt** file (see above).  
 
-To run <b>nsdpy.py</b> the user needs to have <b>functions.py</b> and <b>nsdpy.py</b> files in the same directory, then run it from this directory.  
+To run <b>nsdpy.py</b> the user needs to have the files <b>functions.py</b> and <b>nsdpy.py</b> files in the same directory, then run it from this directory.  
   
 ## Minimum use  
 
+__Once nsdpy is installed as a package the following commands can be run from the terminal.__  
 Open a terminal and enter a __nsdpy__ command with a compulsory **-r** argument  
 
     nsdpy -r “This is a query to NCBI”  
@@ -104,8 +112,6 @@ _These two requests are equivalent._
 - **"COX1[Title]"** is the user’s query to NCBI in double quotes. It is the same format as the one you would use to query the nucleotide database on [NCBI website](https://www.ncbi.nlm.nih.gov/).  
   
 <ins>Example 2</ins>  
-
-The following command will download the fasta files for all results available in GenBank with COX1 in the title:
 
     nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”  
   
@@ -158,13 +164,14 @@ No text output is displayed in the terminal.
 Note that the **--verbose** and **--quiet** options are mutually exclusive.  
   
 ### Gene selection  
+_note that single quotes can be avoided if the pattern does not include any special characters such as ., +, *, ?, ^, $, (, ), [, ], {, }, |, or \\. ._  
   
     -c 'PATTERN 1' 'PATTERN 2' ...
 or..
 
     --cds 'PATTERN 1' 'PATTERN 2' ...
 
-_note that single quotes can be avoided if the pattern does not include any special characters such as ., +, *, ?, ^, $, (, ), [, ], {, }, |, or \\.
+
 The program will download the cds_fasta files instead of the fasta files. The cds_fasta file is a FASTA format of the nucleotide sequences corresponding to all CDS features.
 PATTERNS are optional. PATTERNS: [regular expression](https://www.debuggex.com/cheatsheet/regex/python) for filtering genes from the cds_fasta files and GenBank files corresponding to the [accession version identifiers](https://www.ncbi.nlm.nih.gov/GenBank/sequenceids/) resulting from the user’s query.  The search is case insensitive.
 This option is particularly interesting when looking for a gene from organites whole genomes or from DNA sequences containing more than one gene.  
@@ -189,7 +196,7 @@ However, the following command will interpret the “v” as a pattern and not a
 
     python3 nsdpy.py -r “This is a query to NCBI” -cv  
   
-## Optional output files  
+## output files  
 
 ### TaxIds
 
@@ -202,6 +209,17 @@ Example:
 
     nsdpy -r “ITS2” -T  
   
+### Tab-separated values (--tsv or -t)  
+
+    -t
+or..
+
+    --tsv
+The program will create two folders: "fasta" and "tsv". The fasta folder will contain the results in fasta format adn the tsv folder will contain the results in tsv format.  
+Example:  
+
+    nsdpy -r “homo sapiens[Organism] AND COX1[Title]” -tsv  
+
 
 ### Information
   
@@ -210,22 +228,25 @@ Add the taxonomic information the the information lines of the sequences written
     -i 
 or..
 
-    --information 
-Add the TaxIDs, organism name and lineage to the information lines of the fasta files.   
+    --information  
+
+For the fasta files: add the Taxon name, protein ID (for the cds option only), TaxIDs and lineage to the information lines.  
+For the tsv files the header line will appears to be: name (organism name), SeqID (accession version number and protein ID), TaxID,	Lineage, sequence length, sequence.  
   
 
-### Taxonomy
+### Taxonomy  
+#### kingdom (--kingdom or -k)
   
     -k 
 or  
 
     --kingdom 
-The program will write the results in four different fasta files (one for the Metazoa, one for the Fungi, one for the Plantae and one for Others containing the sequence that doesn’t correspond to the above three kingdom)  
+The program will write the results in different fasta files (one for the Metazoa, one for the Fungi, one for the Plantae and one for Others containing the sequence that doesn’t correspond to the above three kingdom)  
 Example:  
 
     nsdpy -r “users query” -k   
   
-The phylum option works the same for the phyla.
+#### phylum (--phylum or -p)
 
     -p 
 or..
@@ -241,6 +262,8 @@ __Plantae__ = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lyc
 __Fungi__ = ['Chytridiomycota', 'Zygomycota', 'Ascomycota', 'Basidiomycota', 'Glomeromycota']  
 __Metazoa__ = ['Acanthocephala', 'Acoelomorpha', 'Annelida', 'Arthropoda', 'Brachiopoda', 'Ectoprocta', 'Bryozoa', 'Chaetognatha', 'Chordata', 'Cnidaria', 'Ctenophora', 'Cycliophora', 'Echinodermata', 'Echiura', 'Entoprocta', 'Gastrotricha', 'Gnathostomulida', 'Hemichordata', 'Kinorhyncha', 'Loricifera', 'Micrognathozoa', 'Mollusca', 'Nematoda', 'Nematomorpha', 'Nemertea', 'Onychophora','Orthonectida', 'Phoronida', 'Placozoa', 'Plathelminthes', 'Porifera', 'Priapulida', 'Rhombozoa', 'Rotifera', 'Sipuncula', 'Tardigrada', 'Xenoturbella']  
   
+#### levels (--levels or -l)
+  
     -l FILTERS  
 or..
 
@@ -252,6 +275,8 @@ Example:
  
 The program will write one file for the Deuterostomia and one file for for the Protostomia and one file for the others).  
   
+#### species (--species or -s)  
+
     -s 
 or..
 
