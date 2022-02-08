@@ -291,8 +291,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        # for x in range(nb):
-        # ## Split the list of ids
+        ## Split the list of ids
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]

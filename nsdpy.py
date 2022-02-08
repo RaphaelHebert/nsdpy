@@ -169,7 +169,6 @@ def main():
         queries_list = [args.request]    
 
     ### Retrieving results from esearch and the related TaxIDs
-    total_number_of_results = 0
     dict_ids = {}
 
     for query in queries_list:
@@ -197,23 +196,14 @@ def main():
         querykey = str(y["esearchresult"]["querykey"])
         params = (querykey, webenv, count)
 
-        total_number_of_results = total_number_of_results + count
-
         ###Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
    
         subdictids = taxids(params, path, OPTIONS)
-        print(f'dict_ids: {len(dict_ids.keys())}')
-        print(f'subdictids: {len(subdictids.keys())}')
-        test=0
-        for key in subdictids.keys():
-            if key in dict_ids.keys():
-                test += 1
-        print('test :', test)
         dict_ids = {**dict_ids, **subdictids}
 
-        print(f'dict_ids: {len(dict_ids.keys())}')
+        total_number_of_results = len(set(dict_ids.keys()))
 
     if total_number_of_results < 1: 
         sys.exit("No results found")
@@ -265,8 +255,7 @@ def main():
     notfound = list(set(list_of_ids) - (set(sequences) | set(found)))
     if args.cds is not None:
         if verb > 0:
-            print(f'number of results from NCBI:                                                                {count}')
-            print(f'number of unique accession version identifiers:                                             {len(list_of_ids)}')
+            print(f'number of unique results from NCBI:                                                          {count}')
             print(f'number of genes found in the cds_fasta file:                                                {len(found)}')
             print(f'number of genes found in the genbank file:                                                  {len(sequences)}')
             print(f'total number of sequences retrieved:                                                        {len(genes)}')
@@ -279,8 +268,7 @@ def main():
 
     else:
         if verb > 0:
-            print(f'number of results from NCBI:                                        {total_number_of_results}')
-            print(f'number of unique accession version identifiers:                     {len(list_of_ids)}')
+            print(f'number of unique results from NCBI:                                  {total_number_of_results}')
             print(f'total number of sequences retrieved:                                {len(genes)}')
             print(f'number with more than one sequences:                                {duplicates(genes, path)}')
             print(f'total number of accession version identifiers analysed:             {len(total)}')
