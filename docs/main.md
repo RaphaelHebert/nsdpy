@@ -336,7 +336,7 @@ Example 3:
   
 ### Output files  
   
-The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option have been selected one folder called 'tsv' to store the results in tsv format and one folder 'fasta' is created to store the results in fasta format.
+The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option have been selected two folders called 'tsv' and 'fasta' are created to store the results in fasta and tsv format.
 If the --information option is selected, the information line of the output fasta files are as follows:  
 
 - ORGANISM NAME
@@ -354,19 +354,20 @@ If the --information option is selected, the information in the tsv files are as
 - sequence length	
 - sequence  
   
-Different files are printed depending on the selected taxonomy options and filters and the tsv option. The following table summarize the different files and their attributes:
-![files](./pictures/outputfile.png)
+Different files are written depending on the selected taxonomy options and the tsv option. The following table summarize the different files and their attributes:
+<iframe src="https://docs.google.com/document/d/e/2PACX-1vQ4mxn9gbQ-xyl5QrX2i8I981li3OvlEfzXm_0a-O3ikCsW7TLj_pMLtvvrydebSmWOCtLJ-5nycyOL/pub?embedded=true"></iframe>
   
 Example:  
 The **identification line** of the output file:  
   
-    >MW076458 |Chthamalus malayensis|316610|cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Ecdysozoa, Panarthropoda, Arthropoda, Mandibulata, Pancrustacea, Crustacea, Multicrustacea, Hexanauplia, Thecostraca, Cirripedia, Thoracica, Sessilia, Chthamalidae, Chthamalus|<1..1536  
-  
-- *MW076458*: Accession number
-- *Chthamalus malayensis*: Organism name  
-- *316610*: TaxID  
-- *cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Ecdysozoa, Panarthropoda, Arthropoda, Mandibulata, Pancrustacea, Crustacea, Multicrustacea, Hexanauplia, Thecostraca, Cirripedia, Thoracica, Sessilia, Chthamalidae, Chthamalus_*: lineage  
-- *<1..1536*: location, the first number is the starting point and the second number the ending point. The *<* sign before the starting point generally corresponds to the annotation such as ‘start codon not determined’ and the ‘>’ sign to stop codon not determined. This later sign can lead to errors while parsing this kind of fasta file.  
+    >Homo sapiens-KY033221.1_cds_API65494.1_1 | 9606 | cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Deuterostomia, Chordata, Craniata, Vertebrata, Gnathostomata, Teleostomi, Euteleostomi, Sarcopterygii, Dipnotetrapodomorpha, Tetrapoda, Amniota, Mammalia, Theria, Eutheria, Boreoeutheria, Euarchontoglires, Primates, Haplorrhini, Simiiformes, Catarrhini, Hominoidea, Hominidae, Homininae, Homo
+
+- *Homo sapiens*: Organism name  
+- *KY033221.1*: Accession version number
+- API65494.1_1: protein ID
+- *9606*: TaxID  
+- *cellular organisms, Eukaryota, .....,  Homininae, Homo*: lineage  
+
 </br>
 ## Instruction for use from Google Colab  
 
@@ -390,6 +391,7 @@ The *nsdpy.py* file contains the code to run from a terminal. It uses the functi
 ## Algorithm details  
 
 The script uses the Entrez programming utilities to access the NCBI databases ( see: [A General Introduction to the E-utilities](https://www.ncbi.nlm.nih.gov/books/NBK25497/) and for more: [The E-utilities In-Depth: Parameters, Syntax and More](https://www.ncbi.nlm.nih.gov/books/NBK25499/)).  
+  
 The script takes a user’s query as input, the query is the same as the user would enter it in the NCBI search engine ( see: [NCBI webpage](https://www.ncbi.nlm.nih.gov/) for NCBI search engine and [Entrez Searching Options](https://www.ncbi.nlm.nih.gov/books/NBK3837/#EntrezHelp.Entrez_Searching_Options) on how to make a query).  
 This query will be submitted to the esearch E-utility ( see: [ESearch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_)) in history mode by calling the _esearchquery_ function from the functions.py file. The history mode will allow the program to get the ‘webenv’ and ‘query_key’ parameters. These parameters allow the program to later access the list of accession version identifiers corresponding to the results of the [ESearch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_) call and uses them to query esummary (see: [ESummary](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESummary_)) to retrieve the TaxIds and EFetch to retrieve the CDS in fasta format (rettype = ‘fasta_cds_na’, see: [table1](https://www.ncbi.nlm.nih.gov/books/NBK25499/table/chapter4.T._valid_values_of__retmode_and/?report=objectonly) ) or the fasta files.  
 The program then uses esummary to search the [taxonomy database](https://www.ncbi.nlm.nih.gov/taxonomy) calling the *taxids* function. The function finds the TaxIds corresponding to the accession version identifiers found by [Esearch](https://www.ncbi.nlm.nih.gov/books/NBK25499/#_chapter4_ESearch_) and optionally writes a text file with for each line the accession version identifiers and its corresponding TaxId separated by a tab and returns a dictionary ([python doc on dictionaries](https://docs.python.org/3/tutorial/datastructures), for a more basic approach: [w3school tutorial](https://www.w3schools.com/python/python_dictionaries.asp)) with the accession version identifiers as keys and TaxIDs as values.  
