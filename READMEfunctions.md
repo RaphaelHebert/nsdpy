@@ -5,7 +5,7 @@ The following functions are described here:
 - [download](#dowload) 
 - [esearchquery](#esearchquery)
 - [taxids](#taxids)
-- [cdsfasta](#cdsfasta)
+- [cds_fasta](#cds_fasta)
 - [fasta](#fasta)
 - [taxo](#taxo)
 - [extract](#extract)
@@ -108,43 +108,42 @@ taxids(params, path, OPTIONS)
 - (optionnal -T) A text file with one accession number and its corresponding TaxID per line separated by a tab. exp:MW080658   436086.
 - A dictionnary with the accession numbers as keys and TaxIDs as values.
 
-## cdsfasta
+## cds_fasta
 
 ```python
-cdsfasta(params, path, dictid, dicttaxo, QUERY, OPTION)
+cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 ```
 
 ### INPUTS
 
-- *params*(TUPLE): uses *querykey*, *webenv*, *count* from *params*
 - *path*(STRING): the path of the location where the results are written
-- *dictid*(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
-- *QUERY*(TUPLE): uses *apikey* from *QUERY*
+- *dict_ids*(DICT): output of taxids() function, dictionnary with accession number as keys and TaxIDs as values
+- *QUERY*(TUPLE):  uses the *apikey* 
+- list_of_ids: list of accession version numbers to be retrieved
 - *OPTION*(optionnal): uses *verb*, *genelist* and *args.CDS* from *OPTION*
 
 ### ACTION
 
-- Using the efetch E-utility with the parameter from *params* it looks in the nuccore (=nucleotide) database to retrieve the CDS fasta file for 100 accession numbers (see *retmax* variable) at the time.
-- If the *args.CDS* is True, writes the results in a txt file.
+- Using the efetch E-utility with list_of_ids it looks in the nuccore (=nucleotide) database to retrieve the CDS fasta file for 100 accession numbers (see *retmax* variable) at the time.
 - Call the extract function to analyse the results from Entrez API (everytime Entrez returns some results).
 
 ### OUTPUTS
 
-It returns the list of the accession number for which a gene and its taxonomy have been found.
+It returns the list of the accession number for which a CDS have been found.
 
 ## fasta
 
 ```python
-fasta(path, dictid, dicttaxo, QUERY, listofids, OPTIONS)
+fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 ```
 
 
 ### INPUTS
 
 - *path*(STRING): the path of the location where the results are written
-- *dictid*(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
-- *QUERY*(TUPLE): uses *apikey* from *QUERY*
-- *listofids*(LIST): list of accession number for which the fasta files must be retrieved
+- *dict_ids*(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
+- *QUERY*(TUPLE):  uses the *apikey* 
+- *list_of_ids*(LIST): list of accession number for which the fasta files must be retrieved
 - *OPTIONS*(optionnal):uses *verb* and *fileoutput* from *OPTIONS*
 
 ### ACTION
@@ -158,14 +157,14 @@ It returns the list of the accession number for which a sequence have been found
 ## taxo
 
 ```python
-taxo(path, listofid, dictid, dicttaxo, QUERY, OPTION)
+taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None)
 ```
 
 ### INPUTS
 
 - *path*(STRING) see above
-- *listofid*(LIST) list of the accession numbers for which no COI have been found 
-- *dictid*(DICTIONNARY) see above
+- *list_of_ids*(LIST) list of the accession numbers for which no COI have been found 
+- *dict_ids*(DICTIONNARY) see above
 - *QUERY*(TUPLE): uses the *apikey* from *QUERY*
 - *OPTIONS*(TUPLE): uses *verb*, *genelist* and *classif* from *OPTIONS*
 
@@ -188,7 +187,7 @@ taxo(path, listofid, dictid, dicttaxo, QUERY, OPTION)
 ## extract
 
 ```python
-extract(path, text, dictid, dicttaxo, genelist, verb)
+extract(path, text, dict_ids, dict_taxo, genelist, verb)
 ```
 
 ### INPUTS
@@ -212,7 +211,7 @@ extract(path, text, dictid, dicttaxo, genelist, verb)
 ## subextract
 
 ```python
-subextract(seq, path, dictid, dicttaxo, genelist)
+subextract(seq, path, dict_ids, dict_taxo, genelist)
 ```
 
 This function is called by the extract function.
@@ -221,8 +220,8 @@ This function is called by the extract function.
 
 - *seq*(STRING): the gene sequence with its information line
 - *path*(STRING): see above
-- *dictid*(DICTIONNARY): see above
-- *dicttaxo*(DICTIONNARY): see above
+- *dict_ids*(DICTIONNARY): see above
+- *dict_taxo*(DICTIONNARY): see above
 - *genelist*(LIST): see above
 
 ### ACTION
@@ -287,3 +286,20 @@ This function is called by the genbankfields function
 ### OUTPUT
 
 - dict1 (DICTIONNARY) a dictionnary containing all the informations extracted from the genabnk file.
+
+
+## tsv_file_writer(path, data, OPTIONS=None)
+
+### INPUTS
+
+- *path*(STRING): see above
+- *data*(tuple): (name(STRING), seqid(STRING), taxid(STRING), lineage(STRING), dna(STRING)) data to be written in the tsv file
+- *OPTIONS*(TUPLE): see above
+  
+### ACTION 
+  
+Writes or append a  file located at path with the information found in data  
+  
+### OUTPUT
+  
+no output
