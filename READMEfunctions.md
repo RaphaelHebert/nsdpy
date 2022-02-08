@@ -12,6 +12,8 @@ The following functions are described here:
 - [subextract](#subextract)
 - [genbankfields](#genbankfields)
 - [search](#search)
+- [tsv_file_writer](#tsv_file_writer)
+
 
 
 Define some functions that are used in main.py
@@ -288,7 +290,11 @@ This function is called by the genbankfields function
 - dict1 (DICTIONNARY) a dictionnary containing all the informations extracted from the genabnk file.
 
 
-## tsv_file_writer(path, data, OPTIONS=None)
+## tsv_file_writer
+  
+```pythhon
+search(dna, dictentry, s)
+```
 
 ### INPUTS
 
