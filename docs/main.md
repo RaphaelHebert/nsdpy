@@ -7,7 +7,7 @@
 
 # Overview  
 
-__nsdpy__ aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. The main output is one or several fasta files (.fasta) and optionally Tab-separated value files (.tsv) with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
+__nsdpy__ (NCBI sequence Downloader) aims to facilitate the download of large numbers of DNA sequences from the NCBI nucleotide database, sort them by taxonomic rank and if necessary, extract a specific gene from long sequences (e.g. mitochondrial genome) based on sequence annotations. Batch download for list of taxa is also possible. The main output is one or several fasta files (.fasta) and optionally Tab-separated value files (.tsv) with taxonomic information included in the description lines (see  [examples](###Moreexamples )).
   
 </br>
 
@@ -91,7 +91,7 @@ To run <b>nsdpy.py</b> the user needs to have the files <b>functions.py</b> and 
 __Once nsdpy is installed as a package the following commands can be run from the terminal.__  
 Open a terminal and enter a __nsdpy__ command with a compulsory **-r** argument  
 
-    nsdpy -r “This is a query to NCBI”  
+    nsdpy -r "This is a query to NCBI"  
   
 <ins>Example 1</ins>  
 
@@ -113,12 +113,26 @@ _These two requests are equivalent._
   
 <ins>Example 2</ins>  
 
-    nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”  
+    nsdpy -r "mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]" 
   
 This command will download the fasta files for all complete mitochondrial genomes of Bryozoa available in the [nucleotide database](https://www.ncbi.nlm.nih.gov/nucleotide/).  
+  
+<ins>Example 3</ins>  
 
-</br>
+Download all sequences of four genera where COI is present in the title line:  
 
+    nsdpy -r "(Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN]) AND COI[Title]" 
+  
+This command is identical to the following:  
+
+    nsdpy -r "COI[Title]" -L taxa.txt. 
+  
+Where taxa.txt is a text file with each genus name in a separate line:  
+  
+Parnassius  
+Pieris  
+Melithaea  
+Iphiclides
 
 
 <div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b> GOOD TO KNOW . .</b>
@@ -176,25 +190,25 @@ The program will download the cds_fasta files instead of the fasta files. The cd
 PATTERNS are optional. PATTERNS: [regular expression](https://www.debuggex.com/cheatsheet/regex/python) for filtering genes from the cds_fasta files and GenBank files corresponding to the [accession version identifiers](https://www.ncbi.nlm.nih.gov/GenBank/sequenceids/) resulting from the user’s query.  The search is case insensitive.
 This option is particularly interesting when looking for a gene from organites whole genomes or from DNA sequences containing more than one gene.  
   
-Example for the COX1 (or COI ) gene:  
+Example for the COX1 (or COI) gene:  
 
-    nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c 'COX[1I]' 'CO[I1]'  
+    nsdpy -r "mitochondrion[Title] AND complete[Title]" -c 'COX[1I]' 'CO[I1]'  
 or..  
 
-    nsdpy --request "(mitochondrion[Title]) AND complete[Title]" --cds 'cox[1i]' 'CO[I1]' 
+    nsdpy --request "mitochondrion[Title] AND complete[Title]" --cds 'cox[1i]' 'CO[I1]' 
 
 *The above commands are identical.*  
   
-Note that this option must be used separately form the others. For example to use the **--cds** option and the **--verbose** options these commands will run normally:  
+Note that this option must be used separately from the others. For example to use the **--cds** option and the **--verbose** options these commands will run normally:  
 
-    nsdpy -r “This is a query to NCBI” -c -v  
+    nsdpy -r "This is a query to NCBI" -c -v  
         
 
-    nsdpy -r “This is a query to NCBI” -c 'pattern1' 'pattern2' -v  
+    nsdpy -r "This is a query to NCBI" -c 'pattern1' 'pattern2' -v  
   
 However, the following command will interpret the “v” as a pattern and not as the verbose option.
 
-    python3 nsdpy.py -r “This is a query to NCBI” -cv  
+    python3 nsdpy.py -r "This is a query to NCBI" -cv  
   
 ## output files  
 
@@ -207,7 +221,7 @@ or..
 The program will write a text file with the accession version identifiers found and their corresponding TaxIDs separated by a tabulation.
 Example:  
 
-    nsdpy -r “ITS2” -T  
+    nsdpy -r "ITS2" -T  
   
 ### Tab-separated values (--tsv or -t)  
 
@@ -215,15 +229,15 @@ Example:
 or..
 
     --tsv
-The program will create two folders: "fasta" and "tsv". The fasta folder will contain the results in fasta format adn the tsv folder will contain the results in tsv format.  
+The program will create two folders: "fasta" and "tsv". The fasta folder will contain the results in fasta format and the tsv folder will contain the results in tsv format.  
 Example:  
 
-    nsdpy -r “homo sapiens[Organism] AND COX1[Title]” -tsv  
+    nsdpy -r "Homo sapiens[Organism] AND COX1[Title]" -tsv  
 
 
 ### Information
   
-Add the taxonomic information the the information lines of the sequences written in the output files.
+Add the taxonomic information to the information lines of the sequences written in the output files.
 
     -i 
 or..
@@ -244,7 +258,7 @@ or
 The program will write the results in different fasta files (one for the Metazoa, one for the Fungi, one for the Plantae and one for Others containing the sequence that doesn’t correspond to the above three kingdom)  
 Example:  
 
-    nsdpy -r “users query” -k   
+    nsdpy -r "This is a query to NCBI" -k   
   
 #### phylum (--phylum or -p)
 
@@ -255,7 +269,7 @@ or..
 The program will write the results in different fasta files, one file per phylum.  
 Example:  
 
-    nsdpy -r “users query” -p  
+    nsdpy -r "This is a query to NCBI" -p  
 
 For the **-k** and **-p** options the phylums and kingdoms correspond to the following lists and can be modified by the user by adding or deleting entries directly in the __functions.py__ script:  
 __Plantae__ = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta','Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta','Cyanidiophyta', 'Glaucophyta', 'Prasinophyceae','Rhodophyta']  
@@ -271,9 +285,9 @@ or..
 The program will write the results in different fasta files corresponding to the match between the FILTERS and the taxonomy.  
 Example:  
 
-    nsdpy -r “users query” -l Deuterostomia Protostomia  
+    nsdpy -r "This is a query to NCBI" -l Deuterostomia Protostomia  
  
-The program will write one file for the Deuterostomia and one file for for the Protostomia and one file for the others).  
+The program will write one file for the Deuterostomia and one file for the Protostomia and one file for the others).  
   
 #### species (--species or -s)  
 
@@ -284,11 +298,11 @@ or..
 The program will write the results in different fasta files corresponding to the name of the organism.  
 Example:  
 
-    nsdpy -r “users query” -s  
+    nsdpy -r "This is a query to NCBI" -s  
 
 The program will write one file for the each of the different lowest taxonomic level found.  
   
-    nsdpy -r “users query” -ssss  
+    nsdpy -r "This is a query to NCBI" -ssss  
 The program will write one file for the each of the 4th (notice the 4s) lowest taxonomic level found, if the lineage is,for example, *cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Spiralia, Lophotrochozoa, Annelida, Polychaeta, Errantia, Phyllodocida, Nereididae, Platynereis* the program will select *Errantia*).  
 
 <div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>  
@@ -299,8 +313,8 @@ Some options can be used together, for example a gene selection option can be us
   
 Example 1:  
 
-    nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c -iT
-With these options the program will download the fasta files containing the CDS sequences (**-c**) for every result of the user’s query (**-r**), download and append the TaxIDs, organism name and lineage information to every sequences written in the output file (**-i**) and write a text file for the accession version identifiers and TaxIDs (**-T**)  
+    nsdpy -r "mitochondrion[Title] AND complete[Title]" -c -iT
+With these options the program will download the fasta files containing the CDS sequences (**-c**) for every result of the user’s query (**-r**), download and append the TaxIDs, organism name and lineage information to every sequence written in the output file (**-i**) and write a text file for the accession version identifiers and TaxIDs (**-T**)  
 
 <div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b> GOOD TO KNOW . .</b>
 
@@ -313,30 +327,44 @@ With these options the program will download the fasta files containing the CDS 
   
 Example 2:  
 
-    nsdpy -r "(mitochondrion[Title]) AND complete[Title]" -c CO[1Ii] COX[1i] -vk  
+    nsdpy -r "mitochondrion[Title] AND complete[Title]" -c 'CO[1i]' 'COX[1i]' -vk  
 
-As in the first example, the program will download the fasta files containing the CDS sequences for every result of the user’s query (**-r**) but as some filters are provided after the **-c** option ( CO[1Ii] COX[1i]) the program will filter the results according to these regular expression.  
+As in the first example, the program will download the fasta files containing the CDS sequences for every result of the user’s query (**-r**) but as some filters are provided after the **-c** option ( CO[1i] COX[1i]) the program will filter the results according to these regular expression.  
 <div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b>About the filtering process: </b></p>
 
 The sequences are filtered according to the information line of their fasta file: if the regular expression used to filter the sequence is in the information line then the sequence is kept, otherwise it is not kept in the final result.  
-If the sequence has no fasta file for the coding sequences the program downloads and parses the GenBank file ( **.gb**). In that file the program looks in the *“product”*, *“gene”* , *“genesynonym”* and *“note”* fields to find the regex used as filter. It extracts the sequences according to these annotations.  
+If the sequence has no fasta file for the coding sequences the program downloads and parses the GenBank file ( **.gb**). In that file the program looks in the *“product”*, *“gene”* , *“gene_synonym”* and *“note”* fields to find the regex used as filter. It extracts the sequences according to these annotations.  
 </div>  
 </br>  
 
 The program will write information about the run and the number of sequences found in the terminal with the option **-v**.
 The sequences will be dispatched in different fasta files depending on their kingdom with the option **-k**.
   
-    -c CO[1Ii] COX[1i]  
+    -c 'CO[1i]' 'COX[1i]'  
 The program will filter the genes for which the annotation in the CDS fasta file or the GenBank file match the following regular expressions ( patterns): CO[1Ii] COX[1i].  
   
 Example 3:  
 
-    nsdpy --request “((‘CO1’ OR ‘COX1’) OR COI) OR COXI” -l Choradata Cnidaria  
-**-l Choradata Cnidaria**: the program will output three fasta files, one for the Choradata sequences, one for the Cnidaria sequences and one for the sequences that do not belong to the Chordata or the Cnidaria either.  
+    nsdpy --request "CO1 OR COX1 OR COI OR COXI" -l Choradata Cnidaria  
+**-l Chordata Cnidaria**: the program will output three fasta files, one for the Choradata sequences, one for the Cnidaria sequences and one for the sequences that do not belong to the Chordata or the Cnidaria either. 
+  
+Example 4:  
+  
+    nsdpy -r "(Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN] AND COI[Title] AND ('2010'[Publication Date] : '3000'[Publication Date])
+    AND barcode[Keyword] AND mitochondrion[Filter]" -i -t  
+    
+This command is used to download mitochondrial (mitochondrion[Filter]) sequences of four Lepidopteran genera (Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN]) published in NCBI nucleotide database since 2010 ("2010"[Publication Date]: "3000"[Publication Date]), with a barcode present in the keyword field (barcode[Keyword]).
+The request (-r) combines a series search term each of them limited to a particular field (e.g. Organism, Publication Date) of the GenBank record. Note the use of OR to link different names of the genera, to obtain sequences from all of them, and the use of parentheses to correctly structure the query. The -i option replaces the original definition lines to give taxonomically informative format more adapted for phylogenetic studies: taxon_name-SeqID | TaxID | Taxonomic lineage with coma-separated values. The -t option produces a tsv file with the following fields: Taxon name, SequenceID, TaxID, Taxonomic lineage, Sequence length, Sequence.  
+  
+Note the exact same result can be obtained with following command:  
+  
+    nsdpy -r "COI[Ttile] AND ('2010'[Publication Date] : '3000'[Publication Date]) AND barcode[Keyword] AND mitochondrion[Filter]" -i -t -L genus_list.txt  
+
+The genus_list.txt is a text file with the four Lepidopteran genera of interest (one genus name in each line). We used just a short list in this example, but it can contain thousands of taxaof any taxonomic level.
   
 ### Output files  
   
-The script creates a folder named *'results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option have been selected two folders called 'tsv' and 'fasta' are created to store the results in fasta and tsv format.
+The script creates a folder named *'NSDPY_results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/NSDPY_results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option has been selected two folders called 'tsv' and 'fasta' are created to store the results in fasta and tsv format.
 If the --information option is selected, the information line of the output fasta files are as follows:  
 
 - ORGANISM NAME
