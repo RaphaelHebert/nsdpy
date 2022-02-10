@@ -1,8 +1,14 @@
+__version__ = '0.2.1'
+__author__ = "Raphael Hebert, Emese Meglecz"
+__email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
+__license__ = "MIT"
+
 from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 import sys
 import os
 import argparse             #parsing command line arguments
 from datetime import datetime    
+
 
 def main():
 ############################################
@@ -10,6 +16,9 @@ def main():
 ############################################
 
     parser = argparse.ArgumentParser()
+
+    ##VERSION
+    parser.add_argument('-V', '--version', action='version', version=__version__)
 
     ##POSITIONAL ARGUMENTS
     parser.add_argument("-r", "--request", required=True, help="The request to the NCBI database")
