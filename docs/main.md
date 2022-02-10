@@ -350,7 +350,7 @@ Example 3:
   
 Example 4:  
   
-    nsdpy -r "(Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN] AND COI[Title] AND ('2010'[Publication Date] : '3000'[Publication Date])
+    nsdpy -r "(Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN] AND COI[Title] AND (2010[Publication Date] : 3000[Publication Date])
     AND barcode[Keyword] AND mitochondrion[Filter]" -i -t  
     
 This command is used to download mitochondrial (mitochondrion[Filter]) sequences of four Lepidopteran genera (Parnassius[ORGN] OR Pieris[ORGN] OR Melithaea[ORGN] OR Iphiclides[ORGN]) published in NCBI nucleotide database since 2010 ("2010"[Publication Date]: "3000"[Publication Date]), with a barcode present in the keyword field (barcode[Keyword]).
@@ -358,7 +358,7 @@ The request (-r) combines a series search term each of them limited to a particu
   
 Note the exact same result can be obtained with following command:  
   
-    nsdpy -r "COI[Ttile] AND ('2010'[Publication Date] : '3000'[Publication Date]) AND barcode[Keyword] AND mitochondrion[Filter]" -i -t -L genus_list.txt  
+    nsdpy -r "COI[Ttile] AND (2010[Publication Date] : 3000[Publication Date]) AND barcode[Keyword] AND mitochondrion[Filter]" -i -t -L genus_list.txt  
 
 The genus_list.txt is a text file with the four Lepidopteran genera of interest (one genus name in each line). We used just a short list in this example, but it can contain thousands of taxaof any taxonomic level.
   
