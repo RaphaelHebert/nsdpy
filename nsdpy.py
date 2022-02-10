@@ -1,8 +1,14 @@
+__version__ = '0.2.1'
+__author__ = "Raphael Hebert, Emese Meglecz"
+__email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
+__license__ = "MIT"
+
 from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 import sys
 import os
 import argparse             #parsing command line arguments
 from datetime import datetime    
+
 
 def main():
 ############################################
@@ -10,6 +16,9 @@ def main():
 ############################################
 
     parser = argparse.ArgumentParser()
+
+    ##VERSION
+    parser.add_argument('-V', '--version', action='version', version=__version__)
 
     ##POSITIONAL ARGUMENTS
     parser.add_argument("-r", "--request", required=True, help="The request to the NCBI database")
@@ -141,15 +150,12 @@ def main():
         # Remaining space for the taxa list 
         taxa_max_length = 2048 - ( len(base_query) + base_URL_length )
         ##see these threads;
-        #https://stackoverflow.com/questions/417142/what-is-the-maximum-length-of-a-url-in-different-browsers?noredirect=1&lq=1
-        #https://stackoverflow.com/questions/812925/what-is-the-maximum-possible-length-of-a-query-string
 
         # Include taxa in the QUERY and make a list of queries <= 2048 chars
         remaining_space = taxa_max_length
         queries_list = []
         new_query = base_query
 
-        #TODO: a bit of cleanup in this for loop...
         for taxon in taxa_list:
             if (remaining_space - len(taxon) + 4) <= 0:
                 # Delete the last "[ORGN] OR " and close parenthesis
