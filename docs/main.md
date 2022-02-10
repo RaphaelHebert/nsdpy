@@ -156,6 +156,11 @@ Iphiclides
   
   The options can be displayed by using the help as described above.
 
+### Version  
+
+**-V** (or **--version**) displays the nsdpy version and exits.  
+  
+
 ### API Key
 
 **-a** (or **--apikey**) provides an API key when calling the Entrez API. Users can get an API key by registering to the NCBI website ( [Register here](http://www.ncbi.nlm.nih.gov/account/) ).
@@ -245,6 +250,7 @@ or..
     --information  
 
 For the fasta files: add the Taxon name, protein ID (for the cds option only), TaxIDs and lineage to the information lines.  
+__In the output fasta files the taxon name is written without any spaces, eventual spaces are replaced by '_'.__ This is to help parsing these files automatically.  
 For the tsv files the header line will appears to be: name (organism name), SeqID (accession version number and protein ID), TaxID,	Lineage, sequence length, sequence.  
   
 
@@ -367,15 +373,15 @@ The genus_list.txt is a text file with the four Lepidopteran genera of interest 
 The script creates a folder named *'NSDPY_results'* in the working directory and a subdirectory for each run named with the starting time of the run: **/NSDPY_results/YYYY-MM-DD_HH-MM-SS/**. In this last folder the script writes the fasta file(s) containing the results. If the --tsv option has been selected two folders called 'tsv' and 'fasta' are created to store the results in fasta and tsv format.
 If the --information option is selected, the information line of the output fasta files are as follows:  
 
-- ORGANISM NAME
-- ACCESSION VERSION IDENTIFIER
+- Organism name (eventual spaces are replaced by an underscore: _ )
+- Accession version identifier
 - \_cds\_ (if the --cds option is selected)
 - protein_id  (if the --cds option is selected)
-- TaxIDs
-- LINEAGE  
+- TaxID
+- Lineage  
   
 If the --information option is selected, the information in the tsv files are as follows:  
-- Name	
+- Organism name	
 - SeqID	
 - TaxID	
 - Lineage	
@@ -388,15 +394,21 @@ Different files are written depending on the selected taxonomy options and the t
   
 
 Example:  
-The **identification line** of the output file:  
+The **identification line** of the output fasta file:  
   
-    >Homo sapiens-KY033221.1_cds_API65494.1_1 | 9606 | cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Deuterostomia, Chordata, Craniata, Vertebrata, Gnathostomata, Teleostomi, Euteleostomi, Sarcopterygii, Dipnotetrapodomorpha, Tetrapoda, Amniota, Mammalia, Theria, Eutheria, Boreoeutheria, Euarchontoglires, Primates, Haplorrhini, Simiiformes, Catarrhini, Hominoidea, Hominidae, Homininae, Homo
+    >Homo_sapiens-KY033221.1_cds_API65494.1_1 | 9606 | cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Deuterostomia, Chordata, Craniata, Vertebrata, Gnathostomata, Teleostomi, Euteleostomi, Sarcopterygii, Dipnotetrapodomorpha, Tetrapoda, Amniota, Mammalia, Theria, Eutheria, Boreoeutheria, Euarchontoglires, Primates, Haplorrhini, Simiiformes, Catarrhini, Hominoidea, Hominidae, Homininae, Homo
 
-- *Homo sapiens*: Organism name  
+- *Homo_sapiens*: Organism name  
 - *KY033221.1*: Accession version number
 - API65494.1_1: protein ID
 - *9606*: TaxID  
 - *cellular organisms, Eukaryota, .....,  Homininae, Homo*: lineage  
+  
+The first line of the tsv file:
+  
+![tsv file header](./pictures/tsvFileHeader.png)  
+
+__Note that in this example the lineage and the dna sequence have been shortened to fit this document__ in the real tsv file the lineage and dna sequence are complete.  
 
 </br>
 ## Instruction for use from Google Colab  
