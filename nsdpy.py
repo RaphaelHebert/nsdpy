@@ -119,7 +119,7 @@ def main():
     starting_time = str(datetime.now())
     starting_time = '_'.join(starting_time.split())[:19]
     starting_time = starting_time.replace(":", "-")
-    path = "./NSDPY results/" + starting_time
+    path = "./NSDPY_results/" + starting_time
 
 
     ##############################################
