@@ -100,7 +100,10 @@ def taxids(params, path, OPTIONS=None):
         #comments
         if verb and verb > 1:
             start = (x * retmax) + retmax
-            print(f'{round((start / count) * 100, 1)} %  of the TaxIDs downloaded')
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the TaxIDs downloaded')
 
         # if verb and verb > 1:
         #     ret = parameters['retstart']
@@ -328,12 +331,15 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
   
         ##analyse the results     
         sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
- 
         found = found + sublist
+
         #comments
         if verb > 1:
             start = (x * retmax) + retmax
-            print(f'{round((start / count) * 100, 1)} %  of the CDS fasta files downloaded')
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the CDS fasta files downloaded')
 
     return found
 
@@ -434,7 +440,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         return key
 
     else:
-        return []
+        return
 
 
 def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
@@ -452,7 +458,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
     text = text.splitlines()
 
     if not text:
-        return
+        return found
 
     for line in text:
         if len(line.split(">lcl|")) > 1:
@@ -587,7 +593,10 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
         if verb > 1:
             start = (x * retmax) + retmax
-            print(f'{round((start / count) * 100, 1)} %  of the fasta files downloaded')
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the fasta files downloaded')
 
     return keys
 
