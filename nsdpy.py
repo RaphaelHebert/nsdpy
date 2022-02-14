@@ -304,3 +304,5 @@ def main():
             r.write(f"request\toptions\tstarting_time\tending_time\tresults type\tesearch\tGene filters\tsequences\tTaxIDs\n")
             r.write(f"{args.request}\t{options_report}\t{starting_time}\t{ending_time}\t{filetype}\t{count}\t{filters}\t{len(found)}\t{len(list_of_TaxIDs)}\n")
             
+if __name__ == "__main__":
+    main()
