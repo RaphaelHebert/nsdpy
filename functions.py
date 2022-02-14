@@ -75,7 +75,6 @@ def taxids(params, path, OPTIONS=None):
 
     ##retreive the taxids sending batches of accession numbers to esummary
     retmax = 200 
-    print(count, '\n')
     if count < retmax:
         retmax = count
 
@@ -102,6 +101,7 @@ def taxids(params, path, OPTIONS=None):
         if verb and verb > 1:
             start = (x * retmax) + retmax
             print(f'{round((start / count) * 100, 1)} %  of the TaxIDs downloaded')
+
         # if verb and verb > 1:
         #     ret = parameters['retstart']
         #     print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
@@ -328,8 +328,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
   
         ##analyse the results     
         sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
-        print(sublist)
-        print(found)
+ 
         found = found + sublist
         #comments
         if verb > 1:
@@ -435,7 +434,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         return key
 
     else:
-        return
+        return []
 
 
 def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
