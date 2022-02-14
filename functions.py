@@ -69,16 +69,20 @@ def taxids(params, path, OPTIONS=None):
     (querykey, webenv, count) = params
     (verb, _, _, fileoutput, _, _) = OPTIONS
 
-    ##retreive the taxids sending batches of accession numbers to esummary
-    retmax = 100
     dict_ids = {}
     taxid = ''
     seqnb = ''
+
+    ##retreive the taxids sending batches of accession numbers to esummary
+    retmax = 200 
+    if count < retmax:
+        retmax = count
 
     if count % retmax == 0:
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
+   
     for x in range(nb):
         ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -95,8 +99,15 @@ def taxids(params, path, OPTIONS=None):
 
         #comments
         if verb and verb > 1:
-            ret = parameters['retstart']
-            print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
+            start = (x * retmax) + retmax
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the TaxIDs downloaded')
+
+        # if verb and verb > 1:
+        #     ret = parameters['retstart']
+        #     print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
 
         ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
@@ -278,12 +289,15 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     # Comment:
     if verb and verb > 0:
         print("Downloading the CDS fasta files...")
-
-    # Number of accession numbers to be sent at each API query
-    retmax = 200    
+   
     # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
     count = len(list_of_ids)
+
+    # Number of accession numbers to be sent at each API query
+    retmax = 200 
+    if count < retmax:
+        retmax = count
 
     if count % retmax == 0:
         nb = count//retmax
@@ -317,12 +331,15 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
   
         ##analyse the results     
         sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
-
         found = found + sublist
+
         #comments
         if verb > 1:
-            start = parameters['retmax']
-            print(f'{round(((x * int(start) + 100)/count)*100, 1)} %  of the CDS fasta files downloaded')
+            start = (x * retmax) + retmax
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the CDS fasta files downloaded')
 
     return found
 
@@ -441,7 +458,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
     text = text.splitlines()
 
     if not text:
-        return
+        return found
 
     for line in text:
         if len(line.split(">lcl|")) > 1:
@@ -471,9 +488,13 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     if verb and verb > 0:
         print("Downloading the fasta files...")
 
-    retmax = 200    ## Number of sequences per request to the API
     keys = []
     count = len(list_of_ids)
+
+    # Number of accession numbers to be sent at each API query
+    retmax = 200 
+    if count < retmax:
+        retmax = count
 
     if count % retmax == 0:
         nb = count//retmax
@@ -572,7 +593,10 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
         if verb > 1:
             start = (x * retmax) + retmax
-            print(f'{round((start / count) * 100, 1)} %  of the fasta files downloaded')
+            dl = round((start / count) * 100, 1)
+            if dl > 100:
+                dl = 100
+            print(f'{dl} %  of the fasta files downloaded')
 
     return keys
 
