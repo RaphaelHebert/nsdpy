@@ -5,13 +5,22 @@ import csv
 from collections import Counter
 
 def countDown(iteration, total, message=''):
+    """Take the number of iteration, the range of a loop and a message and output a message with the percent of job done"""
+    
     if message:
         message = message + ": "
+
+    if iteration < 0:
+        raise ValueError('iteration must be a positive integer')
+    
+    if total < 1:
+        return f'{message}no job to be done'
+
     iteration = iteration + 1
     left = round( ( iteration / total ) * 100, 1 )
     if left > 100:
         left = 100
-    return print(f'{message} {left}%')
+    return f'{message}{left}%'
 
 def download(parameters, address):
     ##send requests to the API until getting a result
@@ -107,7 +116,7 @@ def taxids(params, path, OPTIONS=None):
 
         #comments
         if verb and verb > 1:
-            countDown(x, nb, "Downloading TaxIDs")
+            print(countDown(x, nb, "Downloading TaxIDs"))
             
         ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
@@ -335,7 +344,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
         #comments
         if verb > 1:
-            countDown(x, nb , "Downloading the cds_fasta files")
+            print(countDown(x, nb , "Downloading the cds_fasta files"))
 
     return found
 
@@ -588,7 +597,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             keys.append(key)
 
         if verb > 1:
-            countDown(x, nb, "Downloading the fasta files")
+            print(countDown(x, nb, "Downloading the fasta files"))  
 
     return keys
 
