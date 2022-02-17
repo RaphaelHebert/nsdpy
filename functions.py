@@ -4,6 +4,14 @@ import re
 import csv
 from collections import Counter
 
+def countDown(iteration, total, message=''):
+    if message:
+        message = message + ": "
+    iteration = iteration + 1
+    left = round( ( iteration / total ) * 100, 1 )
+    if left > 100:
+        left = 100
+    return print(f'{message} {left}%')
 
 def download(parameters, address):
     ##send requests to the API until getting a result
@@ -99,16 +107,8 @@ def taxids(params, path, OPTIONS=None):
 
         #comments
         if verb and verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the TaxIDs downloaded')
-
-        # if verb and verb > 1:
-        #     ret = parameters['retstart']
-        #     print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
-
+            countDown(x, nb, "Downloading TaxIDs")
+            
         ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
@@ -335,11 +335,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
         #comments
         if verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the CDS fasta files downloaded')
+            countDown(x, nb , "Downloading the cds_fasta files")
 
     return found
 
@@ -592,11 +588,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             keys.append(key)
 
         if verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the fasta files downloaded')
+            countDown(x, nb, "Downloading the fasta files")
 
     return keys
 
