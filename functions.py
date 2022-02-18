@@ -5,7 +5,17 @@ import csv
 from collections import Counter
 
 def countDown(iteration, total, message=''):
-    """Take the number of iteration, the range of a loop and a message and output a message with the percent of job done"""
+    """
+    Take the number of iteration, the range of a forloop and a message and output a message with the percent of job done
+
+    INPUTS: countDown(iteration, total, message='')
+    iteration:  positive INT
+    total: positive INT
+    message: STRING
+
+    OUTPUT: STRING
+        
+    """
     
     if message:
         message = message + ": "
@@ -13,6 +23,9 @@ def countDown(iteration, total, message=''):
     if iteration < 0:
         raise ValueError('iteration must be a positive integer')
     
+    if total < 0:
+        raise ValueError('total must be a positive integer')
+
     if total < 1:
         return f'{message}no job to be done'
 
@@ -22,8 +35,18 @@ def countDown(iteration, total, message=''):
         left = 100
     return f'{message}{left}%'
 
+
 def download(parameters, address):
-    ##send requests to the API until getting a result
+    """ 
+    Sends requests to the API until getting a result
+    
+    INPUTS: download(parameters, address)
+        parameters: DICT, parameters of the get request to the API
+        Address: STRING, API bas URL
+
+    OUTPUT: object, <class 'requests.models.Response'>
+        if an exceptions.HTTPError is triggered: returns 1
+    """ 
     connect = 0
     while True:
         try:
@@ -150,6 +173,14 @@ def taxids(params, path, OPTIONS=None):
 
 
 def dispatch(lineage, classif):
+    """
+        take the lineage of a sequence and the classification option and return the base name of the file to store 
+        the sequence.
+
+        INPUTS: dispatch(lineage, classif) 
+            lineage: LIST
+            classif: INT or LIST
+    """
     ###Phylums
     Plantae = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
     'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
@@ -162,7 +193,7 @@ def dispatch(lineage, classif):
     'Tardigrada', 'Xenoturbella']
 
     ##no option selected
-    if classif == 3 or classif == 2:
+    if classif == 2:
         return "sequences"
     ##user gave list of taxonomic levels
     if isinstance(classif, list):
