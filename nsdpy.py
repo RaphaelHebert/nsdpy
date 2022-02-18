@@ -43,8 +43,8 @@ def main():
     group3.add_argument("-p", "--phylum", help="output one file text per phylum", action="store_true" )
     group3.add_argument("-l", "--levels", help="find only the taxon given by user", nargs="+")
     group3.add_argument("-s", "--species",\
-        help="classify the results in different text file one for each specie+n level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
-        action="count", default=3)
+        help="classify the results in different text file one for each (specie + n) level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
+        action="count", default=2)
 
     #information line
     parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
@@ -108,10 +108,10 @@ def main():
         options_report.append(f"--levels (-l) {args.levels[0]}")
     elif args.species:
         classif = args.species
-        if args.species != 3:
-            options_report.append("--species (-", + "s" * ( args.species - 3 ) + ")")
+        if args.species != 2:
+            options_report.append("--species (-" + "s" * ( args.species - 2 ) + ")")
     else:
-        classif = 3
+        classif = 2
 
     OPTIONS = (verb, args.cds, classif, args.taxids, args.tsv, args.information)
 
