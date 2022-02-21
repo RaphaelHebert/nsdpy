@@ -1,6 +1,14 @@
+#import from standard library
 import unittest
+import sys
+from pathlib import Path
+import os
 
-from functions import countDown 
+#add parent directory to imports list
+sys.path.insert(0, "..")
+
+#local import
+from functions import countDown
 from functions import dispatch
 
 class testsFunctions(unittest.TestCase):

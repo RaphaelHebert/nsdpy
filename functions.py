@@ -1,8 +1,13 @@
-import requests             #https://requests.readthedocs.io/en/master/
+#import from standard library
 import os
 import re
 import csv
 from collections import Counter
+
+#third party imports
+import requests             #https://requests.readthedocs.io/en/master/
+
+    
 
 def countDown(iteration, total, message=''):
     """
@@ -122,7 +127,7 @@ def taxids(params, path, OPTIONS=None):
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
-   
+
     for x in range(nb):
         ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -329,7 +334,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     # Comment:
     if verb and verb > 0:
         print("Downloading the CDS fasta files...")
-   
+
     # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
     count = len(list_of_ids)
@@ -368,7 +373,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         if not information and not genelist and classif == 3:
             result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
-  
+
         ##analyse the results     
         sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
         found = found + sublist
@@ -746,7 +751,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
                             except:
                                 name = "not found"
                             info_line = ">" + name + "-" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " | " + taxid + " | " +  "".join(taxo).rstrip(".")
-                     
+                    
                         else:
                             info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
                                 "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
@@ -963,3 +968,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
             writer.writerow([seqid, taxid, len(dna), dna])
 
     return
+
+if __name__=="_main_":
+    countDown()
+    download()
+    dispatch()
