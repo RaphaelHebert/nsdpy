@@ -1,12 +1,57 @@
-import requests             #https://requests.readthedocs.io/en/master/
+#import from standard library
 import os
 import re
 import csv
 from collections import Counter
 
+#third party imports
+import requests             #https://requests.readthedocs.io/en/master/
+
+    
+
+def countDown(iteration, total, message=''):
+    """
+    Take the number of iteration, the range of a forloop and a message and output a message with the percent of job done
+
+    INPUTS: countDown(iteration, total, message='')
+    iteration:  positive INT
+    total: positive INT
+    message: STRING
+
+    OUTPUT: STRING
+        
+    """
+    
+    if message:
+        message = message + ": "
+
+    if iteration < 0:
+        raise ValueError('iteration must be a positive integer')
+    
+    if total < 0:
+        raise ValueError('total must be a positive integer')
+
+    if total < 1:
+        return f'{message}no job to be done'
+
+    iteration = iteration + 1
+    left = round( ( iteration / total ) * 100, 1 )
+    if left > 100:
+        left = 100
+    return f'{message}{left}%'
+
 
 def download(parameters, address):
-    ##send requests to the API until getting a result
+    """ 
+    Sends requests to the API until getting a result
+    
+    INPUTS: download(parameters, address)
+        parameters: DICT, parameters of the get request to the API
+        Address: STRING, API bas URL
+
+    OUTPUT: object, <class 'requests.models.Response'>
+        if an exceptions.HTTPError is triggered: returns 1
+    """ 
     connect = 0
     while True:
         try:
@@ -82,7 +127,7 @@ def taxids(params, path, OPTIONS=None):
         nb = count//retmax
     else: 
         nb = (count//retmax) + 1
-   
+
     for x in range(nb):
         ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
@@ -99,16 +144,8 @@ def taxids(params, path, OPTIONS=None):
 
         #comments
         if verb and verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the TaxIDs downloaded')
-
-        # if verb and verb > 1:
-        #     ret = parameters['retstart']
-        #     print(f'{round(((int(ret) + 100)/count)*100, 1)} %  of the TaxIDs downloaded')
-
+            print(countDown(x, nb, "Downloading TaxIDs"))
+            
         ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
@@ -141,6 +178,14 @@ def taxids(params, path, OPTIONS=None):
 
 
 def dispatch(lineage, classif):
+    """
+        take the lineage of a sequence and the classification option and return the base name of the file to store 
+        the sequence.
+
+        INPUTS: dispatch(lineage, classif) 
+            lineage: LIST
+            classif: INT or LIST
+    """
     ###Phylums
     Plantae = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
     'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
@@ -153,7 +198,7 @@ def dispatch(lineage, classif):
     'Tardigrada', 'Xenoturbella']
 
     ##no option selected
-    if classif == 3 or classif == 2:
+    if classif == 2:
         return "sequences"
     ##user gave list of taxonomic levels
     if isinstance(classif, list):
@@ -289,7 +334,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     # Comment:
     if verb and verb > 0:
         print("Downloading the CDS fasta files...")
-   
+
     # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
     found = []
     count = len(list_of_ids)
@@ -328,18 +373,14 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         if not information and not genelist and classif == 3:
             result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
-  
+
         ##analyse the results     
         sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
         found = found + sublist
 
         #comments
         if verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the CDS fasta files downloaded')
+            print(countDown(x, nb , "Downloading the cds_fasta files"))
 
     return found
 
@@ -592,11 +633,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             keys.append(key)
 
         if verb > 1:
-            start = (x * retmax) + retmax
-            dl = round((start / count) * 100, 1)
-            if dl > 100:
-                dl = 100
-            print(f'{dl} %  of the fasta files downloaded')
+            print(countDown(x, nb, "Downloading the fasta files"))  
 
     return keys
 
@@ -714,7 +751,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
                             except:
                                 name = "not found"
                             info_line = ">" + name + "-" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " | " + taxid + " | " +  "".join(taxo).rstrip(".")
-                     
+                    
                         else:
                             info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
                                 "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
@@ -931,3 +968,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
             writer.writerow([seqid, taxid, len(dna), dna])
 
     return
+
+if __name__=="_main_":
+    countDown()
+    download()
+    dispatch()
