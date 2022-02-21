@@ -1,15 +1,14 @@
 #import from standard library
 import unittest
+from unittest.mock import patch
 import sys
-from pathlib import Path
-import os
+
 
 #add parent directory to imports list
 sys.path.insert(0, "..")
 
 #local import
-from functions import countDown
-from functions import dispatch
+from functions import countDown, dispatch, download
 
 class testsFunctions(unittest.TestCase):
     
@@ -52,8 +51,30 @@ class testsFunctions(unittest.TestCase):
         self.assertEqual(dispatch(metazoa, 3), 'Homo.')
         self.assertEqual(dispatch(plantae, 5), 'Chlorellaceae')
         self.assertEqual(dispatch(plantae, 50), 'OTHERS')
+    
+    def test_download(self): 
+        ##parameters address
+        parameters = {
+            'db': 'nucleotide', 
+            'idtype': 'acc', 
+            'retmode': 'json', 
+            'retmax': '0', 
+            'usehistory': 'y', 
+            'term': 'COI[Title] homo sapiens[ORGN])'}
 
+        address = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 
+        full_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=nucleotide&idtype=acc&retmode=json&retmax=0&usehistory=y&term=COI%5BTitle%5D+homo+sapiens%5BORGN%5D%29'
+
+        with patch("functions.requests.get") as mocked_get:
+            mocked_get.return_value.ok = True
+            mocked_get.return_value.text = "Success"
+            mocked_get.return_value.url = full_url
+
+            dl_response = download(parameters, address)
+            mocked_get.assert_called_with('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi', params={'db': 'nucleotide', 'idtype': 'acc', 'retmode': 'json', 'retmax': '0', 'usehistory': 'y', 'term': 'COI[Title] homo sapiens[ORGN])'}, timeout=60)
+            self.assertEqual(dl_response.url, full_url)
+            self.assertEqual(dl_response.text, "Success")
 
 
 
