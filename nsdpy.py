@@ -17,21 +17,25 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    ##VERSION
+    ## VERSION
     parser.add_argument('-V', '--version', action='version', version=__version__)
 
-    ##POSITIONAL ARGUMENTS
+    ## POSITIONAL ARGUMENTS
     parser.add_argument("-r", "--request", required=True, help="The request to the NCBI database")
 
-    ##OPTIONAL ARGUMENTS
-    #api key
+    ## OPTIONAL ARGUMENTS
+    # api key
     parser.add_argument("-a", "--apikey", default=None, help="API key (register to NCBI to get an API key)")
-    #verbose
+    # verbose
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", help="Diplays downloads progress and actions", action="store_true")
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
+    # sequence types
+    group2 = parser.add_mutually_exclusive_group()
     #gene selection
-    parser.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
+    group2.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
+    #Gene Features format
+    group2.add_argument("-g", "--gene", help="download sequences in gene feature format", nargs="*")
     #file input
     parser.add_argument("-L", "--list", help='input one or more .txt file as an external list of taxa: path/to/file.txt', nargs="*")
     #file output
@@ -71,7 +75,7 @@ def main():
             if not os.path.exists(file):
                 sys.exit(f"The file {file} cannot be found")
             if file[-4:] != ".txt":
-                sys.exit(f"The list of taxa {file} must be a .txt file")
+                sys.exit(f"The list of taxa {file} must be a file with a .txt extension")
 
     #list of chosen options to display in the report.tsv
     ##parse options
@@ -85,6 +89,8 @@ def main():
         options_report.append(f"--cds (-c) {' '.join(args.cds)}")
     if args.apikey:
         options_report.append(f"--apikey (-a) {args.apikey[0]}")
+    if args.gene:
+        options_report.append(f"--gene (-g) {' '.join(args.gene)}")
 
     #verbose
     if args.verbose:
