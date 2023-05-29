@@ -3,6 +3,7 @@ __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
 
+from constants import ESEARCH_URL
 from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 import sys
 import os
@@ -30,18 +31,18 @@ def main():
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-v", "--verbose", help="Diplays downloads progress and actions", action="store_true")
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
-    # sequence types
+    # Sequence types
     group2 = parser.add_mutually_exclusive_group()
-    #gene selection
+    # Gene selection
     group2.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
-    #Gene Features format
+    # Gene Features format
     group2.add_argument("-g", "--gene", help="download sequences in gene feature format", nargs="*")
-    #file input
+    # file input
     parser.add_argument("-L", "--list", help='input one or more .txt file as an external list of taxa: path/to/file.txt', nargs="*")
-    #file output
+    # file output
     parser.add_argument("-T", "--taxids", help='write a text file listing all the accession numbers and their related TaxIDs', action="store_true")
     parser.add_argument("-t", "--tsv", default=None, help="create a tsv file based on fasta file output", action="store_true")
-    #Taxonomy
+    # Taxonomy
     group3 = parser.add_mutually_exclusive_group()
     group3.add_argument("-k", "--kingdom", help="output four different text files file: Plantae and Fungi, Metazoa and  Others", action="store_true" )
     group3.add_argument("-p", "--phylum", help="output one file text per phylum", action="store_true" )
@@ -50,7 +51,7 @@ def main():
         help="classify the results in different text file one for each (specie + n) level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
         action="count", default=2)
 
-    #information line
+    # information line
     parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
 
     args = parser.parse_args()
@@ -62,7 +63,7 @@ def main():
     # list the selected option to make it appear in report.txt
     options_report = []
 
-    #taxa list
+    # taxa list
     if args.list:
         input_files = ' '.join(args.list)
         options_report.append(f" -list (-L) {input_files}")
@@ -77,8 +78,8 @@ def main():
             if file[-4:] != ".txt":
                 sys.exit(f"The list of taxa {file} must be a file with a .txt extension")
 
-    #list of chosen options to display in the report.tsv
-    ##parse options
+    # list of chosen options to display in the report.tsv
+    ## parse options
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -147,7 +148,7 @@ def main():
         taxa_list = [ taxon + "[ORGN] OR " for taxon in taxa_list]
 
         # Base URL with params
-        esearch_address = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
+        esearch_address = ESEARCH_URL
         base_URL_length = len(esearch_address) + 100 # Keep 100 chars for params
 
         # Base query

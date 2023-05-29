@@ -3,7 +3,7 @@ import os
 import re
 import csv
 from collections import Counter
-
+from constants import ESEARCH_URL, ESUMMARY_URL, EFETCH_URL, PLANTAE, FUNGI, METAZOA
 #third party imports
 import requests             #https://requests.readthedocs.io/en/master/
 
@@ -81,12 +81,10 @@ def download(parameters, address):
 
 
 def esearchquery(QUERY):
-    ##unpack QUERY:
+    ## unpack QUERY:
     (query, api_key) = QUERY
 
-    ##build api address
-    esearchaddress = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
-    #parameters
+    # parameters
     parameters = {}
     if api_key:
         parameters["api_key"] = str(api_key)
@@ -95,11 +93,11 @@ def esearchquery(QUERY):
     parameters["retmode"] = "json"
     parameters["retmax"] = "0"
     parameters["usehistory"] = "y"    
-    #user's query
+    # user's query
     parameters["term"] = query
     
-    ###send request to the API
-    y = download(parameters, esearchaddress)
+    ### send request to the API
+    y = download(parameters, ESEARCH_URL)
     if y == 1:
         return ({"error": "wrong address for esearch"})  
     return (y.json())
@@ -110,7 +108,7 @@ def taxids(params, path, OPTIONS=None):
     if OPTIONS is None:
         OPTIONS = ("","","","","","")
 
-    ##unpack parameters
+    ## unpack parameters
     (querykey, webenv, count) = params
     (verb, _, _, fileoutput, _, _) = OPTIONS
 
@@ -118,7 +116,7 @@ def taxids(params, path, OPTIONS=None):
     taxid = ''
     seqnb = ''
 
-    ##retreive the taxids sending batches of accession numbers to esummary
+    ## retreive the taxids sending batches of accession numbers to esummary
     retmax = 200 
     if count < retmax:
         retmax = count
@@ -129,9 +127,7 @@ def taxids(params, path, OPTIONS=None):
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        ##build the API address
-        esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-        #parameters 
+        # parameters 
         parameters = {}
         parameters['db'] = "taxonomy"
         parameters['query_key'] = querykey
@@ -140,13 +136,13 @@ def taxids(params, path, OPTIONS=None):
         parameters['retmax'] = str(retmax)
         parameters['rettype'] = "uilist"
         parameters['retmode'] = "text"
-        result = download(parameters, esummaryaddress)
+        result = download(parameters, ESUMMARY_URL)
 
-        #comments
+        # comments
         if verb and verb > 1:
             print(countDown(x, nb, "Downloading TaxIDs"))
             
-        ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
+        ### extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
             if len(line.split('<DocSum>')) > 1:
@@ -167,9 +163,9 @@ def taxids(params, path, OPTIONS=None):
                     dict_ids[seqnb] = taxid 
 
     if fileoutput:
-        ##filename
+        ## filename
         filename = "TaxIDs.txt"
-        ##path to filename
+        ## path to filename
         path = path + "/" + filename
         with open(path, 'a') as summary:
             [summary.write(f'{key}  {value}\n') for key, value in dict_ids.items()]
@@ -186,21 +182,10 @@ def dispatch(lineage, classif):
             lineage: LIST
             classif: INT or LIST
     """
-    ###Phylums
-    Plantae = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
-    'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
-    'Cyanidiophyta', 'Glaucophyta', 'Prasinophyceae','Rhodophyta']
-    Fungi = ['Chytridiomycota', 'Zygomycota', 'Ascomycota', 'Basidiomycota', 'Glomeromycota']
-    Metazoa = ['Acanthocephala', 'Acoelomorpha', 'Annelida', 'Arthropoda', 'Brachiopoda', 'Ectoprocta', 'Bryozoa', 'Chaetognatha',\
-    'Chordata', 'Cnidaria', 'Ctenophora', 'Cycliophora', 'Echinodermata', 'Echiura', 'Entoprocta', 'Gastrotricha', 'Gnathostomulida',\
-    'Hemichordata', 'Kinorhyncha', 'Loricifera', 'Micrognathozoa', 'Mollusca', 'Nematoda', 'Nematomorpha', 'Nemertea', 'Onychophora'\
-    'Orthonectida', 'Phoronida', 'Placozoa', 'Plathelminthes', 'Porifera', 'Priapulida', 'Rhombozoa', 'Rotifera', 'Sipuncula',\
-    'Tardigrada', 'Xenoturbella']
-
-    ##no option selected
+    ## no option selected
     if classif == 2:
         return "sequences"
-    ##user gave list of taxonomic levels
+    ## user gave list of taxonomic levels
     if isinstance(classif, list):
         try:
             other = [rank for rank in lineage if rank in classif][0]
@@ -210,17 +195,17 @@ def dispatch(lineage, classif):
     ##phylums
     if classif == 0:
         try:
-            Phylum = [phy for phy in lineage if phy in Metazoa or phy in Fungi or phy in Plantae][0]
+            Phylum = [phy for phy in lineage if phy in METAZOA or phy in FUNGI or phy in PLANTAE][0]
         except IndexError:
             Phylum = 'OTHERS'
         return Phylum
     ##kingdoms
     if classif == 1:
-        if 'Metazoa' in lineage or len(list(set(lineage) & set(Metazoa))) > 0:
+        if 'METAZOA' in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
             kingdom = "METAZOA"
-        elif "Viridiplantae" in lineage or len(list(set(lineage) & set(Plantae))) > 0:
+        elif "ViridiPLANTAE" in lineage or len(list(set(lineage) & set(PLANTAE))) > 0:
             kingdom = "PLANTAE" 
-        elif "Fungi" in  lineage or len(list(set(lineage) & set(Fungi))) > 0:
+        elif "FUNGI" in  lineage or len(list(set(lineage) & set(FUNGI))) > 0:
             kingdom = "FUNGI" 
         else:
             kingdom = "OTHERS"
@@ -263,7 +248,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
         idsublist = ','.join(idsublist)
 
         ##build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
         #parameters 
         parameters['db'] = "taxonomy"
@@ -272,7 +256,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
             parameters['api_key'] = api_key
 
         ##loop until download is correct
-        result = download(parameters, efetchaddress)
+        result = download(parameters, EFETCH_URL)
 
         #comments
         if verb > 1:
@@ -354,10 +338,8 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ## Build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # Parameters 
+        parameters = {}
         parameters['id'] = ",".join(ids)
         parameters['db'] = "nuccore"
         if api_key:
@@ -366,7 +348,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         parameters['retmode'] = "text"
 
         ## Download
-        raw_result = download(parameters, efetchaddress)
+        raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
 
         ## Extract available information
@@ -547,10 +529,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ## Build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # Parameters 
+        parameters = {}
         parameters['db'] = "nuccore"
         parameters['id'] = ",".join(ids)
         if api_key:
@@ -559,7 +539,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         parameters['retmode'] = "text"
 
         ## Download
-        raw_result = download(parameters, efetchaddress)
+        raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
 
         ## Extract available informations
@@ -693,11 +673,8 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
             ids = ids + remain
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
-
-        ##build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         #parameters 
+        parameters = {}
         parameters['db'] = "nuccore"
         parameters['id'] = ids1
         parameters['rettype'] = "gb"
@@ -706,7 +683,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
             parameters["api_key"] = api_key
         
         ##loop until dl is correct
-        result = download(parameters, efetchaddress)
+        result = download(parameters, EFETCH_URL)
         result = result.text
 
 
