@@ -38,7 +38,7 @@ def main():
     # Gene selection
     group2.add_argument("-c", "--cds", help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex", nargs="*")
     # Gene Features format
-    group2.add_argument("-g", "--gene", help="download sequences in gene feature format", nargs="*")
+    group2.add_argument("-g", "--gene", help="download sequences in gene feature format // NOT FUNCTIONAL YET", nargs="*")
     # file input
     parser.add_argument("-L", "--list", help='input one or more .txt file as an external list of taxa: path/to/file.txt', nargs="*")
     # file output
@@ -237,9 +237,8 @@ def main():
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
     # dict_taxo = {}
-    # if classif != 3 or args.information:
-    print(f'number of taxids in list_of_TaxIDs: {len(list_of_TaxIDs)}')
-    dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
+    if classif != 2 or args.information:
+        dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
     if args.cds is None:
