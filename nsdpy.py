@@ -3,12 +3,14 @@ __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
 
-from constants import ESEARCH_URL
-from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 import sys
 import os
-import argparse             #parsing command line arguments
+import argparse                     #parsing command line arguments
 from datetime import datetime    
+
+# local imports
+from constants import ESEARCH_URL
+from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 
 
 def main():
@@ -111,6 +113,7 @@ def main():
         classif = 0
         options_report.append("--phylum (-p)")
     elif args.levels:
+        # here isinstance(classif, list) == true
         classif = args.levels
         options_report.append(f"--levels (-l) {args.levels[0]}")
     elif args.species:
@@ -194,13 +197,13 @@ def main():
         ## esearchquery
         y = esearchquery(QUERY)
 
-        ##check errors (if bad API key etc) errors returned by the Entrez API
+        ## check errors (if bad API key etc) errors returned by the Entrez API
         if "error" in y.keys():
             errors = y["error"]
             sys.exit(errors)
 
         count = int(y["esearchresult"]["count"])
-        #comments
+        # comments
         if verb > 0:    
             print(f'Number of results found: {count}')
 
@@ -210,7 +213,7 @@ def main():
         querykey = str(y["esearchresult"]["querykey"])
         params = (querykey, webenv, count)
 
-        ###Taxids
+        ### Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
    
@@ -225,7 +228,7 @@ def main():
     if verb != 0:
         print(f"Total number of results: {total_number_of_results}")
 
-    #make a set of TaxIDs
+    # make a set of TaxIDs
     list_of_ids = list(dict_ids.keys())
     reverse = set(dict_ids.values())
     list_of_TaxIDs = list(reverse)
@@ -233,10 +236,10 @@ def main():
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
-    dict_taxo = {}
-    if classif != 3 or args.information:
-        dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
-
+    # dict_taxo = {}
+    # if classif != 3 or args.information:
+    print(f'number of taxids in list_of_TaxIDs: {len(list_of_TaxIDs)}')
+    dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
     if args.cds is None:
@@ -257,7 +260,7 @@ def main():
     analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
 
 
-    ### summarise
+    ### Summurize
     # Get the ending time of the run
     ending_time= str(datetime.now())
     ending_time= '_'.join(ending_time.split())[:19]
@@ -291,7 +294,7 @@ def main():
             if len(notfound) > 0:
                 print(f'see "notfound.txt"')
 
-    ##write summary
+    ## Write summary
     if args.cds is None:
         filters = ""
         filetype = "fasta"

@@ -1,4 +1,4 @@
-#import from standard library
+ #import from standard library
 import os
 import re
 import csv
@@ -8,7 +8,6 @@ from constants import ESEARCH_URL, ESUMMARY_URL, EFETCH_URL, PLANTAE, FUNGI, MET
 import requests             #https://requests.readthedocs.io/en/master/
 
     
-
 def countDown(iteration, total, message=''):
     """
     Take the number of iteration, the range of a forloop and a message and output a message with the percent of job done
@@ -185,21 +184,21 @@ def dispatch(lineage, classif):
     ## no option selected
     if classif == 2:
         return "sequences"
-    ## user gave list of taxonomic levels
+    ## user gave list of taxonomic levels (option -l --levels)
     if isinstance(classif, list):
         try:
             other = [rank for rank in lineage if rank in classif][0]
         except IndexError:
             other = "OTHERS"
         return other
-    ##phylums
+    ## phylums
     if classif == 0:
         try:
             Phylum = [phy for phy in lineage if phy in METAZOA or phy in FUNGI or phy in PLANTAE][0]
         except IndexError:
             Phylum = 'OTHERS'
         return Phylum
-    ##kingdoms
+    ## kingdoms
     if classif == 1:
         if 'METAZOA' in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
             kingdom = "METAZOA"
@@ -210,7 +209,7 @@ def dispatch(lineage, classif):
         else:
             kingdom = "OTHERS"
         return kingdom
-    ##if the users choose to make groupe n rank higher than species (classif >= 3)
+    ## if the users choose to make groupe n rank higher than species (classif >= 3)
     classif = -(int(classif) - 2)
     try:
         rank = lineage[classif]
@@ -219,10 +218,10 @@ def dispatch(lineage, classif):
     return rank
 
 
-#query taxonomy with efetch, returns a dict with taxid as key and info in a dict as value
+# query taxonomy with efetch, returns a dict with taxid as key and info in a dict as value
 def completetaxo(idlist, QUERY, OPTIONS):
 
-    ##unpack parameters
+    ## unpack parameters
     (_, api_key) = QUERY
     (verb, _, classif, _, _, _) = OPTIONS
 
@@ -242,12 +241,12 @@ def completetaxo(idlist, QUERY, OPTIONS):
         nb = (count//retmax) + 1
 
     for x in range(nb):
-        ##slice the idlist
+        ## slice the idlist
         retstart = x * retmax
         idsublist = idlist[retstart:(retstart+retmax)]
         idsublist = ','.join(idsublist)
 
-        ##build API address
+        ## build API address
         parameters = {}
         #parameters 
         parameters['db'] = "taxonomy"
@@ -255,14 +254,14 @@ def completetaxo(idlist, QUERY, OPTIONS):
         if api_key:
             parameters['api_key'] = api_key
 
-        ##loop until download is correct
+        ## loop until download is correct
         result = download(parameters, EFETCH_URL)
 
-        #comments
+        # comments
         if verb > 1:
             print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
 
-        ##analyse the results from efetch
+        ## analyse the results from efetch
         result = result.text.split('</Taxon>\n<Taxon>')
 
         for seq in result:
@@ -293,15 +292,30 @@ def completetaxo(idlist, QUERY, OPTIONS):
             lineage = Lineage.split('; ')
             dicttemp['Lineage'] = lineage
 
-            ##dispatch
+            ## dispatch
             dicttemp['dispatch'] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
 
-    #comments
+    # comments
     if verb and verb > 0:
         print(f'number of taxids:\t{len(data.keys())}')
 
+    if verb and verb > 0:
+        dup = {}
+        duplicate = 0
+        for TaxId in data.keys():
+            if data[TaxId]['dispatch'] in dup.keys():
+                duplicate = duplicate + 1
+                dup[data[TaxId]['dispatch']] = dup[data[TaxId]['dispatch']] + [TaxId]
+            else: 
+                dup[data[TaxId]['dispatch']] = [TaxId]
+        print('--------------- DUPLICATES ---------------')
+        print(f'Number of taxa for which more than one TaxId has been found: {duplicate}')
+        for key in dup.keys():
+            if len(dup[key]) > 1:
+                print(f'{key}: {dup[key]}')
+        print('------------------------------------------')
     return data
 
 
@@ -412,7 +426,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         dispatch = dict_taxo[TaxId]['dispatch']
     except KeyError:
         dispatch = "others"
-    if classif == 3:
+    if classif == 2:
         dispatch = "sequences"
 
     ##check if genes
@@ -580,7 +594,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             except KeyError:
                 name = 'others'
             
-            if classif == 3:
+            if classif == 2:
                 dispatch = "sequences"
             
             data = (name, key, taxid, lineage, dna)
