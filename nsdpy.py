@@ -236,7 +236,7 @@ def main():
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
-    # dict_taxo = {}
+    dict_taxo = {}
     if classif != 2 or args.information:
         dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
