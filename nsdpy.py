@@ -1,4 +1,4 @@
-__version__ = '0.3.0-beta'
+__version__ = '0.3.5-beta'
 __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
@@ -9,9 +9,10 @@ import argparse                     #parsing command line arguments
 from datetime import datetime    
 
 # local imports
-from constants import ESEARCH_URL
+
 from functions import esearchquery, completetaxo, taxids, cds_fasta, taxo, fasta, duplicates
 
+ESEARCH_URL='https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
 
 def main():
 ############################################
