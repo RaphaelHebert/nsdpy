@@ -53,6 +53,9 @@ def main():
     group3.add_argument("-s", "--species",\
         help="classify the results in different text file one for each (specie + n) level found, exp: -s correspond to lowest levels, -ss 2nd lowest, -sssss 5th lowest and so on",\
         action="count", default=2)
+    group3.add_argument("-x", "--custom",\
+        help="classify the result for the given taxonomic level",\
+        nargs="+")
 
     # information line
     parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
@@ -107,6 +110,8 @@ def main():
         verb = 1
 
     #taxonomy
+    print(f'args: {args}')
+    print(args.custom[0])
     if args.kingdom:
         classif = 1
         options_report.append("--kingdom (-k)")
@@ -117,10 +122,16 @@ def main():
         # here isinstance(classif, list) == true
         classif = args.levels
         options_report.append(f"--levels (-l) {args.levels[0]}")
+    elif args.custom[0]:
+        print(f'"--custom (-x) {args.custom[0]}')
+        print(args.custom[0])
+        classif = args.custom[0]
+        options_report.append(f"--custom (-x) {args.custom}")
     elif args.species:
         classif = args.species
         if args.species != 2:
             options_report.append("--species (-" + "s" * ( args.species - 2 ) + ")")
+    
     else:
         classif = 2
 

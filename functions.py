@@ -193,12 +193,19 @@ def dispatch(lineage, classif):
         the sequence.
 
         INPUTS: dispatch(lineage, classif) 
-            lineage: LIST
-            classif: INT or LIST
+            lineage: List or Dict
+            classif: Int or List
     """
     ## no option selected
     if classif == 2:
         return "sequences"
+    
+    ## user gave list of taxonomic levels (option -l --levels)
+    if isinstance(classif, str):
+        ## type checking
+        if not isinstance(lineage, dict):
+            return "OTHERS"
+    
     ## user gave list of taxonomic levels (option -l --levels)
     if isinstance(classif, list):
         try:
@@ -206,6 +213,7 @@ def dispatch(lineage, classif):
         except IndexError:
             other = "OTHERS"
         return other
+    
     ## phylums
     if classif == 0:
         try:
@@ -213,6 +221,7 @@ def dispatch(lineage, classif):
         except IndexError:
             Phylum = 'OTHERS'
         return Phylum
+    
     ## kingdoms
     if classif == 1:
         if 'METAZOA' in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
@@ -301,14 +310,21 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
             try:
                 Lineage , _ = seq.split('</Lineage>', 1)
-                _, Lineage = Lineage.split('<Lineage>', 1)    
+                _, Lineage = Lineage.split('<Lineage>', 1)  
             except ValueError:
                 Lineage = 'not found'
             lineage = Lineage.split('; ')
             dicttemp['Lineage'] = lineage
 
             ## dispatch
-            dicttemp['dispatch'] = dispatch(lineage, classif)
+            if isinstance(classif, str):
+                lineage = parseClassifXML(seq)
+                if classif in lineage.keys():
+                    dicttemp['dispatch'] = lineage[classif].replace(' ', '_')
+                else: 
+                    dicttemp['dispatch'] = 'OTHERS'
+            else:
+                dicttemp['dispatch'] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
 
@@ -974,6 +990,48 @@ def tsv_file_writer(path, data, OPTIONS=None):
             writer.writerow([seqid, taxid, len(dna), dna])
 
     return
+
+"""
+    takes a string and parse it as xml format to extract the available taxonomy
+    
+
+    INPUTS: parseClassifXML(xml) 
+        xml: string
+    OUTPUTS:
+        classif: dict
+"""
+def parseClassifXML(xml):
+    classif = {}
+
+    if "</ScientificName>" in xml and "<ScientificName>" in xml:
+        scientificName, newXml = xml.split('</ScientificName>', 1)
+        _, scientificName = scientificName.split('<ScientificName>', 1)
+        classif['ScientificName'] = scientificName
+
+    if "</LineageEx>" in xml and "<LineageEx>" in xml:
+        lineageInfo, _ = xml.split("</LineageEx>", 1)
+        _, lineageInfo = lineageInfo.split("<LineageEx>", 1)
+        taxons = lineageInfo.split("</Taxon>")
+        
+        for taxon in taxons:
+            keys = classif.keys()
+            if "</ScientificName>" in taxon and "<ScientificName>" in taxon and "<Rank>" in taxon and "</Rank>" in taxon:
+                name, _ = taxon.split("</ScientificName>", 1)
+                _, name = name.split("<ScientificName>", 1)
+                name = re.sub(r"\s+", '_', name)
+                rank, _ = taxon.split("</Rank>", 1)
+                _, rank= rank.split("<Rank>", 1)
+                rank = re.sub(r"\s+", '_', rank)
+                if rank == 'clade':
+                    if rank not in keys: 
+                        classif['clade'] = [name]
+                    else:
+                        classif['clade'].append(name)
+                else:
+                    classif[rank] = name
+                    
+    return classif
+
 
 if __name__=="_main_":
     countDown()
