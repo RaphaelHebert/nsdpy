@@ -16,6 +16,6 @@ repos:
         entry: python -m unittest -f discover .
         language: python
         "types": [python]
-        args: ["-p '*test.py'"] # Probably this option is absolutely not needed.
+        ## args: ["-p '*test.py'"] # Probably this option is absolutely not needed.
         pass_filenames: false
         stages: [commit]
