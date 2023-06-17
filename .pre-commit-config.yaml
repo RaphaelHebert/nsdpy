@@ -13,7 +13,7 @@ repos:
     hooks:
       - id: unittest
         name: unittest
-        entry: python -m unittest discover -p test/test_*.py
+        entry: python -m unittest discover -s START
         language: python
         "types": [python]
         ## args: ["-p '*test.py'"] # Probably this option is absolutely not needed.
