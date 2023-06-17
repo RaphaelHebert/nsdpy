@@ -15,22 +15,22 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="Welcome to NSDPY’s documentation!" href="index.html" />
-   
+
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
-  
-  
+
+
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head><body>
-  
+
 
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          
+
 
           <div class="body" role="main">
-            
+
   <div class="tex2jax_ignore mathjax_ignore section" id="nsdpy-batch-downloading-from-ncbi-database-with-python3">
 <h1>NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌<a class="headerlink" href="#nsdpy-batch-downloading-from-ncbi-database-with-python3" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="overview">
@@ -108,9 +108,9 @@ pip3 install -r requirements.txt</p>
 nsdpy -r “This is a query to NCBI”</p>
 <p><ins>Example 1</ins></p>
 <p>The following command will download the fasta files for all results available in genbank with COX1 in the title:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r COX1[Title]  
-or  
-nsdpy --request COX1[Title]  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r COX1[Title]
+or
+nsdpy --request COX1[Title]
 </pre></div>
 </div>
 <p><em>These two requests are equivalent.</em></p>
@@ -121,7 +121,7 @@ nsdpy --request COX1[Title]
 <li><p>COX1[Title] is the user’s query. It is the same format as the one you would use to query the nucleotide database on NCBI from a web browser.</p></li>
 </ul>
 <p><ins>Example 2</ins></p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “((mitochondrion[Title] AND complete[Title] AND Bryozoa[Organism]”
 </pre></div>
 </div>
 </div>
@@ -147,11 +147,11 @@ If no API key is provided the program works as well (might be a little slower). 
 </div>
 <div class="section" id="verbose">
 <h3>Verbose<a class="headerlink" href="#verbose" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-v (or --verbose)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-v (or --verbose)
 </pre></div>
 </div>
 <p>Displays more text output in the terminal, such as progression of downloads and analysis.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-q (or --quiet)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-q (or --quiet)
 </pre></div>
 </div>
 <p>No text output is displayed in the terminal.</p>
@@ -159,7 +159,7 @@ If no API key is provided the program works as well (might be a little slower). 
 </div>
 <div class="section" id="gene-selection">
 <h3>Gene selection<a class="headerlink" href="#gene-selection" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c [PATTERNS] (or --cds [PATTERNS])  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c [PATTERNS] (or --cds [PATTERNS])
 </pre></div>
 </div>
 <p>The program will download the cds_fasta files instead of the fasta files. The cds_fasta file is a FASTA format of the nucleotide sequences corresponding to all CDS features.
@@ -178,13 +178,13 @@ python3 nsdpy.py -r “This is a query to NCBI” -cv</p>
 </div>
 <div class="section" id="optional-output-files">
 <h3>Optional output files<a class="headerlink" href="#optional-output-files" title="Permalink to this headline">¶</a></h3>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-T (or --taxids)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-T (or --taxids)
 </pre></div>
 </div>
 <p>The program will write a text file with the accession version identifiers found and their corresponding TaxIDs separated by a tabulation.
 Example:<br />
 nsdpy -r “ITS2” -T</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-S (or --summary)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-S (or --summary)
 </pre></div>
 </div>
 <p>The program will write a table in the working directory that summarize the downloads made with the script. The file is a tab separated file. The columns describe the following parameters:</p>
@@ -199,11 +199,11 @@ nsdpy -r “ITS2” -T</p>
 <div class="section" id="taxonomy">
 <h3>Taxonomy<a class="headerlink" href="#taxonomy" title="Permalink to this headline">¶</a></h3>
 <p>If any of the following taxonomy options is selected the TaxID, organism name and lineage will be added to the information line of the sequences in the fasta files.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-i (or information)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-i (or information)
 </pre></div>
 </div>
 <p>Just add the TaxID, organism name and lineage to the information lines of the fasta files. All the sequences are still being written in one file.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-k (or --kingdom)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-k (or --kingdom)
 </pre></div>
 </div>
 <p>The program will write the results in four different fasta files (one for the Metazoa, one for the Fungi, one for the Plantae and one for Others containing the sequence that doesn’t correspond to the above three kingdom)<br />
@@ -211,7 +211,7 @@ Example:<br />
 nsdpy -r “users query” -k<br />
 or<br />
 nsdpy -r “users query” –kingdom</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-p (or --phylum)  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-p (or --phylum)
 </pre></div>
 </div>
 <p>The program will write the results in different fasta files, one file per phylum.<br />
@@ -223,7 +223,7 @@ nsdpy -r “users query” –phylum</p>
 <strong>Plantae</strong> = [‘Chlorophyta’, ‘Charophyta’, ‘Bryophyta’, ‘Marchantiophyta’, ‘Lycopodiophyta’, ‘Ophioglossophyta’, ‘Pteridophyta’,’Cycadophyta’, ‘Ginkgophyta’, ‘Gnetophyta’, ‘Pinophyta’, ‘Magnoliophyta’, ‘Equisetidae’, ‘Psilophyta’, ‘Bacillariophyta’,’Cyanidiophyta’, ‘Glaucophyta’, ‘Prasinophyceae’,’Rhodophyta’]
 <strong>Fungi</strong> = [‘Chytridiomycota’, ‘Zygomycota’, ‘Ascomycota’, ‘Basidiomycota’, ‘Glomeromycota’]
 <strong>Metazoa</strong> = [‘Acanthocephala’, ‘Acoelomorpha’, ‘Annelida’, ‘Arthropoda’, ‘Brachiopoda’, ‘Ectoprocta’, ‘Bryozoa’, ‘Chaetognatha’, ‘Chordata’, ‘Cnidaria’, ‘Ctenophora’, ‘Cycliophora’, ‘Echinodermata’, ‘Echiura’, ‘Entoprocta’, ‘Gastrotricha’, ‘Gnathostomulida’, ‘Hemichordata’, ‘Kinorhyncha’, ‘Loricifera’, ‘Micrognathozoa’, ‘Mollusca’, ‘Nematoda’, ‘Nematomorpha’, ‘Nemertea’, ‘Onychophora’,’Orthonectida’, ‘Phoronida’, ‘Placozoa’, ‘Plathelminthes’, ‘Porifera’, ‘Priapulida’, ‘Rhombozoa’, ‘Rotifera’, ‘Sipuncula’, ‘Tardigrada’, ‘Xenoturbella’]</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-l FILTERS  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-l FILTERS
 </pre></div>
 </div>
 <p>or<br />
@@ -243,7 +243,7 @@ nsdpy -r “users query” -s<br />
 or<br />
 nsdpy -r “users query” –species<br />
 The program will write one file for the each of the different lowest taxonomic level found.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “users query” -ssss  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>nsdpy -r “users query” -ssss
 </pre></div>
 </div>
 <p>The program will write one file for the each of the 4th (notice the 4s) lowest taxonomic level found, if the lineage is For example: “ cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Spiralia, Lophotrochozoa, Annelida, Polychaeta, Errantia, Phyllodocida, Nereididae, Platynereis” the program will select “Errantia”).</p>
@@ -272,7 +272,7 @@ More information about the filtering process:<br />
 The sequences are filtered according to the information line of their fasta file: if the regex used to filter the sequence is in the information line then the sequence is kept, otherwise it is not kept in the final result. If the sequence has no fasta file for the coding sequences the program downloads and parses the Genbank file. In that file the program looks in the “product”, “gene” , “genesynonym” and “note” fields to find the regex used as filter. It extracts the sequence according to these annotations.</p>
 <p>The program will write information about the run and the number of sequences found in the terminal with the option -v.
 The sequences will be dispatched in different fasta files depending on their kingdom with the option -k.</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c CO[1Ii] COX[1i]  
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-c CO[1Ii] COX[1i]
 </pre></div>
 </div>
 <p>The program will filter the genes for which the annotation in the CDS fasta file or the genbank file match the following regular expressions (patterns): CO[1Ii] COX[1i].</p>
@@ -360,7 +360,7 @@ Then if the program doesn’t find a match for an accession version number in th
 
 
           </div>
-          
+
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -424,18 +424,18 @@ Then if the program doesn’t find a match for an accession version number in th
     </div>
     <div class="footer">
       &copy;2021, Raphael Hebert.
-      
+
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
-      
+
       |
       <a href="_sources/main.md.txt"
           rel="nofollow">Page source</a>
     </div>
 
-    
 
-    
+
+
   </body>
 </html>
