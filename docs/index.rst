@@ -1,12 +1,12 @@
 
-NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌ 
+NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ with‌ ‌python3‌
 =================================
 
 .. toctree::
    main.md
    :maxdepth: 2
    :caption: Table of Contents:
-   
+
    Overview
    Major steps
    Workflow
@@ -16,8 +16,8 @@ NSDPY:‌ ‌Batch‌‌ ‌downloading‌ ‌from‌ ‌NCBI‌ ‌database‌ 
    Instruction for use from Google Colab
    Additional comments
 
-   
-   
+
+
 
 
 
