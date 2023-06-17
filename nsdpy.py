@@ -1,4 +1,4 @@
-__version__ = '0.3.5-beta'
+__version__ = '0.3.6-beta'
 __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
@@ -110,8 +110,6 @@ def main():
         verb = 1
 
     #taxonomy
-    print(f'args: {args}')
-    print(args.custom[0])
     if args.kingdom:
         classif = 1
         options_report.append("--kingdom (-k)")
@@ -123,15 +121,12 @@ def main():
         classif = args.levels
         options_report.append(f"--levels (-l) {args.levels[0]}")
     elif args.custom[0]:
-        print(f'"--custom (-x) {args.custom[0]}')
-        print(args.custom[0])
         classif = args.custom[0]
         options_report.append(f"--custom (-x) {args.custom}")
     elif args.species:
         classif = args.species
         if args.species != 2:
             options_report.append("--species (-" + "s" * ( args.species - 2 ) + ")")
-    
     else:
         classif = 2
 

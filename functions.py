@@ -332,21 +332,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
     if verb and verb > 0:
         print(f'number of taxids:\t{len(data.keys())}')
 
-    if verb and verb > 0:
-        dup = {}
-        duplicate = 0
-        for TaxId in data.keys():
-            if data[TaxId]['dispatch'] in dup.keys():
-                duplicate = duplicate + 1
-                dup[data[TaxId]['dispatch']] = dup[data[TaxId]['dispatch']] + [TaxId]
-            else: 
-                dup[data[TaxId]['dispatch']] = [TaxId]
-        print('--------------- DUPLICATES ---------------')
-        print(f'Number of taxa for which more than one TaxId has been found: {duplicate}')
-        for key in dup.keys():
-            if len(dup[key]) > 1:
-                print(f'{key}: {dup[key]}')
-        print('------------------------------------------')
     return data
 
 
