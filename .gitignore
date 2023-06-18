@@ -2,3 +2,4 @@ venv/*
 NSDPY_results/*
 ressources.txt
 report.tsv
+.env
