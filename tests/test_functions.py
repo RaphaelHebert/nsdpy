@@ -8,6 +8,7 @@ import requests
 sys.path.insert(0, "..")
 
 # local import
+from xmls import esummary_response
 from constants import EFETCH_URL, ESUMMARY_URL, ESEARCH_URL
 from functions import countDown, dispatch, download, esearchquery, taxids
 from data import METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY
@@ -159,8 +160,9 @@ class testsFunctions(unittest.TestCase):
         expected_response = {}
         expected_response[sequence_1]=taxid_1
         expected_response[sequence_2]=taxid_2
+
         class Taxids_results:
-            text = f'Hello<Item Name="AccessionVersion" Type="String">{sequence_1}</Item><Item Name="TaxId" Type="Integer">{taxid_1}</Item>\nHello<Item Name="AccessionVersion" Type="String">{sequence_2}</Item><Item Name="TaxId" Type="Integer">{taxid_2}</Item>\n'
+            text = esummary_response.response
 
         path = './'
         mocked_query_key = "mockedQueryKey!"
@@ -177,10 +179,11 @@ class testsFunctions(unittest.TestCase):
         parameters['retmode'] = "text"
 
         get_content_mock.return_value = Taxids_results()
+        print(get_content_mock.get_value())
         result = taxids(params, path)
         self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
-        self.assertEqual(result, expected_response)
+        self.assertEqual(result, esummary_response.expected_output)
 
 
 

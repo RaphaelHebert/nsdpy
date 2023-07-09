@@ -141,7 +141,6 @@ def taxids(params, path, OPTIONS=None):
         parameters['rettype'] = "uilist"
         parameters['retmode'] = "text"
         result = download(parameters, esummaryaddress)
-
         #comments
         if verb and verb > 1:
             print(countDown(x, nb, "Downloading TaxIDs"))
@@ -155,6 +154,11 @@ def taxids(params, path, OPTIONS=None):
             else:
                 try:
                     version = line.split('<Item Name="AccessionVersion" Type="String">', 1)[1]
+                    ''' 
+                        AccessionVersion is made of accession number plus versions number. 
+                        Accession numbers pattern: [alphabetical prefix][series of digits]
+                        see: https://www.ncbi.nlm.nih.gov/books/NBK470040/#:~:text=The%20accession%20number%20is%20a,the%20accession%20munumber%2C%20an%20Accession.
+                    '''
                     seqnb = version.split("<")[0].strip()
                 except IndexError:
                     pass
