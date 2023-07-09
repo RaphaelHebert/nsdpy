@@ -47,7 +47,7 @@ def download(parameters, address):
     
     INPUTS: download(parameters, address)
         parameters: DICT, parameters of the get request to the API
-        Address: STRING, API bas URL
+        Address: STRING, API base URL
 
     OUTPUT: object, <class 'requests.models.Response'>
         if an exceptions.HTTPError is triggered: returns 1
