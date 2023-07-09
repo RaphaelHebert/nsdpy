@@ -1,11 +1,16 @@
 import sys
 import io
+import os
 import unittest
 from unittest.mock import patch, DEFAULT
 import requests
+import filecmp
 
 # add parent directory to imports list
 sys.path.insert(0, "..")
+
+# add data
+sys. path.insert(0,'./data') 
 
 # local import
 from xmls import esummary_response
@@ -164,7 +169,7 @@ class testsFunctions(unittest.TestCase):
         class Taxids_results:
             text = esummary_response.response
 
-        path = './'
+        path = '.'
         mocked_query_key = "mockedQueryKey!"
         mocked_webenv = { "web": 'ok', 'mocked': True }
         mocked_count = 600 
@@ -178,15 +183,15 @@ class testsFunctions(unittest.TestCase):
         parameters['rettype'] = "uilist"
         parameters['retmode'] = "text"
 
+        OPTIONS = ("","","",True,"","") #write output file 
+
         get_content_mock.return_value = Taxids_results()
-        print(get_content_mock.get_value())
-        result = taxids(params, path)
+        result = taxids(params, path, OPTIONS)
         self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
         self.assertEqual(result, esummary_response.expected_output)
-
-
-
+        self.assertTrue(filecmp.cmp("./data/TaxIDs_expected.txt", './TaxIDs.txt'))
+        if os.path.exists('./TaxIDs.txt'): os.remove('./TaxIDs.txt')
 
 if __name__=='__main__':
     unittest.main()
