@@ -1,15 +1,13 @@
-response_1 = '''<?xml version="1.0" ?>
-<!DOCTYPE TaxaSet PUBLIC "-//NLM//DTD Taxon, 14th January 2002//EN" "https://www.ncbi.nlm.nih.gov/entrez/query/DTD/taxon.dtd">
-<TaxaSet><Taxon>
-    <TaxId>407149</TaxId>
-    <ScientificName>Zerynthia polyxena latevittata</ScientificName>
+response_1 = '''    <TaxId>330314</TaxId>
+    <ScientificName>Parnassius mnemosyne ochraceus</ScientificName>
     <OtherNames>
+        <Synonym>Parnassius mnemosyne ochracea</Synonym>
         <Name>
             <ClassCDE>authority</ClassCDE>
-            <DispName>Zerynthia polyxena latevittata Verity, 1919</DispName>
+            <DispName>Parnassius mnemosyne ochraceus Austaut, 1891</DispName>
         </Name>
     </OtherNames>
-    <ParentTaxId>330376</ParentTaxId>
+    <ParentTaxId>213953</ParentTaxId>
     <Rank>subspecies</Rank>
     <Division>Invertebrates</Division>
     <GeneticCode>
@@ -20,7 +18,7 @@ response_1 = '''<?xml version="1.0" ?>
         <MGCId>5</MGCId>
         <MGCName>Invertebrate Mitochondrial</MGCName>
     </MitoGeneticCode>
-    <Lineage>cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa; Bilateria; Protostomia; Ecdysozoa; Panarthropoda; Arthropoda; Mandibulata; Pancrustacea; Hexapoda; Insecta; Dicondylia; Pterygota; Neoptera; Endopterygota; Amphiesmenoptera; Lepidoptera; Glossata; Neolepidoptera; Heteroneura; Ditrysia; Obtectomera; Papilionoidea; Papilionidae; Parnassiinae; Zerynthini; Zerynthia; Zerynthia polyxena</Lineage>
+    <Lineage>cellular organisms; Eukaryota; Opisthokonta; Metazoa; Eumetazoa; Bilateria; Protostomia; Ecdysozoa; Panarthropoda; Arthropoda; Mandibulata; Pancrustacea; Hexapoda; Insecta; Dicondylia; Pterygota; Neoptera; Endopterygota; Amphiesmenoptera; Lepidoptera; Glossata; Neolepidoptera; Heteroneura; Ditrysia; Obtectomera; Papilionoidea; Papilionidae; Parnassiinae; Parnassini; Parnassius; Driopa; Parnassius mnemosyne</Lineage>
     <LineageEx>
         <Taxon>
             <TaxId>131567</TaxId>
@@ -163,21 +161,30 @@ response_1 = '''<?xml version="1.0" ?>
             <Rank>subfamily</Rank>
         </Taxon>
         <Taxon>
-            <TaxId>213900</TaxId>
-            <ScientificName>Zerynthini</ScientificName>
+            <TaxId>213899</TaxId>
+            <ScientificName>Parnassini</ScientificName>
             <Rank>tribe</Rank>
         </Taxon>
         <Taxon>
-            <TaxId>132709</TaxId>
-            <ScientificName>Zerynthia</ScientificName>
+            <TaxId>42291</TaxId>
+            <ScientificName>Parnassius</ScientificName>
             <Rank>genus</Rank>
         </Taxon>
         <Taxon>
-            <TaxId>330376</TaxId>
-            <ScientificName>Zerynthia polyxena</ScientificName>
+            <TaxId>447264</TaxId>
+            <ScientificName>Driopa</ScientificName>
+            <Rank>subgenus</Rank>
+        </Taxon>
+        <Taxon>
+            <TaxId>213953</TaxId>
+            <ScientificName>Parnassius mnemosyne</ScientificName>
             <Rank>species</Rank>
         </Taxon>
     </LineageEx>
-    <CreateDate>2006/10/12 13:07:25</CreateDate>
-    <UpdateDate>2016/08/18 11:57:58</UpdateDate>
-    <PubDate>2006/12/31 18:00:13</PubDate>'''
+    <CreateDate>2005/05/25 09:22:24</CreateDate>
+    <UpdateDate>2018/11/26 11:54:50</UpdateDate>
+    <PubDate>2008/02/29 18:00:18</PubDate>
+</Taxon>
+
+</TaxaSet>
+'''

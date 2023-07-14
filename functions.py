@@ -326,7 +326,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
                 print(seq)
                 lineage = parseClassifXML(seq)
                 print(lineage)
-                break
                 if classif in lineage.keys():
                     dicttemp['dispatch'] = lineage[classif].replace(' ', '_')
                 else: 
@@ -996,33 +995,39 @@ def tsv_file_writer(path, data, OPTIONS=None):
 def parseClassifXML(xml):
     classif = {}
 
+# parse the name before lineageex as well 
     if "</ScientificName>" in xml and "<ScientificName>" in xml:
-        scientificName, newXml = xml.split('</ScientificName>', 1)
+        scientificName, _ = xml.split('</ScientificName>', 1)
         _, scientificName = scientificName.split('<ScientificName>', 1)
         classif['ScientificName'] = scientificName
 
     if "</LineageEx>" in xml and "<LineageEx>" in xml:
-        lineageInfo, _ = xml.split("</LineageEx>", 1)
-        _, lineageInfo = lineageInfo.split("<LineageEx>", 1)
-        taxons = lineageInfo.split("</Taxon>")
-        
-        for taxon in taxons:
-            keys = classif.keys()
-            if "</ScientificName>" in taxon and "<ScientificName>" in taxon and "<Rank>" in taxon and "</Rank>" in taxon:
-                name, _ = taxon.split("</ScientificName>", 1)
-                _, name = name.split("<ScientificName>", 1)
-                name = re.sub(r"\s+", '_', name)
-                rank, _ = taxon.split("</Rank>", 1)
-                _, rank= rank.split("<Rank>", 1)
-                rank = re.sub(r"\s+", '_', rank)
-                if rank == 'clade':
-                    if rank not in keys: 
-                        classif['clade'] = [name]
-                    else:
-                        classif['clade'].append(name)
+        lineageInfo, general_infos = xml.split("</LineageEx>", 1)
+        general_infos, lineageInfo = lineageInfo.split("<LineageEx>", 1)
+
+    if "</Rank>" in general_infos and "<Rank>" in general_infos and 'ScientificName' in classif:
+        taxon_info = general_infos.split("</Rank>", 1)[0].split("<Rank>", 1)[1]
+        classif[taxon_info] = classif['ScientificName']
+
+
+    taxons = lineageInfo.split("</Taxon>")
+    for taxon in taxons:
+        keys = classif.keys()
+        if "</ScientificName>" in taxon and "<ScientificName>" in taxon and "<Rank>" in taxon and "</Rank>" in taxon:
+            name, _ = taxon.split("</ScientificName>", 1)
+            _, name = name.split("<ScientificName>", 1)
+            name = re.sub(r"\s+", '_', name)
+            rank, _ = taxon.split("</Rank>", 1)
+            _, rank= rank.split("<Rank>", 1)
+            rank = re.sub(r"\s+", '_', rank)
+            if rank == 'clade':
+                if rank not in keys: 
+                    classif['clade'] = [name]
                 else:
-                    classif[rank] = name
-                    
+                    classif['clade'].append(name)
+            else:
+                classif[rank] = name
+                
     return classif
 
 
