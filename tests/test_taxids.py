@@ -7,7 +7,7 @@ import filecmp
 # local import
 from constants import ESUMMARY_URL
 from functions import taxids
-from data import data, esummary_response
+from data import esummary_response
     
 mocked_response_xms , expected_output = attrgetter("mocked_response_xms", "expected_output")(esummary_response)
 

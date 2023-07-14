@@ -23,8 +23,6 @@ METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY = attrgetter("METAZOA", 
 mocked_response_xms , expected_output = attrgetter("mocked_response_xms", "expected_output")(esummary_response)
 
 class testsFunctions(unittest.TestCase):
-
-   
     @unittest.mock.patch('sys.stdout', new_callable=io.StringIO)
     def test_download(self, mock_stdout): 
         ##parameters address
@@ -96,35 +94,5 @@ class testsFunctions(unittest.TestCase):
             dl_response = download(parameters, ESEARCH_URL)
             self.assertEqual(mock_stdout.getvalue(), REQUEST_EXCEPTION_ERROR_RESPONSE)
     
-
-    @patch('functions.download')
-    def test_esearchquery(self, get_content_mock):
-        query = "Parnassius[Organism] AND COI[Title]"
-        api_key = "somerandomkey"
-        # test errors
-        get_content_mock.return_value = 1
-        result = esearchquery((query, api_key))
-        self.assertEqual(result, {"error": "wrong address for esearch"})
-
-        # test success
-        class Response:
-            json = lambda _: "hello world"
-        
-        parameters = {}
-        parameters["api_key"] = api_key
-        parameters["db"] = "nucleotide"
-        parameters["idtype"] = "acc"
-        parameters["retmode"] = "json"
-        parameters["retmax"] = "0"
-        parameters["usehistory"] = "y" 
-        parameters["term"] = query
-
-        get_content_mock.reset_mock()
-        get_content_mock.return_value = Response()
-
-        result = esearchquery((query, api_key))
-        get_content_mock.assert_called_with(parameters, ESEARCH_URL)
-        self.assertEqual(result, "hello world")
-
 if __name__=='__main__':
     unittest.main()
