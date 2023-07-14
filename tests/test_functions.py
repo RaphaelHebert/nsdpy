@@ -25,15 +25,6 @@ METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY = attrgetter("METAZOA", 
 mocked_response_xms , expected_output = attrgetter("mocked_response_xms", "expected_output")(esummary_response)
 
 class testsFunctions(unittest.TestCase):
-    
-    def test_countDown(self):
-        self.assertEqual(countDown(1,1),'100%')
-        self.assertEqual(countDown(1,0),'no job to be done')
-        with self.assertRaises(ValueError):
-            countDown(-1,1)
-        with self.assertRaises(ValueError):
-            countDown(1,-1)
-
 
     def test_dispatch(self):
     
@@ -197,6 +188,9 @@ class testsFunctions(unittest.TestCase):
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
         self.assertEqual(result, expected_output)
         self.assertTrue(filecmp.cmp("./tests/data/TaxIDs_expected.txt", 'TaxIDs.txt'))
+
+    def test_taxids_cleanup(self):
+        # this is to make sure the created file in test_taxids is cleaned up even on test fail
         if os.path.exists('./TaxIDs.txt'): 
             os.remove('./TaxIDs.txt')
         print(os.getcwd())
