@@ -55,7 +55,7 @@ def main():
         action="count", default=2)
     group3.add_argument("-x", "--custom",\
         help="classify the result for the given taxonomic level",\
-        nargs="+")
+        nargs="+", type=str)
 
     # information line
     parser.add_argument("-i", "--information", help="just add the taxonomic information in the information line of the output file(s)", action="store_true" )
@@ -120,7 +120,7 @@ def main():
         # here isinstance(classif, list) == true
         classif = args.levels
         options_report.append(f"--levels (-l) {args.levels[0]}")
-    elif args.custom[0]:
+    elif args.custom:
         classif = args.custom[0]
         options_report.append(f"--custom (-x) {args.custom}")
     elif args.species:

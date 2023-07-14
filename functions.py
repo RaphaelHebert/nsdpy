@@ -291,6 +291,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
             print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
 
         ## analyse the results from efetch
+        # split batch results string in single results array
         result = result.text.split('</Taxon>\n<Taxon>')
 
         for seq in result:
@@ -323,9 +324,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
             ## dispatch
             if isinstance(classif, str):
-                print(seq)
                 lineage = parseClassifXML(seq)
-                print(lineage)
                 if classif in lineage.keys():
                     dicttemp['dispatch'] = lineage[classif].replace(' ', '_')
                 else: 
