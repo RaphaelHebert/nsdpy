@@ -323,7 +323,10 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
             ## dispatch
             if isinstance(classif, str):
+                print(seq)
                 lineage = parseClassifXML(seq)
+                print(lineage)
+                break
                 if classif in lineage.keys():
                     dicttemp['dispatch'] = lineage[classif].replace(' ', '_')
                 else: 
