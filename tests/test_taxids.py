@@ -1,11 +1,11 @@
 import os
 import unittest
-from unittest.mock import patch, DEFAULT
+from unittest.mock import patch
 from operator import attrgetter
 import filecmp
 
 # local import
-from constants import ESUMMARY_URL, ESEARCH_URL
+from constants import ESUMMARY_URL
 from functions import taxids
 from data import data, esummary_response
     
