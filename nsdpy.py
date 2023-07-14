@@ -1,4 +1,4 @@
-__version__ = '0.3.6-beta'
+__version__ = '0.3.7-beta'
 __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
