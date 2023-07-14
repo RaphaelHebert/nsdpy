@@ -17,7 +17,7 @@ sys. path.insert(0,'./xmls')
 # local import
 
 from constants import ESEARCH_URL
-from functions import download, esearchquery
+from functions import download
 from data import data, esummary_response  #METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY
 METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY = attrgetter("METAZOA", "FUNGI", "PLANTAE", "WRONG_LINEAGE", "CUSTOM_TAXONOMY")(data)
 mocked_response_xms , expected_output = attrgetter("mocked_response_xms", "expected_output")(esummary_response)
