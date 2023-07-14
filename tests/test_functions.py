@@ -5,6 +5,7 @@ import unittest
 from unittest.mock import patch, DEFAULT
 import requests
 import filecmp
+from operator import attrgetter
 
 # add parent directory to imports list
 sys.path.insert(0, "..")
@@ -12,11 +13,16 @@ sys.path.insert(0, "..")
 # add data
 sys. path.insert(0,'./data') 
 
+# add data
+sys. path.insert(0,'./xmls') 
+
 # local import
-from xmls import esummary_response
+
 from constants import EFETCH_URL, ESUMMARY_URL, ESEARCH_URL
 from functions import countDown, dispatch, download, esearchquery, taxids
-from data import METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY
+from data import data, esummary_response  #METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY
+METAZOA, FUNGI, PLANTAE, WRONG_LINEAGE, CUSTOM_TAXONOMY = attrgetter("METAZOA", "FUNGI", "PLANTAE", "WRONG_LINEAGE", "CUSTOM_TAXONOMY")(data)
+mocked_response_xms , expected_output = attrgetter("mocked_response_xms", "expected_output")(esummary_response)
 
 class testsFunctions(unittest.TestCase):
     
@@ -155,9 +161,9 @@ class testsFunctions(unittest.TestCase):
         self.assertEqual(result, "hello world")
 
 
-    @patch('sys.stdout', new_callable=io.StringIO)
+    # @patch('sys.stdout', new_callable=io.StringIO)mock_stdout
     @patch('functions.download')
-    def test_taxids(self, get_content_mock, mock_stdout):
+    def test_taxids(self, get_content_mock ):
         sequence_1 = '1234567890'
         taxid_1 = '!@122'
         sequence_2 = '0987654321'
@@ -167,7 +173,7 @@ class testsFunctions(unittest.TestCase):
         expected_response[sequence_2]=taxid_2
 
         class Taxids_results:
-            text = esummary_response.response
+            text = mocked_response_xms
 
         path = '.'
         mocked_query_key = "mockedQueryKey!"
@@ -189,9 +195,12 @@ class testsFunctions(unittest.TestCase):
         result = taxids(params, path, OPTIONS)
         self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
-        self.assertEqual(result, esummary_response.expected_output)
-        self.assertTrue(filecmp.cmp("./data/TaxIDs_expected.txt", './TaxIDs.txt'))
-        if os.path.exists('./TaxIDs.txt'): os.remove('./TaxIDs.txt')
+        self.assertEqual(result, expected_output)
+        self.assertTrue(filecmp.cmp("./tests/data/TaxIDs_expected.txt", 'TaxIDs.txt'))
+        if os.path.exists('./TaxIDs.txt'): 
+            os.remove('./TaxIDs.txt')
+        print(os.getcwd())
+        print(os.listdir('.'))
 
 if __name__=='__main__':
     unittest.main()
