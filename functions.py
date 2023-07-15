@@ -823,7 +823,7 @@ def genbankfields(text, genelist):
     dictfield["taxo"] = taxo
     dictfield["organism"] = organism    
 
-    ###Definition line (to use if information option is not selected)
+    ### Definition line (to use if information option is not selected)
     try:
         definition = text.split('DEFINITION', 1)[1]
         definition = definition.split('ACCESSION', 1)[0]
@@ -831,7 +831,7 @@ def genbankfields(text, genelist):
         definition = "not found"
     dictfield["definition"] = "".join(definition.split("\n"))
 
-    ###DNA sequence
+    ### DNA sequence
     try:
         dna = text.split("ORIGIN")[1].splitlines()
         dna = [d.strip().strip('1234567890') for d in dna]
@@ -840,17 +840,21 @@ def genbankfields(text, genelist):
         dna = []
     dictfield["dna"] = dna
 
-    ###look for all the CDS, their gene names or product names (== protein) and locations and sequences
-    ##and protein_id, frame
+    ### look for all the CDS, their gene names or product names (== protein) and locations and sequences
+    ## and protein_id, frame
     seqgene = text.split("  gene  ")
     for seq in seqgene:
         dictgene = {}
+        print('dna', dna)
+        print('dictgene', dictgene)
+        print('seq', seq)
         dictgene = search(dna, dictgene, seq)
+        print('dictgene', dictgene)
         seqcds = seq.split("  CDS  ")[1:]
         for seq1 in seqcds:
             dictcds = search(dna, dictfield, seq1)
             if genelist:
-                ##check if target is found
+                ## check if target is found
                 check = [1 for reg in genelist if re.findall(reg, dictcds["product"], flags=re.IGNORECASE) or re.findall(reg, dictcds["gene"], flags=re.IGNORECASE)\
                 or re.findall(reg, dictcds["note"], flags=re.IGNORECASE) or re.findall(reg, dictcds["genesynonym"], flags=re.IGNORECASE)]
                 try:
