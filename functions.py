@@ -995,21 +995,25 @@ def parseClassifXML(xml):
     classif = {}
 
 # parse the name before lineageex as well 
+    general_infos = ''
+    lineage_info = ''
+    taxon = []
+
     if "</ScientificName>" in xml and "<ScientificName>" in xml:
         scientificName, _ = xml.split('</ScientificName>', 1)
         _, scientificName = scientificName.split('<ScientificName>', 1)
         classif['ScientificName'] = scientificName
 
     if "</LineageEx>" in xml and "<LineageEx>" in xml:
-        lineageInfo, general_infos = xml.split("</LineageEx>", 1)
-        general_infos, lineageInfo = lineageInfo.split("<LineageEx>", 1)
+        lineage_info, general_infos = xml.split("</LineageEx>", 1)
+        general_infos, lineage_info = lineage_info.split("<LineageEx>", 1)
 
     if "</Rank>" in general_infos and "<Rank>" in general_infos and 'ScientificName' in classif:
         taxon_info = general_infos.split("</Rank>", 1)[0].split("<Rank>", 1)[1]
         classif[taxon_info] = classif['ScientificName']
 
 
-    taxons = lineageInfo.split("</Taxon>")
+    taxons = lineage_info.split("</Taxon>")
     for taxon in taxons:
         keys = classif.keys()
         if "</ScientificName>" in taxon and "<ScientificName>" in taxon and "<Rank>" in taxon and "</Rank>" in taxon:
