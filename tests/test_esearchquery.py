@@ -5,9 +5,9 @@ from unittest.mock import patch
 from functions import esearchquery
 from constants import ESEARCH_URL
 
+
 class testsFunctions(unittest.TestCase):
-    
-    @patch('functions.download')
+    @patch("functions.download")
     def test_esearchquery(self, get_content_mock):
         query = "Parnassius[Organism] AND COI[Title]"
         api_key = "somerandomkey"
@@ -19,14 +19,14 @@ class testsFunctions(unittest.TestCase):
         # test success
         class Response:
             json = lambda _: "hello world"
-        
+
         parameters = {}
         parameters["api_key"] = api_key
         parameters["db"] = "nucleotide"
         parameters["idtype"] = "acc"
         parameters["retmode"] = "json"
         parameters["retmax"] = "0"
-        parameters["usehistory"] = "y" 
+        parameters["usehistory"] = "y"
         parameters["term"] = query
 
         get_content_mock.reset_mock()
@@ -37,5 +37,5 @@ class testsFunctions(unittest.TestCase):
         self.assertEqual(result, "hello world")
 
 
-if __name__=='__main__':
+if __name__ == "__main__":
     unittest.main()

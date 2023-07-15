@@ -1,4 +1,4 @@
-mocked_response_xms = ('''<DocSum>
+mocked_response_xms = """<DocSum>
         <Id>1691430259</Id>
         <Item Name="Caption" Type="String">MH518723</Item>
         <Item Name="Title" Type="String">Parnassius nomion isolate BMS03 cytochrome c oxidase subunit I (COI) gene, partial cds; mitochondrial</Item>
@@ -49,7 +49,11 @@ mocked_response_xms = ('''<DocSum>
         <Item Name="AccessionVersion" Type="String">MH518721.1</Item>
 </DocSum>
 
-</eSummaryResult>''')
+</eSummaryResult>"""
 
 
-expected_output = {"MH518723.1": "213955", "MH518722.1": "213955", "MH518721.1": "213955"}
+expected_output = {
+    "MH518723.1": "213955",
+    "MH518722.1": "213955",
+    "MH518721.1": "213955",
+}

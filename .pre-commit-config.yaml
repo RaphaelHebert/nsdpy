@@ -13,7 +13,7 @@ repos:
     hooks:
       - id: unittest
         name: unittest
-        entry: python -m unittest tests/test_functions.py
+        entry: python -m unittest discover tests
         language: python
         "types": [python]
         ## args: ["-p '*test.py'"] # Probably this option is absolutely not needed.
