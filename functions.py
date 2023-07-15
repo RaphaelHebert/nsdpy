@@ -80,10 +80,22 @@ def download(parameters, address):
 
 
 def esearchquery(QUERY):
-    ##unpack QUERY:
+    """
+
+    Sends a query to ncbi esearch engine
+
+    INPUTS: esearchquery(QUERY)
+        query: (TUPLE) (query: STRING, apikey: STRING)
+
+    OUTPUTS: dict
+        the result of the submitted query
+
+    """
+
+    ## unpack QUERY:
     (query, api_key) = QUERY
 
-    ##build api address
+    ## build api address
     esearchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     # parameters
     parameters = {}
@@ -97,7 +109,7 @@ def esearchquery(QUERY):
     # user's query
     parameters["term"] = query
 
-    ###send request to the API
+    ### send request to the API
     y = download(parameters, esearchaddress)
     if y == 1:
         return {"error": "wrong address for esearch"}
@@ -105,11 +117,24 @@ def esearchquery(QUERY):
 
 
 def taxids(params, path, OPTIONS=None):
+    """
+    sends queries by batches to esummary E-utility
+    parse the response to map taxids to accession numbers
+    if -T writes a textfile
 
+    INPUTS: taxids(params, path, OPTIONS)
+        params: (TUPLE) (querykey, webenv, count)
+        path: (STRING) output folder path
+        OPTIONS: (TUPLE) (verb, _, _, args.taxids, _, _)
+
+    OUTPUTS: dict { accession_number: TaxIDs }
+        if -T textfile
+
+    """
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
 
-    ##unpack parameters
+    ## unpack parameters
     (querykey, webenv, count) = params
     (verb, _, _, fileoutput, _, _) = OPTIONS
 
@@ -117,7 +142,7 @@ def taxids(params, path, OPTIONS=None):
     taxid = ""
     seqnb = ""
 
-    ##retreive the taxids sending batches of accession numbers to esummary
+    ## retreive the taxids sending batches of accession numbers to esummary
     retmax = 200
     if count < retmax:
         retmax = count
@@ -128,7 +153,7 @@ def taxids(params, path, OPTIONS=None):
         nb = (count // retmax) + 1
 
     for x in range(nb):
-        ##build the API address
+        ## build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
         # parameters
         parameters = {}
@@ -172,9 +197,9 @@ def taxids(params, path, OPTIONS=None):
                     dict_ids[seqnb] = taxid
 
     if fileoutput:
-        ##filename
+        ## filename
         filename = "TaxIDs.txt"
-        ##path to filename
+        ## path to filename
         path = path + "/" + filename
         with open(path, "a") as summary:
             [summary.write(f"{key}  {value}\n") for key, value in dict_ids.items()]
@@ -191,7 +216,7 @@ def dispatch(lineage, classif):
         lineage: LIST
         classif: INT or LIST
     """
-    ###Phylums
+    ### Phylums
     Plantae = [
         "Chlorophyta",
         "Charophyta",
