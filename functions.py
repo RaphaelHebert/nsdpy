@@ -678,6 +678,22 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
 
 def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+    """
+    Retrieves fasta files from nuccore db calls and parse it find
+
+    INPUTS
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        dict_taxo: (DICT) { tadId: dicttemp }
+        QUERY: (TUPLE) (query: STRING, apikey: STRING)
+        list_of_ids: (LIST) [accession_version_numbers]
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+        (LIST) [ matching_accession_number ]
+            if selected tsv fils and/or info
+
+    """
 
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
