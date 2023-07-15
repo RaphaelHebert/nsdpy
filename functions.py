@@ -1233,6 +1233,19 @@ def search(dna, dictentry, s):
 
 
 def tsv_file_writer(path, data, OPTIONS=None):
+    """
+
+    Writes a tsv file with the given data
+
+    INPUTS:
+        path: (STRING) output_path
+        data: (TUPLE) (name (STRING), seqid (STRING), taxid (STRING), lineage (STRING), dna (STRING))
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+        (VOID) path.tsv
+
+    """
 
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
