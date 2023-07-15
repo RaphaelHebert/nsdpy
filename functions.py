@@ -327,18 +327,31 @@ def dispatch(lineage, classif):
 
 # query taxonomy with efetch, returns a dict with taxid as key and info in a dict as value
 def completetaxo(idlist, QUERY, OPTIONS):
+    """
+    Query efetch with the given list of taxIds
 
-    ##unpack parameters
+    INPUTS: completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
+        list_of_TaxIDs: (LIST) [STRING,]
+        QUERY: (TUPLE) (_, api_key)
+        OPTIONS: (TUPLE) (verb, _, classif, _, _, _)
+
+    OUTPUTS: (DICT) { tadId: dicttemp }
+        taxId: (STRING) taxId
+        dicttemp: (DICT) { Name: (STRING), Lineage: (STRING), dispatch: (STRING) }
+
+    """
+
+    ## unpack parameters
     (_, api_key) = QUERY
     (verb, _, classif, _, _, _) = OPTIONS
 
     if verb and verb > 0:
         print("retrieving taxonomy...")
 
-    ##dictionnary that will be returned
+    ## dictionnary that will be returned
     data = {}
     idlist = [i.split(".")[0] for i in idlist]
-    ##retreive the taxonomy sending batches of TaxIds to efetch
+    ## retreive the taxonomy sending batches of TaxIds to efetch
     # number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
@@ -348,12 +361,12 @@ def completetaxo(idlist, QUERY, OPTIONS):
         nb = (count // retmax) + 1
 
     for x in range(nb):
-        ##slice the idlist
+        ## slice the idlist
         retstart = x * retmax
         idsublist = idlist[retstart : (retstart + retmax)]
         idsublist = ",".join(idsublist)
 
-        ##build API address
+        ## build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
         # parameters
@@ -362,14 +375,14 @@ def completetaxo(idlist, QUERY, OPTIONS):
         if api_key:
             parameters["api_key"] = api_key
 
-        ##loop until download is correct
+        ## oop until download is correct
         result = download(parameters, efetchaddress)
 
         # comments
         if verb > 1:
             print(f"{round((int(retstart)/count)*100, 1)} % of the taxonomy found")
 
-        ##analyse the results from efetch
+        ## analyse the results from efetch
         result = result.text.split("</Taxon>\n<Taxon>")
 
         for seq in result:
@@ -400,7 +413,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
             lineage = Lineage.split("; ")
             dicttemp["Lineage"] = lineage
 
-            ##dispatch
+            ## dispatch
             dicttemp["dispatch"] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
@@ -414,13 +427,29 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
 ## Download the CDS fasta files by batch of 'retmax' for the seq access found by an esearch request returning a querykey and a webenv variable
 def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+    """
+
+    Query eftch with batches of ids
+    Parse the result to find match for gene in genelist
+
+    a list of the accession numbers for which a gene (from genelist) have been found (LIST)
+    INPUTS:
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        QUERY: (TUPLE) (_, api_key)
+        list_of_ids: (LIST) [accession_version_numbers]
+        OPTION: (TUPLE) (verb: (STRING), args.cds (LIST), classif (INT, or LIST), _, _, args.information (BOOL))
+
+    OUTPUTS: (LIST) [accession_number] matches genelist/results
+
+    """
 
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
 
     ## Unpack parameters
     (_, api_key) = QUERY
-    (verb, genelist, classif, _, tsv, information) = OPTIONS
+    (verb, genelist, classif, _, _, information) = OPTIONS
 
     # Comment:
     if verb and verb > 0:
@@ -465,7 +494,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
 
-        ##analyse the results
+        ## analyse the results
         sublist = extract(
             path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb
         )
