@@ -1,29 +1,87 @@
- #import from standard library
+# import from standard library
 import os
 import re
 import csv
 from collections import Counter
-#third party imports
-import requests             #https://requests.readthedocs.io/en/master/
 
-ESEARCH_URL = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi'
+# third party imports
+import requests  # https://requests.readthedocs.io/en/master/
+
+ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
-PLANTAE = ['Chlorophyta', 'Charophyta', 'Bryophyta', 'Marchantiophyta', 'Lycopodiophyta', 'Ophioglossophyta', 'Pteridophyta',\
-    'Cycadophyta', 'Ginkgophyta', 'Gnetophyta', 'Pinophyta', 'Magnoliophyta', 'Equisetidae', 'Psilophyta', 'Bacillariophyta',\
-    'Cyanidiophyta', 'Glaucophyta', 'Prasinophyceae','Rhodophyta']
+PLANTAE = [
+    "Chlorophyta",
+    "Charophyta",
+    "Bryophyta",
+    "Marchantiophyta",
+    "Lycopodiophyta",
+    "Ophioglossophyta",
+    "Pteridophyta",
+    "Cycadophyta",
+    "Ginkgophyta",
+    "Gnetophyta",
+    "Pinophyta",
+    "Magnoliophyta",
+    "Equisetidae",
+    "Psilophyta",
+    "Bacillariophyta",
+    "Cyanidiophyta",
+    "Glaucophyta",
+    "Prasinophyceae",
+    "Rhodophyta",
+]
 
-FUNGI = ['Chytridiomycota', 'Zygomycota', 'Ascomycota', 'Basidiomycota', 'Glomeromycota']
+FUNGI = [
+    "Chytridiomycota",
+    "Zygomycota",
+    "Ascomycota",
+    "Basidiomycota",
+    "Glomeromycota",
+]
 
-METAZOA = ['Acanthocephala', 'Acoelomorpha', 'Annelida', 'Arthropoda', 'Brachiopoda', 'Ectoprocta', 'Bryozoa', 'Chaetognatha',\
-    'Chordata', 'Cnidaria', 'Ctenophora', 'Cycliophora', 'Echinodermata', 'Echiura', 'Entoprocta', 'Gastrotricha', 'Gnathostomulida',\
-    'Hemichordata', 'Kinorhyncha', 'Loricifera', 'Micrognathozoa', 'Mollusca', 'Nematoda', 'Nematomorpha', 'Nemertea', 'Onychophora'\
-    'Orthonectida', 'Phoronida', 'Placozoa', 'Plathelminthes', 'Porifera', 'Priapulida', 'Rhombozoa', 'Rotifera', 'Sipuncula',\
-    'Tardigrada', 'Xenoturbella']
+METAZOA = [
+    "Acanthocephala",
+    "Acoelomorpha",
+    "Annelida",
+    "Arthropoda",
+    "Brachiopoda",
+    "Ectoprocta",
+    "Bryozoa",
+    "Chaetognatha",
+    "Chordata",
+    "Cnidaria",
+    "Ctenophora",
+    "Cycliophora",
+    "Echinodermata",
+    "Echiura",
+    "Entoprocta",
+    "Gastrotricha",
+    "Gnathostomulida",
+    "Hemichordata",
+    "Kinorhyncha",
+    "Loricifera",
+    "Micrognathozoa",
+    "Mollusca",
+    "Nematoda",
+    "Nematomorpha",
+    "Nemertea",
+    "Onychophora" "Orthonectida",
+    "Phoronida",
+    "Placozoa",
+    "Plathelminthes",
+    "Porifera",
+    "Priapulida",
+    "Rhombozoa",
+    "Rotifera",
+    "Sipuncula",
+    "Tardigrada",
+    "Xenoturbella",
+]
 
-    
-def countDown(iteration, total, message=''):
+
+def countDown(iteration, total, message=""):
     """
     Take the number of iteration, the range of a forloop and a message and output a message with the percent of job done
 
@@ -33,50 +91,50 @@ def countDown(iteration, total, message=''):
     message: STRING
 
     OUTPUT: STRING
-        
+
     """
-    
+
     if message:
         message = message + ": "
 
     if iteration < 0:
-        raise ValueError('iteration must be a positive integer')
-    
+        raise ValueError("iteration must be a positive integer")
+
     if total < 0:
-        raise ValueError('total must be a positive integer')
+        raise ValueError("total must be a positive integer")
 
     if total < 1:
-        return f'{message}no job to be done'
+        return f"{message}no job to be done"
 
     iteration = iteration + 1
-    left = round( ( iteration / total ) * 100, 1 )
+    left = round((iteration / total) * 100, 1)
     if left > 100:
         left = 100
-    return f'{message}{left}%'
+    return f"{message}{left}%"
 
 
 def download(parameters, address):
-    """ 
+    """
     Sends requests to the API until getting a result
-    
+
     INPUTS: download(parameters, address)
         parameters: DICT, parameters of the get request to the API
         Address: STRING, API base URL
 
     OUTPUT: object, <class 'requests.models.Response'>
         if an exceptions.HTTPError is triggered: returns 1
-    """ 
+    """
     connect = 0
     while True:
         try:
-            result = requests.get(address, params = parameters, timeout = 60)
+            result = requests.get(address, params=parameters, timeout=60)
             break
         except requests.exceptions.HTTPError as errh:
             print("Http Error:", errh)
-            return(1)
+            return 1
 
         except requests.exceptions.Timeout as to:
-            print(f'Connection Timed out\n{to}')
+            print(f"Connection Timed out\n{to}")
             continue
 
         except requests.exceptions.ConnectionError as _:
@@ -84,11 +142,11 @@ def download(parameters, address):
                 continue
             elif connect == 0:
                 connect = 1
-                print(f'Connection error (please reconnect)\n ')
+                print(f"Connection error (please reconnect)\n ")
                 continue
 
         except requests.exceptions.RequestException as e:
-            print(f'An exception occurred:\n{e}')
+            print(f"An exception occurred:\n{e}")
             continue
 
     return result
@@ -106,70 +164,72 @@ def esearchquery(QUERY):
     parameters["idtype"] = "acc"
     parameters["retmode"] = "json"
     parameters["retmax"] = "0"
-    parameters["usehistory"] = "y"    
+    parameters["usehistory"] = "y"
     # user's query
     parameters["term"] = query
-    
+
     ### send request to the API
     y = download(parameters, ESEARCH_URL)
     if y == 1:
-        return ({"error": "wrong address for esearch"})  
-    return (y.json())
+        return {"error": "wrong address for esearch"}
+    return y.json()
 
 
 def taxids(params, path, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
+        OPTIONS = ("", "", "", "", "", "")
 
     ## unpack parameters
     (querykey, webenv, count) = params
     (verb, _, _, fileoutput, _, _) = OPTIONS
 
     dict_ids = {}
-    taxid = ''
-    seqnb = ''
+    taxid = ""
+    seqnb = ""
 
     ## retreive the taxids sending batches of accession numbers to esummary
-    retmax = 200 
+    retmax = 200
     if count < retmax:
         retmax = count
 
     if count % retmax == 0:
-        nb = count//retmax
-    else: 
-        nb = (count//retmax) + 1
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
 
     for x in range(nb):
-        # parameters 
+        # parameters
         parameters = {}
-        parameters['db'] = "taxonomy"
-        parameters['query_key'] = querykey
-        parameters['WebEnv'] = webenv
-        parameters['retstart'] = str(x * retmax)
-        parameters['retmax'] = str(retmax)
-        parameters['rettype'] = "uilist"
-        parameters['retmode'] = "text"
+        parameters["db"] = "taxonomy"
+        parameters["query_key"] = querykey
+        parameters["WebEnv"] = webenv
+        parameters["retstart"] = str(x * retmax)
+        parameters["retmax"] = str(retmax)
+        parameters["rettype"] = "uilist"
+        parameters["retmode"] = "text"
         result = download(parameters, ESUMMARY_URL)
 
         # comments
         if verb and verb > 1:
             print(countDown(x, nb, "Downloading TaxIDs"))
-            
+
         ### extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
-            if len(line.split('<DocSum>')) > 1:
-                taxid = ''
-                seqnb = ''
+            if len(line.split("<DocSum>")) > 1:
+                taxid = ""
+                seqnb = ""
             else:
                 try:
-                    version = line.split('<Item Name="AccessionVersion" Type="String">', 1)[1]
-                    ''' 
-                        AccessionVersion is made of accession number plus versions number. 
+                    version = line.split(
+                        '<Item Name="AccessionVersion" Type="String">', 1
+                    )[1]
+                    """
+                        AccessionVersion is made of accession number plus versions number.
                         Accession numbers pattern: [alphabetical prefix][series of digits]
                         see: https://www.ncbi.nlm.nih.gov/books/NBK470040/#:~:text=The%20accession%20number%20is%20a,the%20accession%20munumber%2C%20an%20Accession.
-                    '''
+                    """
                     seqnb = version.split("<")[0].strip()
                 except IndexError:
                     pass
@@ -177,40 +237,40 @@ def taxids(params, path, OPTIONS=None):
                 TaxId = line.split('<Item Name="TaxId" Type="Integer">', 1)
                 if len(TaxId) > 1:
                     taxid = TaxId[1].split("<")[0].strip()
-                
+
                 if seqnb:
-                    dict_ids[seqnb] = taxid 
+                    dict_ids[seqnb] = taxid
 
     if fileoutput:
         ## filename
         filename = "TaxIDs.txt"
         ## path to filename
         path = path + "/" + filename
-        with open(path, 'a') as summary:
-            [summary.write(f'{key}  {value}\n') for key, value in dict_ids.items()]
+        with open(path, "a") as summary:
+            [summary.write(f"{key}  {value}\n") for key, value in dict_ids.items()]
 
     return dict_ids
 
 
 def dispatch(lineage, classif):
     """
-        take the lineage of a sequence and the classification option and return the base name of the file to store 
-        the sequence.
+    take the lineage of a sequence and the classification option and return the base name of the file to store
+    the sequence.
 
-        INPUTS: dispatch(lineage, classif) 
-            lineage: List or Dict
-            classif: Int or List
+    INPUTS: dispatch(lineage, classif)
+        lineage: List or Dict
+        classif: Int or List
     """
     ## no option selected
     if classif == 2:
         return "sequences"
-    
+
     ## user gave list of taxonomic levels (option -l --levels)
     if isinstance(classif, str):
         ## type checking
         if not isinstance(lineage, dict):
             return "OTHERS"
-    
+
     ## user gave list of taxonomic levels (option -l --levels)
     if isinstance(classif, list):
         try:
@@ -218,23 +278,27 @@ def dispatch(lineage, classif):
         except IndexError:
             other = "OTHERS"
         return other
-    
+
     ## phylums
     if classif == 0:
         try:
-            Phylum = [phy for phy in lineage if phy in METAZOA or phy in FUNGI or phy in PLANTAE][0]
+            Phylum = [
+                phy
+                for phy in lineage
+                if phy in METAZOA or phy in FUNGI or phy in PLANTAE
+            ][0]
         except IndexError:
-            Phylum = 'OTHERS'
+            Phylum = "OTHERS"
         return Phylum
-    
+
     ## kingdoms
     if classif == 1:
-        if 'METAZOA' in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
+        if "METAZOA" in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
             kingdom = "METAZOA"
         elif "ViridiPLANTAE" in lineage or len(list(set(lineage) & set(PLANTAE))) > 0:
-            kingdom = "PLANTAE" 
-        elif "FUNGI" in  lineage or len(list(set(lineage) & set(FUNGI))) > 0:
-            kingdom = "FUNGI" 
+            kingdom = "PLANTAE"
+        elif "FUNGI" in lineage or len(list(set(lineage) & set(FUNGI))) > 0:
+            kingdom = "FUNGI"
         else:
             kingdom = "OTHERS"
         return kingdom
@@ -261,82 +325,82 @@ def completetaxo(idlist, QUERY, OPTIONS):
     data = {}
     idlist = [i.split(".")[0] for i in idlist]
     ##retreive the taxonomy sending batches of TaxIds to efetch
-    #number of TaxIds to be sent to the API at once
+    # number of TaxIds to be sent to the API at once
     retmax = 100
     count = len(idlist)
-    if count % retmax == 0:                                    
-        nb = count//retmax
-    else: 
-        nb = (count//retmax) + 1
+    if count % retmax == 0:
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
 
     for x in range(nb):
         ## slice the idlist
         retstart = x * retmax
-        idsublist = idlist[retstart:(retstart+retmax)]
-        idsublist = ','.join(idsublist)
+        idsublist = idlist[retstart : (retstart + retmax)]
+        idsublist = ",".join(idsublist)
 
         ## build API address
         parameters = {}
-        #parameters 
-        parameters['db'] = "taxonomy"
-        parameters['id'] = idsublist
+        # parameters
+        parameters["db"] = "taxonomy"
+        parameters["id"] = idsublist
         if api_key:
-            parameters['api_key'] = api_key
+            parameters["api_key"] = api_key
 
         ## loop until download is correct
         result = download(parameters, EFETCH_URL)
 
         # comments
         if verb > 1:
-            print(f'{round((int(retstart)/count)*100, 1)} % of the taxonomy found')
+            print(f"{round((int(retstart)/count)*100, 1)} % of the taxonomy found")
 
         ## analyse the results from efetch
         # split batch results string in single results array
-        result = result.text.split('</Taxon>\n<Taxon>')
+        result = result.text.split("</Taxon>\n<Taxon>")
 
         for seq in result:
             dicttemp = {}
             try:
-                TaxId, _ = seq.split('</TaxId>', 1)
-                _, TaxId = TaxId.split('<TaxId>', 1)
-                TaxId = TaxId.strip()    
+                TaxId, _ = seq.split("</TaxId>", 1)
+                _, TaxId = TaxId.split("<TaxId>", 1)
+                TaxId = TaxId.strip()
             except ValueError:
-                TaxId = 'not found'
+                TaxId = "not found"
 
-            #check if the taxonomy for a given TaxId is already in memory
+            # check if the taxonomy for a given TaxId is already in memory
             if TaxId in data.keys():
                 continue
-            
-            try:
-                Name , _ = seq.split('</ScientificName>', 1)
-                _, Name = Name.split('<ScientificName>', 1)    
-            except ValueError:
-                Name = 'not found'
-            dicttemp['Name'] = Name
 
             try:
-                Lineage , _ = seq.split('</Lineage>', 1)
-                _, Lineage = Lineage.split('<Lineage>', 1)  
+                Name, _ = seq.split("</ScientificName>", 1)
+                _, Name = Name.split("<ScientificName>", 1)
             except ValueError:
-                Lineage = 'not found'
-            lineage = Lineage.split('; ')
-            dicttemp['Lineage'] = lineage
+                Name = "not found"
+            dicttemp["Name"] = Name
+
+            try:
+                Lineage, _ = seq.split("</Lineage>", 1)
+                _, Lineage = Lineage.split("<Lineage>", 1)
+            except ValueError:
+                Lineage = "not found"
+            lineage = Lineage.split("; ")
+            dicttemp["Lineage"] = lineage
 
             ## dispatch
             if isinstance(classif, str):
                 lineage = parseClassifXML(seq)
                 if classif in lineage.keys():
-                    dicttemp['dispatch'] = lineage[classif].replace(' ', '_')
-                else: 
-                    dicttemp['dispatch'] = 'OTHERS'
+                    dicttemp["dispatch"] = lineage[classif].replace(" ", "_")
+                else:
+                    dicttemp["dispatch"] = "OTHERS"
             else:
-                dicttemp['dispatch'] = dispatch(lineage, classif)
+                dicttemp["dispatch"] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
 
     # comments
     if verb and verb > 0:
-        print(f'number of taxids:\t{len(data.keys())}')
+        print(f"number of taxids:\t{len(data.keys())}")
 
     return data
 
@@ -345,11 +409,11 @@ def completetaxo(idlist, QUERY, OPTIONS):
 def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
-    
+        OPTIONS = ("", "", "", "", "", "")
+
     ## Unpack parameters
     (_, api_key) = QUERY
-    (verb, genelist, classif, _, tsv, information)= OPTIONS
+    (verb, genelist, classif, _, tsv, information) = OPTIONS
 
     # Comment:
     if verb and verb > 0:
@@ -360,28 +424,28 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     count = len(list_of_ids)
 
     # Number of accession numbers to be sent at each API query
-    retmax = 200 
+    retmax = 200
     if count < retmax:
         retmax = count
 
     if count % retmax == 0:
-        nb = count//retmax
-    else: 
-        nb = (count//retmax) + 1
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
 
     for x in range(nb):
         ## Split the list of ids
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        # Parameters 
+        # Parameters
         parameters = {}
-        parameters['id'] = ",".join(ids)
-        parameters['db'] = "nuccore"
+        parameters["id"] = ",".join(ids)
+        parameters["db"] = "nuccore"
         if api_key:
             parameters["api_key"] = api_key
-        parameters['rettype'] = "fasta_cds_na"
-        parameters['retmode'] = "text"
+        parameters["rettype"] = "fasta_cds_na"
+        parameters["retmode"] = "text"
 
         ## Download
         raw_result = download(parameters, EFETCH_URL)
@@ -392,13 +456,15 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             result_fasta = raw_result.split(">lcl|")[1:]
             sublist = [r.split("_cds")[0] for r in result_fasta]
 
-        ##analyse the results     
-        sublist = extract(path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
+        ##analyse the results
+        sublist = extract(
+            path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb
+        )
         found = found + sublist
 
-        #comments
+        # comments
         if verb > 1:
-            print(countDown(x, nb , "Downloading the cds_fasta files"))
+            print(countDown(x, nb, "Downloading the cds_fasta files"))
 
     return found
 
@@ -406,10 +472,9 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
+        OPTIONS = ("", "", "", "", "", "")
 
     (_, _, classif, _, tsv, information) = OPTIONS
-
 
     ###find gene in a seq and write to ouput file
     ##extract accession number
@@ -419,7 +484,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         return
 
     ##extract SeqID
-    try: 
+    try:
         SeqID = seq.split(">lcl|")[1].split(" [")[0]
     except IndexError:
         return
@@ -428,45 +493,49 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
     try:
         TaxId = dict_ids[key]
     except KeyError:
-        return 
+        return
 
     ## Extract info
-    #Lineage
-    try:                                                       
-        Lineage = dict_taxo[TaxId]['Lineage']
+    # Lineage
+    try:
+        Lineage = dict_taxo[TaxId]["Lineage"]
     except KeyError:
         Lineage = "no info"
 
-    #Name
+    # Name
     try:
-        Name = dict_taxo[TaxId]['Name']  
+        Name = dict_taxo[TaxId]["Name"]
     except KeyError:
         Name = "no info"
 
-    #dispatch
+    # dispatch
     try:
-        dispatch = dict_taxo[TaxId]['dispatch']
+        dispatch = dict_taxo[TaxId]["dispatch"]
     except KeyError:
         dispatch = "others"
     if classif == 2:
         dispatch = "sequences"
 
     ##check if genes
-    check = [1 for reg_exp in genelist if len(re.split(reg_exp, seq, flags=re.IGNORECASE)) > 1]
+    check = [
+        1
+        for reg_exp in genelist
+        if len(re.split(reg_exp, seq, flags=re.IGNORECASE)) > 1
+    ]
     if 1 in check or not genelist:
         ##get the Sequence
-        _, dna = seq.split('\n', 1)
-        
+        _, dna = seq.split("\n", 1)
+
         # if dict_taxo and information:
         if information:
-            Lineage = ", ".join(Lineage) 
-            fasta_Name = "_".join(Name.split())                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          
-            info_line = fasta_Name + '-' + SeqID + ' | ' + TaxId + ' | ' + Lineage 
+            Lineage = ", ".join(Lineage)
+            fasta_Name = "_".join(Name.split())
+            info_line = fasta_Name + "-" + SeqID + " | " + TaxId + " | " + Lineage
         else:
-            info_line = seq.split('\n', 1)[0]
+            info_line = seq.split("\n", 1)[0]
 
         # Make only one > and \n
-        info_line = '>' + info_line.lstrip(">")
+        info_line = ">" + info_line.lstrip(">")
         info_line = info_line.rstrip("\n") + "\n"
 
         ## Create folders is tsv is selected
@@ -483,13 +552,13 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
             tsv_file = path + "/" + dispatch + ".tsv"
 
         # write fasta file
-        with open(fasta_file, 'a') as new:
+        with open(fasta_file, "a") as new:
             new.write(str(info_line))
-            new.write(str(dna).rstrip("\n") + "\n") 
+            new.write(str(dna).rstrip("\n") + "\n")
 
         # write tsv file
         if tsv:
-            # Format dna sequence 
+            # Format dna sequence
             dna = "".join(dna.split("\n"))
 
             # write .tsv file
@@ -506,14 +575,14 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
     # Comments
     if verb and verb > 1:
-        print('analyzing the results...')
-    
+        print("analyzing the results...")
+
     found = []
 
     # Extract genes to filter
-    genelist = [ "=" + gene + "]" for gene in genelist]  
+    genelist = ["=" + gene + "]" for gene in genelist]
 
-    seq = ''
+    seq = ""
     text = text.splitlines()
 
     if not text:
@@ -523,14 +592,16 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
         if len(line.split(">lcl|")) > 1:
             if seq:
                 try:
-                    result = subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS)
+                    result = subextract(
+                        seq, path, dict_ids, dict_taxo, genelist, OPTIONS
+                    )
                     if result:
                         found.append(result)
                 except:
                     pass
-            seq = str(line)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+            seq = str(line)
         else:
-            seq = seq + '\n' + line
+            seq = seq + "\n" + line
 
     return found
 
@@ -538,11 +609,11 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
-    
+        OPTIONS = ("", "", "", "", "", "")
+
     ## Unpack parameters
     (_, api_key) = QUERY
-    (verb, _, classif, _, tsv, information)= OPTIONS
+    (verb, _, classif, _, tsv, information) = OPTIONS
 
     if verb and verb > 0:
         print("Downloading the fasta files...")
@@ -551,40 +622,40 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     count = len(list_of_ids)
 
     # Number of accession numbers to be sent at each API query
-    retmax = 200 
+    retmax = 200
     if count < retmax:
         retmax = count
 
     if count % retmax == 0:
-        nb = count//retmax
-    else: 
-        nb = (count//retmax) + 1
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
 
     for x in range(nb):
         ## Split the list of ids
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        # Parameters 
+        # Parameters
         parameters = {}
-        parameters['db'] = "nuccore"
-        parameters['id'] = ",".join(ids)
+        parameters["db"] = "nuccore"
+        parameters["id"] = ",".join(ids)
         if api_key:
             parameters["api_key"] = api_key
-        parameters['rettype'] = "fasta"
-        parameters['retmode'] = "text"
+        parameters["rettype"] = "fasta"
+        parameters["retmode"] = "text"
 
         ## Download
         raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
 
         ## Extract available informations
-        result = raw_result.split('>')
+        result = raw_result.split(">")
 
         ## Store analyzed Accession version numbers
         for seq in result:
             try:
-                id_line, dna = seq.split('\n', 1)
+                id_line, dna = seq.split("\n", 1)
             except ValueError:
                 continue
 
@@ -592,33 +663,33 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
                 key = id_line.split()[0]
             except IndexError:
                 continue
-            
-            #from dict_ids
+
+            # from dict_ids
             try:
                 taxid = dict_ids[key]
             except KeyError:
-                taxid = 'not found'
-            
+                taxid = "not found"
+
             # from dict_taxo
             try:
-                lineage = dict_taxo[taxid]['Lineage']
+                lineage = dict_taxo[taxid]["Lineage"]
                 lineage = ", ".join(lineage)
             except KeyError:
-                lineage = 'not found'
-            
+                lineage = "not found"
+
             try:
-                name = dict_taxo[taxid]['Name']
+                name = dict_taxo[taxid]["Name"]
             except KeyError:
-                name = 'not found'
-            
+                name = "not found"
+
             try:
-                dispatch = dict_taxo[taxid]['dispatch']
+                dispatch = dict_taxo[taxid]["dispatch"]
             except KeyError:
-                name = 'others'
-            
+                name = "others"
+
             if classif == 2:
                 dispatch = "sequences"
-            
+
             data = (name, key, taxid, lineage, dna)
 
             # Create folders for .tsv files and .fasta files
@@ -634,12 +705,21 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
                 fasta_file = path + "/" + dispatch + ".fasta"
                 tsv_file = path + "/" + dispatch + ".tsv"
 
-
             # Write fasta file
-            if information: 
+            if information:
                 fasta_name = "_".join(name.split())
-                id_line = fasta_name + "-" + key + " | " + taxid + " | " + lineage + " | " + id_line
-            with open(fasta_file, 'a') as f:
+                id_line = (
+                    fasta_name
+                    + "-"
+                    + key
+                    + " | "
+                    + taxid
+                    + " | "
+                    + lineage
+                    + " | "
+                    + id_line
+                )
+            with open(fasta_file, "a") as f:
                 f.write(f">{id_line}\n")
                 f.write(f"{dna}\n")
 
@@ -649,7 +729,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             keys.append(key)
 
         if verb > 1:
-            print(countDown(x, nb, "Downloading the fasta files"))  
+            print(countDown(x, nb, "Downloading the fasta files"))
 
     return keys
 
@@ -664,16 +744,16 @@ def duplicates(listofaccess, path):
             nb += 1
             with open(filename, "a") as f:
                 f.write(f"{key}   {value}\n")
-    return(nb)
+    return nb
 
 
 def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
+        OPTIONS = ("", "", "", "", "", "")
 
     if len(list_of_ids) < 1:
-        return ([],[])
+        return ([], [])
 
     ##unpack params
     (verb, genelist, classif, _, tsv, information) = OPTIONS
@@ -682,52 +762,51 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
     ##build output unique filename
     notfound = path + "/notfound.txt"
 
-    #format the expression to be found in 'gene' (from gene and CDS section of the gb file)
+    # format the expression to be found in 'gene' (from gene and CDS section of the gb file)
     if genelist:
         genelist = ['[; "()]+' + gene + '["; ()]+' for gene in genelist]
 
-    #comments
+    # comments
     if verb and verb > 0:
         print("Downloading the GenBank files...")
 
-    remain = []         #accessions not downloaded from previous iteration
-    analysed = []       #accessions successfully donwnloaded and found in the gb file
-    genefound = []      ##accessions with some cds found or matching the filter if filter(s)
+    remain = []  # accessions not downloaded from previous iteration
+    analysed = []  # accessions successfully donwnloaded and found in the gb file
+    genefound = []  ##accessions with some cds found or matching the filter if filter(s)
     count = len(list_of_ids)
     retmax = 10
     if count % retmax == 0:
-        nb = count//retmax
-    else: 
-        nb = (count//retmax) + 1
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
 
     for x in range(nb):
         ###################  API CALL  ##################
         ##slice the list of ids passed to the function
-        ids = list_of_ids[x * retmax:(x+1) * retmax]
+        ids = list_of_ids[x * retmax : (x + 1) * retmax]
         ##if some ids haven't been dl at the last call add them to this call
         if remain:
             ids = ids + remain
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
-        #parameters 
+        # parameters
         parameters = {}
-        parameters['db'] = "nuccore"
-        parameters['id'] = ids1
-        parameters['rettype'] = "gb"
-        parameters['retmode'] = "text"
+        parameters["db"] = "nuccore"
+        parameters["id"] = ids1
+        parameters["rettype"] = "gb"
+        parameters["retmode"] = "text"
         if api_key:
             parameters["api_key"] = api_key
-        
+
         ##loop until dl is correct
         result = download(parameters, EFETCH_URL)
         result = result.text
-
 
         ########################################################################
         #######################   ANALYZING RESULTS   ##########################
         ########################################################################
 
-        result = result.split('\n//')
+        result = result.split("\n//")
         ###extract the CDS for each asscession version number
         accessionlist = []
         for i, seq in enumerate(result[:-1]):
@@ -737,7 +816,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
             for dictCDS in listCDS:
                 if dictCDS:
                     accessionlist.append(dictCDS["version"])
-                    #select the gene if genes to select
+                    # select the gene if genes to select
                     if "gene" in dictCDS.keys():
                         ##genefound
                         genefound.append(dictCDS["version"])
@@ -748,10 +827,10 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
                             fasta_file = path + "/fasta/" + filename + ".fasta"
                         else:
                             fasta_file = path + "/" + filename + ".fasta"
-                        
-                        ##information line 
-                        taxo = ', '.join(taxo)
-                        
+
+                        ##information line
+                        taxo = ", ".join(taxo)
+
                         try:
                             taxid = dict_ids[dictCDS["version"]]
                         except IndexError:
@@ -759,41 +838,77 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
                         if information:
                             try:
-                                name = dict_taxo[taxid]['Name']
+                                name = dict_taxo[taxid]["Name"]
                                 name = "_".join(name.split())
                             except:
                                 name = "not found"
-                            info_line = ">" + name + "-" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " | " + taxid + " | " +  "".join(taxo).rstrip(".")
-                    
+                            info_line = (
+                                ">"
+                                + name
+                                + "-"
+                                + dictCDS["version"]
+                                + "_cds_"
+                                + dictCDS["proteinid"].strip('"')
+                                + " | "
+                                + taxid
+                                + " | "
+                                + "".join(taxo).rstrip(".")
+                            )
+
                         else:
-                            info_line = ">" + dictCDS["version"] + "_cds_" + dictCDS["proteinid"].strip('"') + " [gene=" + dictCDS["gene"] + "] " + "[protein=" + dictCDS["proteinid"] + "] " + \
-                                "[location=" + dictCDS["loc"].strip() + "] " + "[gbkey=CDS] " + "[definition=" + " ".join(dictCDS["definition"].split(" " * 12)).rstrip(".") + "]"
+                            info_line = (
+                                ">"
+                                + dictCDS["version"]
+                                + "_cds_"
+                                + dictCDS["proteinid"].strip('"')
+                                + " [gene="
+                                + dictCDS["gene"]
+                                + "] "
+                                + "[protein="
+                                + dictCDS["proteinid"]
+                                + "] "
+                                + "[location="
+                                + dictCDS["loc"].strip()
+                                + "] "
+                                + "[gbkey=CDS] "
+                                + "[definition="
+                                + " ".join(
+                                    dictCDS["definition"].split(" " * 12)
+                                ).rstrip(".")
+                                + "]"
+                            )
 
                         ## append to file
-                        with open(fasta_file, 'a') as a:
+                        with open(fasta_file, "a") as a:
                             a.write(f"{info_line}\n")
-                            [a.write(f'{"".join(list(dictCDS["sequence"])[i: i + 70]).upper()}\n') for i in range(0, len(dictCDS["sequence"]), 70)]
+                            [
+                                a.write(
+                                    f'{"".join(list(dictCDS["sequence"])[i: i + 70]).upper()}\n'
+                                )
+                                for i in range(0, len(dictCDS["sequence"]), 70)
+                            ]
 
         remain = list(set(accessionlist) - set(ids))
         analysed = analysed + accessionlist
 
-        #comments
+        # comments
         if verb > 1:
-            print(f'{round(((int(retstart))/count)*100, 1)} %  of the remaining  analysis done')
+            print(
+                f"{round(((int(retstart))/count)*100, 1)} %  of the remaining  analysis done"
+            )
 
     if remain:
         for number in remain:
-            with open(notfound, 'a') as nf:
-                nf.write(f'{number}    Accession number not found in gb files\n')
+            with open(notfound, "a") as nf:
+                nf.write(f"{number}    Accession number not found in gb files\n")
 
-    #accessions found in bg file wihtout matching gene
+    # accessions found in bg file wihtout matching gene
     nogene = list(set(analysed) - set(genefound))
     for number in nogene:
-        with open(notfound, 'a') as nf:
-            nf.write(f'{number}    No matching gene found in gb file\n')
+        with open(notfound, "a") as nf:
+            nf.write(f"{number}    No matching gene found in gb file\n")
 
     return analysed, genefound
-            
 
 
 def genbankfields(text, genelist):
@@ -803,8 +918,8 @@ def genbankfields(text, genelist):
     dna = []
     ##ACCESSION VERSION NUMBER
     try:
-        version = text.split('VERSION', 1)[1]
-        version = version.split('\n', 1)[0]
+        version = text.split("VERSION", 1)[1]
+        version = version.split("\n", 1)[0]
         version = version.split()[0]
         version = version.strip()
         dictfield["version"] = version
@@ -813,20 +928,20 @@ def genbankfields(text, genelist):
 
     ##ORGANISM And TAXO
     try:
-        taxo = text.split('ORGANISM', 1)[1]
-        taxo = taxo.split('REFERENCE')[0]
+        taxo = text.split("ORGANISM", 1)[1]
+        taxo = taxo.split("REFERENCE")[0]
         organism = taxo.splitlines()[0].strip()
-        taxo = ''.join(taxo.splitlines()[1:]).split("; ")
+        taxo = "".join(taxo.splitlines()[1:]).split("; ")
         taxo = [t.strip() for t in taxo]
     except IndexError:
         taxo, organism = "not found", "not found"
     dictfield["taxo"] = taxo
-    dictfield["organism"] = organism    
+    dictfield["organism"] = organism
 
     ### Definition line (to use if information option is not selected)
     try:
-        definition = text.split('DEFINITION', 1)[1]
-        definition = definition.split('ACCESSION', 1)[0]
+        definition = text.split("DEFINITION", 1)[1]
+        definition = definition.split("ACCESSION", 1)[0]
     except IndexError:
         definition = "not found"
     dictfield["definition"] = "".join(definition.split("\n"))
@@ -834,7 +949,7 @@ def genbankfields(text, genelist):
     ### DNA sequence
     try:
         dna = text.split("ORIGIN")[1].splitlines()
-        dna = [d.strip().strip('1234567890') for d in dna]
+        dna = [d.strip().strip("1234567890") for d in dna]
         dna = "".join("".join(dna).split())
     except IndexError:
         dna = []
@@ -851,40 +966,78 @@ def genbankfields(text, genelist):
             dictcds = search(dna, dictfield, seq1)
             if genelist:
                 ## check if target is found
-                check = [1 for reg in genelist if re.findall(reg, dictcds["product"], flags=re.IGNORECASE) or re.findall(reg, dictcds["gene"], flags=re.IGNORECASE)\
-                or re.findall(reg, dictcds["note"], flags=re.IGNORECASE) or re.findall(reg, dictcds["genesynonym"], flags=re.IGNORECASE)]
+                check = [
+                    1
+                    for reg in genelist
+                    if re.findall(reg, dictcds["product"], flags=re.IGNORECASE)
+                    or re.findall(reg, dictcds["gene"], flags=re.IGNORECASE)
+                    or re.findall(reg, dictcds["note"], flags=re.IGNORECASE)
+                    or re.findall(reg, dictcds["genesynonym"], flags=re.IGNORECASE)
+                ]
                 try:
                     if not check:
-                        if dictgene["location"][0][0] ==  dictcds["location"][0][0] and dictgene["location"][-1][1] ==  dictcds["location"][-1][1]:
-                            check = [1 for reg in genelist if re.findall(reg, dictgene["product"], flags=re.IGNORECASE) or re.findall(reg, dictgene["gene"], flags=re.IGNORECASE)\
-                            or re.findall(reg, dictgene["note"], flags=re.IGNORECASE) or re.findall(reg, dictgene["genesynonym"], flags=re.IGNORECASE)]
+                        if (
+                            dictgene["location"][0][0] == dictcds["location"][0][0]
+                            and dictgene["location"][-1][1]
+                            == dictcds["location"][-1][1]
+                        ):
+                            check = [
+                                1
+                                for reg in genelist
+                                if re.findall(
+                                    reg, dictgene["product"], flags=re.IGNORECASE
+                                )
+                                or re.findall(
+                                    reg, dictgene["gene"], flags=re.IGNORECASE
+                                )
+                                or re.findall(
+                                    reg, dictgene["note"], flags=re.IGNORECASE
+                                )
+                                or re.findall(
+                                    reg, dictgene["genesynonym"], flags=re.IGNORECASE
+                                )
+                            ]
                 except IndexError:
                     pass
                 if check:
                     listofdict.append(dictcds)
             else:
                 listofdict.append(dictcds)
-        
+
     if listofdict:
-        return listofdict, dna 
+        return listofdict, dna
     else:
         listofdict.append(dictfield)
         return listofdict, dna
-    
 
-def search(dna , dictentry, s):
+
+def search(dna, dictentry, s):
     dict1 = dict(dictentry)
-    s = s.split("RNA   ")[0].split("  misc_feature  ")[0].split("  gene  ")[0].split("repeat_region")[0]\
-        .split("transit_peptide")[0].split("mat_peptide")[0].split("3'UTR")[0].split("5'UTR")[0]
-    #Location and sequence
+    s = (
+        s.split("RNA   ")[0]
+        .split("  misc_feature  ")[0]
+        .split("  gene  ")[0]
+        .split("repeat_region")[0]
+        .split("transit_peptide")[0]
+        .split("mat_peptide")[0]
+        .split("3'UTR")[0]
+        .split("5'UTR")[0]
+    )
+    # Location and sequence
     if dna:
-    ##if join or complement:
+        ##if join or complement:
         try:
             loc = s.split("/")[0]
-            loc1 = loc.split(',')
-            loc1 = [(int(i.split('..')[0].strip("cmpletjoin(><) \n")), int(i.split('..')[1].strip("cmpletjoin(><) \n"))) for i in loc1]
-            sequence = "".join([dna[i[0]:i[1]] for i in loc1])
-        #else
+            loc1 = loc.split(",")
+            loc1 = [
+                (
+                    int(i.split("..")[0].strip("cmpletjoin(><) \n")),
+                    int(i.split("..")[1].strip("cmpletjoin(><) \n")),
+                )
+                for i in loc1
+            ]
+            sequence = "".join([dna[i[0] : i[1]] for i in loc1])
+        # else
         except IndexError:
             sequence = ""
             loc = "not found"
@@ -901,22 +1054,21 @@ def search(dna , dictentry, s):
     dict1["location"] = loc1
     dict1["loc"] = "".join(loc.split("\n"))
 
-    
-    #Product
+    # Product
     try:
         product = s.split('product="')[1].split('"')[0]
     except IndexError:
         product = "not found"
     dict1["product"] = product
 
-    #protein_id
-    try: 
+    # protein_id
+    try:
         proteinid = s.split("protein_id=")[1].split()[0]
     except IndexError:
         proteinid = "not found"
     dict1["proteinid"] = proteinid
 
-    #note
+    # note
     try:
         note = s.split("note=")[1].split("/")[0]
         note = "".join(note.split("\n"))
@@ -924,21 +1076,21 @@ def search(dna , dictentry, s):
         note = ""
     dict1["note"] = note
 
-    #gene
+    # gene
     try:
         gene = s.split("gene=")[1].split("\n")[0]
     except IndexError:
         gene = "not found"
     dict1["gene"] = gene
 
-    #gene_synonym
+    # gene_synonym
     try:
         genesynonym = s.split("gene_synonym=")[1].split("/")[0].strip("\n")
     except IndexError:
         genesynonym = "not found"
     dict1["genesynonym"] = genesynonym
 
-    #locus_tag
+    # locus_tag
     try:
         locustag = s.split("locus_tag=")[1].split()[0]
     except IndexError:
@@ -948,25 +1100,24 @@ def search(dna , dictentry, s):
     return dict1
 
 
-
 def tsv_file_writer(path, data, OPTIONS=None):
 
     if OPTIONS is None:
-        OPTIONS = ("","","","","","")
+        OPTIONS = ("", "", "", "", "", "")
 
-    (_, _, _, _, _, information) = OPTIONS   
+    (_, _, _, _, _, information) = OPTIONS
 
-        
     # check if the file already exists
     if not os.path.exists(path):
         with open(path, "a") as tsv_to_write:
             writer = csv.writer(tsv_to_write, delimiter="\t")
             if information:
-                writer.writerow(['Name', 'SeqID', 'TaxID', 'Lineage', 'sequence length', 'sequence'])
+                writer.writerow(
+                    ["Name", "SeqID", "TaxID", "Lineage", "sequence length", "sequence"]
+                )
             else:
-                writer.writerow(['SeqID', 'TaxID', 'sequence length', 'sequence'])
+                writer.writerow(["SeqID", "TaxID", "sequence length", "sequence"])
 
-    
     # unpack data
     (name, seqid, taxid, lineage, dna) = data
 
@@ -974,7 +1125,7 @@ def tsv_file_writer(path, data, OPTIONS=None):
 
     # write data
     with open(path, "a") as outtsv:
-        writer = csv.writer(outtsv, delimiter='\t')
+        writer = csv.writer(outtsv, delimiter="\t")
         if information:
             writer.writerow([name, seqid, taxid, lineage, len(dna), dna])
         else:
@@ -982,59 +1133,70 @@ def tsv_file_writer(path, data, OPTIONS=None):
 
     return
 
+
 """
     takes a string and parse it as xml format to extract the available taxonomy
-    
 
-    INPUTS: parseClassifXML(xml) 
+
+    INPUTS: parseClassifXML(xml)
         xml: string
     OUTPUTS:
         classif: dict
 """
+
+
 def parseClassifXML(xml):
     classif = {}
 
-# parse the name before lineageex as well 
-    general_infos = ''
-    lineage_info = ''
+    # parse the name before lineageex as well
+    general_infos = ""
+    lineage_info = ""
     taxon = []
 
     if "</ScientificName>" in xml and "<ScientificName>" in xml:
-        scientificName, _ = xml.split('</ScientificName>', 1)
-        _, scientificName = scientificName.split('<ScientificName>', 1)
-        classif['ScientificName'] = scientificName
+        scientificName, _ = xml.split("</ScientificName>", 1)
+        _, scientificName = scientificName.split("<ScientificName>", 1)
+        classif["ScientificName"] = scientificName
 
     if "</LineageEx>" in xml and "<LineageEx>" in xml:
         lineage_info, general_infos = xml.split("</LineageEx>", 1)
         general_infos, lineage_info = lineage_info.split("<LineageEx>", 1)
 
-    if "</Rank>" in general_infos and "<Rank>" in general_infos and 'ScientificName' in classif:
+    if (
+        "</Rank>" in general_infos
+        and "<Rank>" in general_infos
+        and "ScientificName" in classif
+    ):
         taxon_info = general_infos.split("</Rank>", 1)[0].split("<Rank>", 1)[1]
-        classif[taxon_info] = classif['ScientificName']
-
+        classif[taxon_info] = classif["ScientificName"]
 
     taxons = lineage_info.split("</Taxon>")
     for taxon in taxons:
         keys = classif.keys()
-        if "</ScientificName>" in taxon and "<ScientificName>" in taxon and "<Rank>" in taxon and "</Rank>" in taxon:
+        if (
+            "</ScientificName>" in taxon
+            and "<ScientificName>" in taxon
+            and "<Rank>" in taxon
+            and "</Rank>" in taxon
+        ):
             name, _ = taxon.split("</ScientificName>", 1)
             _, name = name.split("<ScientificName>", 1)
-            name = re.sub(r"\s+", '_', name)
+            name = re.sub(r"\s+", "_", name)
             rank, _ = taxon.split("</Rank>", 1)
-            _, rank= rank.split("<Rank>", 1)
-            rank = re.sub(r"\s+", '_', rank)
-            if rank == 'clade':
-                if rank not in keys: 
-                    classif['clade'] = [name]
+            _, rank = rank.split("<Rank>", 1)
+            rank = re.sub(r"\s+", "_", rank)
+            if rank == "clade":
+                if rank not in keys:
+                    classif["clade"] = [name]
                 else:
-                    classif['clade'].append(name)
+                    classif["clade"].append(name)
             else:
                 classif[rank] = name
-                
+
     return classif
 
 
-if __name__=="_main_":
+if __name__ == "_main_":
     countDown()
     download()
     dispatch()

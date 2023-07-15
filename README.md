@@ -20,29 +20,29 @@
 
 ## Introduction
 
-nsdpy (nucleotide or NCBI sequence downloader) aims to ease the download and sort of big bacth of DNA sequences from the NCBI database. 
+nsdpy (nucleotide or NCBI sequence downloader) aims to ease the download and sort of big bacth of DNA sequences from the NCBI database.
 It can also be usefull to filter the sequences based on their annotations.
 Using nsdpy the user can:
 
 - **Search** NCBI nucleotide database
 - **Download** the fasta files or the cds_fasta files corresponding to the result of the search
 - **Sort** the sequences based on their taxonomy
-- **Select** coding sequences from cds files based on the gene names using one or more regular expressions. 
+- **Select** coding sequences from cds files based on the gene names using one or more regular expressions.
 This can help the user retrieve some sequences for which the gene name is annotated in another field.
-- **Retrieve** the taxonomic information and add it to the output sequences.  
+- **Retrieve** the taxonomic information and add it to the output sequences.
 
 ## Quick start
 
-- Clone the repo from Github: 
-```bash 
+- Clone the repo from Github:
+```bash
 git clone https://github.com/RaphaelHebert/nsdpy.git
   ```
-- pip:  
+- pip:
 _depending on the user environment pip may be replaced by pip3 if pip3 is used_
-```bash 
+```bash
 pip install nsdpy
-```  
-*minimum python version for nsdpy: 3.8.2* 
+```
+*minimum python version for nsdpy: 3.8.2*
 
 - Google Colab: save a copy of [this notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing) in your drive.
 
@@ -58,12 +58,12 @@ pip install nsdpy
 ### Command line
 
 ```bash
-nsdpy -r "USER'S REQUEST" [OPTIONS] 
+nsdpy -r "USER'S REQUEST" [OPTIONS]
 ```
 
-## Authors and acknowledgment  
+## Authors and acknowledgment
 
-[Raphael Hebert](https://github.com/RaphaelHebert)  
+[Raphael Hebert](https://github.com/RaphaelHebert)
 [Emese Meglecz](https://github.com/meglecz)
 
 
@@ -75,9 +75,5 @@ Code and documentation copyright 2021 the nsdpy authors. Code released under the
 
 ## More Documentation
 
-Official documentation:  
+Official documentation:
 [Readthedocs](https://nsdpy.readthedocs.io/en/latest/main.html#overview)
-  
-
-
-

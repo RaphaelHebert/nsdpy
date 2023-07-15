@@ -6,7 +6,7 @@
 
 **help:** display the help
 ```bash
--h or --help 
+-h or --help
 ```
 
 ### POSITIONNAL ARGUMENTS
@@ -34,13 +34,13 @@
 **Verbose:** display more comments in the terminal
 
 ```bash
--v or --verbose 
+-v or --verbose
 ```
 
 **Quiet:** display less comments in the terminal
 
 ```bash
--q or --quiet 
+-q or --quiet
 ```
 
 #### Download and analyse
@@ -48,14 +48,14 @@
 **cds:** download the cds_fasta files. Uses  PATTERNS  as filter to filter the sequences in the cds_fasta files. PATTERNS are used as regexp.
 
 ```bash
--c PATTERNS or --cds=PATTERNS 
+-c PATTERNS or --cds=PATTERNS
 ```
 
 **TaxIDs:** writes a text file with all the accession numbers and their corresponding taxids found by the esearch query
     Taxonomy Options
 
 ```bash
--T --TAXIDS 
+-T --TAXIDS
 ```
 
 #### Sort
