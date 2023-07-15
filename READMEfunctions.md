@@ -38,6 +38,7 @@ The intputs **QUERY**, **OPTIONS** and **params** correspond to tuples that cont
 - args.TAXIDS(BOOL):if the function should writes a text file with the accession numbers and their TaxIDS table or not
 - verb(INT): verbose or quiet options
 - classif (INT, or LIST): if LIST correspond to a list of taxonomic levels names entered by the user, if INT [0, infinite[
+- args.information (BOOL) option to add taxomomic information to results
 
 - **params**:
   -querykey(STRING) the query_key returned by a search with the esearch E-utility in history mode, text format. exp: "1".
@@ -117,13 +118,14 @@ cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 
 - _path_(STRING): the path of the location where the results are written
 - _dict_ids_(DICT): output of taxids() function, dictionnary with accession number as keys and TaxIDs as values
+- _dict_taxo_(DICT): { tadId: dicttemp } the returned value of completetaxo function call
 - _QUERY_(TUPLE): uses the _apikey_
 - list_of_ids: list of accession version numbers to be retrieved
 - _OPTION_(optionnal): uses _verb_, _genelist_ and _args.CDS_ from _OPTION_
 
 ### ACTION
 
-- Using the efetch E-utility with list_of_ids it looks in the nuccore (=nucleotide) database to retrieve the CDS fasta file for 100 accession numbers (see _retmax_ variable) at the time.
+- Using the efetch E-utility with list*of_ids it looks in the nuccore (=nucleotide) database to retrieve the CDS fasta file for 100 accession numbers (see \_retmax* variable) at the time.
 - Call the extract function to analyse the results from Entrez API (everytime Entrez returns some results).
 
 ### OUTPUTS
@@ -140,6 +142,7 @@ fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 
 - _path_(STRING): the path of the location where the results are written
 - _dict_ids_(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
+- _dict_taxo_(DICT): { tadId: dicttemp } the returned value of completetaxo function call
 - _QUERY_(TUPLE): uses the _apikey_
 - _list_of_ids_(LIST): list of accession number for which the fasta files must be retrieved
 - _OPTIONS_(optionnal):uses _verb_ and _fileoutput_ from _OPTIONS_
@@ -164,6 +167,7 @@ taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None)
 - _list_of_ids_(LIST) list of the accession numbers for which no COI have been found
 - _dict_ids_(DICTIONNARY) see above
 - _QUERY_(TUPLE): uses the _apikey_ from _QUERY_
+- _dict_taxo_(DICT): { tadId: dicttemp } the returned value of completetaxo function call
 - _OPTIONS_(TUPLE): uses _verb_, _genelist_ and _classif_ from _OPTIONS_
 
 ### ACTION
@@ -192,8 +196,8 @@ extract(path, text, dict_ids, dict_taxo, genelist, verb)
 
 - _path_(STRING): see above
 - _text_(STRING): CDS fasta file in text format, results of the call to nuccore database made by the cdsfasta function.
-- _dictid_(DICTIONNARY) see above
-- _dicttaxo_(DICTIONNARY) see above
+- _dictid_(DICT) see above
+- _dict_taxo_(DICT): { tadId: dicttemp } the returned value of completetaxo function call
 - _genelist_(LIST) from _OPTIONS_, see above
 - _verb_(INT) from _OPTIONS_, see above
 
@@ -218,8 +222,8 @@ This function is called by the extract function.
 
 - _seq_(STRING): the gene sequence with its information line
 - _path_(STRING): see above
-- _dict_ids_(DICTIONNARY): see above
-- _dict_taxo_(DICTIONNARY): see above
+- _dict_ids_(DICT): see above
+- _dict_taxo_(DICT): { tadId: dicttemp } the returned value of completetaxo function call
 - _genelist_(LIST): see above
 
 ### ACTION
