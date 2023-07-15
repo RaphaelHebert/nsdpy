@@ -61,8 +61,6 @@ class testsFunctions(unittest.TestCase):
         # this is to make sure the created file in test_taxids is cleaned up even on test fail
         if os.path.exists("./TaxIDs.txt"):
             os.remove("./TaxIDs.txt")
-        print(os.getcwd())
-        print(os.listdir("."))
 
 
 if __name__ == "__main__":
