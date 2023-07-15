@@ -2,7 +2,7 @@
 
 The following functions are described here:
 
-- [download](#dowload) 
+- [download](#dowload)
 - [esearchquery](#esearchquery)
 - [taxids](#taxids)
 - [cds_fasta](#cds_fasta)
@@ -60,7 +60,7 @@ download(parameters, address)
 
 ### ACTION
 
-- make a call using the get method from the [requests library](https://requests.readthedocs.io/en/master/) to the *address* provided with the *parameters* 
+- make a call using the get method from the [requests library](https://requests.readthedocs.io/en/master/) to the *address* provided with the *parameters*
 - loop untils getting an answer from the call, returns 1 if an HTTPerror is raised
 - handle errors (such as HTTPerror, network error...), see the [errors](https://requests.readthedocs.io/en/master/_modules/requests/exceptions/) for more information
 
@@ -78,7 +78,7 @@ esearchquery(QUERY)
 
 Submit the user's request to the [ncbi esearch engine](https://www.ncbi.nlm.nih.gov/books/NBK25499/#chapter4.ESearch) with the following parameters:
 
-- *usehistory = y* using history mode allow to get the querykey and webenv number to use in other E-utilities 
+- *usehistory = y* using history mode allow to get the querykey and webenv number to use in other E-utilities
 - *db=nucleotide* look in the nulceotide database
 - *idtype=acc* return accession numbers
 - *retmax=0* number of idtype that will be displayed
@@ -120,7 +120,7 @@ cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 
 - *path*(STRING): the path of the location where the results are written
 - *dict_ids*(DICT): output of taxids() function, dictionnary with accession number as keys and TaxIDs as values
-- *QUERY*(TUPLE):  uses the *apikey* 
+- *QUERY*(TUPLE):  uses the *apikey*
 - list_of_ids: list of accession version numbers to be retrieved
 - *OPTION*(optionnal): uses *verb*, *genelist* and *args.CDS* from *OPTION*
 
@@ -144,7 +144,7 @@ fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None)
 
 - *path*(STRING): the path of the location where the results are written
 - *dict_ids*(DICT): output of taxids() function, dictionnary with accession number as keys and taxids as values
-- *QUERY*(TUPLE):  uses the *apikey* 
+- *QUERY*(TUPLE):  uses the *apikey*
 - *list_of_ids*(LIST): list of accession number for which the fasta files must be retrieved
 - *OPTIONS*(optionnal):uses *verb* and *fileoutput* from *OPTIONS*
 
@@ -165,7 +165,7 @@ taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None)
 ### INPUTS
 
 - *path*(STRING) see above
-- *list_of_ids*(LIST) list of the accession numbers for which no COI have been found 
+- *list_of_ids*(LIST) list of the accession numbers for which no COI have been found
 - *dict_ids*(DICTIONNARY) see above
 - *QUERY*(TUPLE): uses the *apikey* from *QUERY*
 - *OPTIONS*(TUPLE): uses *verb*, *genelist* and *classif* from *OPTIONS*
@@ -198,7 +198,7 @@ extract(path, text, dict_ids, dict_taxo, genelist, verb)
 - *text*(STRING): CDS fasta file in text format, results of the call to nuccore database made by the cdsfasta function.
 - *dictid*(DICTIONNARY) see above
 - *dicttaxo*(DICTIONNARY) see above
-- *genelist*(LIST) from *OPTIONS*, see above 
+- *genelist*(LIST) from *OPTIONS*, see above
 - *verb*(INT) from *OPTIONS*, see above
 
 ### ACTION
@@ -228,7 +228,7 @@ This function is called by the extract function.
 
 ### ACTION
 
-- extracts the accession number 
+- extracts the accession number
 - retrieves TaxID from dictid
 - retrieves taxonomic informations from dicttaxo, if no information are found in dictaxo (keyerror) it returns (so the accession number will be searched later with the taxo function and these infos will be retrieved from the genbank result)
 - check if the gene is in genelist
@@ -257,7 +257,7 @@ This function is called by the taxo function
 
 - extract the accession version number, DNA sequence, organism name and lineage from the text then add these in a dict
 - split the text every "  gene  " and iterate over the list of result calling the search function and splitting the results every "  CDS  " to iterate over these results calling again the search function
-- from the calls to search function it gets two dictionnaries: one for the "  gene  " sequence and one for "  CDS  " sequence. 
+- from the calls to search function it gets two dictionnaries: one for the "  gene  " sequence and one for "  CDS  " sequence.
 - if one or more filter is provided in the genelist: for each CDS sequences, looks for a match between the filters and the "gene", "product", "gene_synonym" and "note" fields from the Genbank file.if no mtach found it compares the start and stop of the location field from the "  gene  " and the "  CDS  " file are the same it looks for a match in the gene sequence fields. If a mtach is found it writes the dictionnary containing the cds sequence informations is appended to the list of dictionnares the function will return.
 - if no filter is provided the the dictionnary containing the cds sequence informations is directly appended to the list of dictionnares the function will return.
 
@@ -291,7 +291,7 @@ This function is called by the genbankfields function
 
 
 ## tsv_file_writer
-  
+
 ```pythhon
 search(dna, dictentry, s)
 ```
@@ -301,11 +301,11 @@ search(dna, dictentry, s)
 - *path*(STRING): see above
 - *data*(tuple): (name(STRING), seqid(STRING), taxid(STRING), lineage(STRING), dna(STRING)) data to be written in the tsv file
 - *OPTIONS*(TUPLE): see above
-  
-### ACTION 
-  
-Writes or append a  file located at path with the information found in data  
-  
+
+### ACTION
+
+Writes or append a  file located at path with the information found in data
+
 ### OUTPUT
-  
+
 no output

@@ -2,6 +2,7 @@ venv/*
 NSDPY_results/*
 ressources.txt
 report.tsv
+.env
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
