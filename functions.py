@@ -845,11 +845,7 @@ def genbankfields(text, genelist):
     seqgene = text.split("  gene  ")
     for seq in seqgene:
         dictgene = {}
-        print('dna', dna)
-        print('dictgene', dictgene)
-        print('seq', seq)
         dictgene = search(dna, dictgene, seq)
-        print('dictgene', dictgene)
         seqcds = seq.split("  CDS  ")[1:]
         for seq1 in seqcds:
             dictcds = search(dna, dictfield, seq1)
@@ -876,7 +872,7 @@ def genbankfields(text, genelist):
         return listofdict, dna
     
 
-def search(dna ,dictentry, s):
+def search(dna , dictentry, s):
     dict1 = dict(dictentry)
     s = s.split("RNA   ")[0].split("  misc_feature  ")[0].split("  gene  ")[0].split("repeat_region")[0]\
         .split("transit_peptide")[0].split("mat_peptide")[0].split("3'UTR")[0].split("5'UTR")[0]
