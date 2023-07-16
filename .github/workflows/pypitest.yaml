@@ -13,22 +13,47 @@ on:
       - main
 
 jobs:
-  test_unittest:
+  pypi_test_deploy:
     name: Deploy pypi_test
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config pypi-token.pypi ${{ secrets.PYPI_TEST_TOKEN }}
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip3 install -r requirements-dev.txt
-      - name: Deploy
-        env:
-          TEST: ${{ secrets.TEST_SECRET }}
-          PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
+          poetry install --no-root
+
+      - name: Build and Publish Package
         run: |
-          echo "HELLO YOU"
-          echo "$TEST"
-          poetry --help
-          poetry publish --dry-run --skip-existing
+          poetry build
+          poetry publish --repository testpypi
+    # steps:
+    #   - name: Checkout
+    #     uses: actions/checkout@v2
+    #   - name: Install dependencies
+    #     run: |
+    #       python -m pip install --upgrade pip
+    #       pip3 install -r requirements-dev.txt
+    #   - name: Deploy
+    #     env:
+    #       TEST: ${{ secrets.TEST_SECRET }}
+    #       PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
+    #     run: |
+    #       echo "HELLO YOU"
+    #       echo "$TEST"
+    #       poetry --help
+    #       poetry publish --dry-run --skip-existing
