@@ -24,4 +24,4 @@ jobs:
           python -m pip install --upgrade pip
           pip3 install -r requirements-dev.txt
       - name: Deploy
-        run: poetry publish --build --username __token__ --password $PYPI_TEST_TOKEN
+        run: poetry publish --build --username __token__ --password ${{ secrets.PYPI_TEST_TOKEN }}
