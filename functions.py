@@ -7,6 +7,79 @@ from collections import Counter
 # third party imports
 import requests  # https://requests.readthedocs.io/en/master/
 
+ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
+EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+
+PLANTAE = [
+    "Chlorophyta",
+    "Charophyta",
+    "Bryophyta",
+    "Marchantiophyta",
+    "Lycopodiophyta",
+    "Ophioglossophyta",
+    "Pteridophyta",
+    "Cycadophyta",
+    "Ginkgophyta",
+    "Gnetophyta",
+    "Pinophyta",
+    "Magnoliophyta",
+    "Equisetidae",
+    "Psilophyta",
+    "Bacillariophyta",
+    "Cyanidiophyta",
+    "Glaucophyta",
+    "Prasinophyceae",
+    "Rhodophyta",
+]
+
+FUNGI = [
+    "Chytridiomycota",
+    "Zygomycota",
+    "Ascomycota",
+    "Basidiomycota",
+    "Glomeromycota",
+]
+
+METAZOA = [
+    "Acanthocephala",
+    "Acoelomorpha",
+    "Annelida",
+    "Arthropoda",
+    "Brachiopoda",
+    "Ectoprocta",
+    "Bryozoa",
+    "Chaetognatha",
+    "Chordata",
+    "Cnidaria",
+    "Ctenophora",
+    "Cycliophora",
+    "Echinodermata",
+    "Echiura",
+    "Entoprocta",
+    "Gastrotricha",
+    "Gnathostomulida",
+    "Hemichordata",
+    "Kinorhyncha",
+    "Loricifera",
+    "Micrognathozoa",
+    "Mollusca",
+    "Nematoda",
+    "Nematomorpha",
+    "Nemertea",
+    "Onychophora" "Orthonectida",
+    "Phoronida",
+    "Placozoa",
+    "Plathelminthes",
+    "Porifera",
+    "Priapulida",
+    "Rhombozoa",
+    "Rotifera",
+    "Sipuncula",
+    "Tardigrada",
+    "Xenoturbella",
+]
+
 
 def countDown(iteration, total, message=""):
     """
@@ -153,7 +226,7 @@ def taxids(params, path, OPTIONS=None):
         nb = (count // retmax) + 1
 
     for x in range(nb):
-        ## build the API address
+        ##build the API address
         esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
         # parameters
         parameters = {}
@@ -164,12 +237,13 @@ def taxids(params, path, OPTIONS=None):
         parameters["retmax"] = str(retmax)
         parameters["rettype"] = "uilist"
         parameters["retmode"] = "text"
-        result = download(parameters, esummaryaddress)
+        result = download(parameters, ESUMMARY_URL)
+
         # comments
         if verb and verb > 1:
             print(countDown(x, nb, "Downloading TaxIDs"))
 
-        ###extract the TaxIDs and accession numbers (record in text file and in dict_ids)
+        ### extract the TaxIDs and accession numbers (record in text file and in dict_ids)
         f = result.text.splitlines()
         for line in f:
             if len(line.split("<DocSum>")) > 1:
@@ -220,8 +294,7 @@ def dispatch(lineage, classif):
         (STRING) rank
 
     """
-
-    ### Phylums
+    ###Phylums
     Plantae = [
         "Chlorophyta",
         "Charophyta",
@@ -289,34 +362,41 @@ def dispatch(lineage, classif):
         "Xenoturbella",
     ]
 
-    ## no option selected
+    ##no option selected
     if classif == 2:
         return "sequences"
-    ## user gave list of taxonomic levels
+
+    ## user gave list of taxonomic levels (option -l --levels)
+    if isinstance(classif, str):
+        ## type checking
+        if not isinstance(lineage, dict):
+            return "OTHERS"
+
+    ## user gave list of taxonomic levels (option -l --levels)
     if isinstance(classif, list):
         try:
             other = [rank for rank in lineage if rank in classif][0]
         except IndexError:
             other = "OTHERS"
         return other
-    ## phylums
+    ##phylums
     if classif == 0:
         try:
             Phylum = [
                 phy
                 for phy in lineage
-                if phy in Metazoa or phy in Fungi or phy in Plantae
+                if phy in METAZOA or phy in FUNGI or phy in PLANTAE
             ][0]
         except IndexError:
             Phylum = "OTHERS"
         return Phylum
-    ## kingdoms
+    ##kingdoms
     if classif == 1:
-        if "Metazoa" in lineage or len(list(set(lineage) & set(Metazoa))) > 0:
+        if "METAZOA" in lineage or len(list(set(lineage) & set(METAZOA))) > 0:
             kingdom = "METAZOA"
-        elif "Viridiplantae" in lineage or len(list(set(lineage) & set(Plantae))) > 0:
+        elif "ViridiPLANTAE" in lineage or len(list(set(lineage) & set(PLANTAE))) > 0:
             kingdom = "PLANTAE"
-        elif "Fungi" in lineage or len(list(set(lineage) & set(Fungi))) > 0:
+        elif "FUNGI" in lineage or len(list(set(lineage) & set(FUNGI))) > 0:
             kingdom = "FUNGI"
         else:
             kingdom = "OTHERS"
@@ -419,7 +499,14 @@ def completetaxo(idlist, QUERY, OPTIONS):
             dicttemp["Lineage"] = lineage
 
             ## dispatch
-            dicttemp["dispatch"] = dispatch(lineage, classif)
+            if isinstance(classif, str):
+                lineage = parseClassifXML(seq)
+                if classif in lineage.keys():
+                    dicttemp["dispatch"] = lineage[classif].replace(" ", "_")
+                else:
+                    dicttemp["dispatch"] = "OTHERS"
+            else:
+                dicttemp["dispatch"] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
 
@@ -479,10 +566,8 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ## Build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # Parameters
+        parameters = {}
         parameters["id"] = ",".join(ids)
         parameters["db"] = "nuccore"
         if api_key:
@@ -491,7 +576,7 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         parameters["retmode"] = "text"
 
         ## Download
-        raw_result = download(parameters, efetchaddress)
+        raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
 
         ## Extract available information
@@ -568,7 +653,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
         dispatch = dict_taxo[TaxId]["dispatch"]
     except KeyError:
         dispatch = "others"
-    if classif == 3:
+    if classif == 2:
         dispatch = "sequences"
 
     ## check if genes
@@ -723,10 +808,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ids = list_of_ids[x * retmax : (x * retmax) + retmax]
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
-        ## Build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # Parameters
+        parameters = {}
         parameters["db"] = "nuccore"
         parameters["id"] = ",".join(ids)
         if api_key:
@@ -735,7 +818,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         parameters["retmode"] = "text"
 
         ## Download
-        raw_result = download(parameters, efetchaddress)
+        raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
 
         ## Extract available informations
@@ -776,7 +859,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             except KeyError:
                 name = "others"
 
-            if classif == 3:
+            if classif == 2:
                 dispatch = "sequences"
 
             data = (name, key, taxid, lineage, dna)
@@ -916,6 +999,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         parameters = {}
         # parameters
+        parameters = {}
         parameters["db"] = "nuccore"
         parameters["id"] = ids1
         parameters["rettype"] = "gb"
@@ -1293,6 +1377,68 @@ def tsv_file_writer(path, data, OPTIONS=None):
             writer.writerow([seqid, taxid, len(dna), dna])
 
     return
+
+
+"""
+    takes a string and parse it as xml format to extract the available taxonomy
+
+
+    INPUTS: parseClassifXML(xml)
+        xml: string
+    OUTPUTS:
+        classif: dict
+"""
+
+
+def parseClassifXML(xml):
+    classif = {}
+
+    # parse the name before lineageex as well
+    general_infos = ""
+    lineage_info = ""
+    taxon = []
+
+    if "</ScientificName>" in xml and "<ScientificName>" in xml:
+        scientificName, _ = xml.split("</ScientificName>", 1)
+        _, scientificName = scientificName.split("<ScientificName>", 1)
+        classif["ScientificName"] = scientificName
+
+    if "</LineageEx>" in xml and "<LineageEx>" in xml:
+        lineage_info, general_infos = xml.split("</LineageEx>", 1)
+        general_infos, lineage_info = lineage_info.split("<LineageEx>", 1)
+
+    if (
+        "</Rank>" in general_infos
+        and "<Rank>" in general_infos
+        and "ScientificName" in classif
+    ):
+        taxon_info = general_infos.split("</Rank>", 1)[0].split("<Rank>", 1)[1]
+        classif[taxon_info] = classif["ScientificName"]
+
+    taxons = lineage_info.split("</Taxon>")
+    for taxon in taxons:
+        keys = classif.keys()
+        if (
+            "</ScientificName>" in taxon
+            and "<ScientificName>" in taxon
+            and "<Rank>" in taxon
+            and "</Rank>" in taxon
+        ):
+            name, _ = taxon.split("</ScientificName>", 1)
+            _, name = name.split("<ScientificName>", 1)
+            name = re.sub(r"\s+", "_", name)
+            rank, _ = taxon.split("</Rank>", 1)
+            _, rank = rank.split("<Rank>", 1)
+            rank = re.sub(r"\s+", "_", rank)
+            if rank == "clade":
+                if rank not in keys:
+                    classif["clade"] = [name]
+                else:
+                    classif["clade"].append(name)
+            else:
+                classif[rank] = name
+
+    return classif
 
 
 if __name__ == "_main_":
