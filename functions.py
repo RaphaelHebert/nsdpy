@@ -11,7 +11,7 @@ import requests  # https://requests.readthedocs.io/en/master/
 def testSnippet():
     mes = "badlyformattedline"
     vars = {"another": "string"}
-    ars = {"another": "string"}
+    ars={"another": "string"}
     return (mes, vars, ars)
 
 
