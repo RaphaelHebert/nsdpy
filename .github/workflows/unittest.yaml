@@ -1,6 +1,6 @@
 name: TESTS:unittest
 
-on: [push]
+on: [pull_request]
 
 jobs:
   test_unittest:
