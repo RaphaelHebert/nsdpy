@@ -14,7 +14,7 @@ on:
 
 jobs:
   test_unittest:
-    name: Tests unittest
+    name: Deploy pypi_test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
