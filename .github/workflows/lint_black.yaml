@@ -1,6 +1,6 @@
 name: LINT:black-action
 
-on: [push, pull_request]
+on: [push]
 
 jobs:
   python-black:
