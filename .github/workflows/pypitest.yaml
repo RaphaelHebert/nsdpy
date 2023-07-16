@@ -26,4 +26,7 @@ jobs:
       - name: Deploy
         env:
           PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
-        run: poetry publish --build --username __token__ --password $PYPI_TOKEN
+          TEST: ${{ secrets.SECRET }}
+        run: |
+          echo $TEST
+          poetry publish --build --username __token__ --password $PYPI_TOKEN
