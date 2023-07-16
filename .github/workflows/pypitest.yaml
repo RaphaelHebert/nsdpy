@@ -31,4 +31,4 @@ jobs:
           echo "HELLO YOU"
           echo "$TEST"
           poetry --help
-          poetry publish --build --username __token__ --password "$PYPI_TOKEN"
+          poetry publish -VVV --build --username __token__ --password "$PYPI_TOKEN"
