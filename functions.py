@@ -7,6 +7,10 @@ from collections import Counter
 # third party imports
 import requests  # https://requests.readthedocs.io/en/master/
 
+def testSnippet():
+    mes="badlyformattedline"
+    vars={'another':'string'}
+    return (mes, vars)
 
 def countDown(iteration, total, message=""):
     """
