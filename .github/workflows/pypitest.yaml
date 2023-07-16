@@ -30,6 +30,5 @@ jobs:
         run: |
           echo "HELLO YOU"
           echo "$TEST"
-          poetry config repositories.test-pypi https://test.pypi.org/legacy/
           poetry --help
-          poetry publish --build --repository --username __token__ --password ${{ secrets.PYPI_TEST_TOKEN }} --dry-run --skip-existing
+          poetry publish --build --repository https://test.pypi.org/legacy/ --username __token__ --password ${{ secrets.PYPI_TEST_TOKEN }} --dry-run --skip-existing
