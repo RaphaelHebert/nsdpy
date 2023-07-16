@@ -54,7 +54,7 @@ class testsFunctions(unittest.TestCase):
         result = taxids(params, path, OPTIONS)
         self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
-        self.assertEqual(result, expected_output)
+        self.assertEqual(result, 'sdfsdf')
         self.assertTrue(filecmp.cmp("./tests/data/TaxIDs_expected.txt", "TaxIDs.txt"))
 
     def test_taxids_cleanup(self):
