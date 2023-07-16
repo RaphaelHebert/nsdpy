@@ -1,5 +1,5 @@
-dna_1 = 'aacattatattttatttttggtatttgagcaggtatagtaggaacctctttaagattattaattcgtactgaattaggtaatcctggatctttaattggagatgatcaaatttataatactattgtaacagctcatgcttttattataattttttttatagttataccaattataattggaggatttggaaattgattaattcctttaatattaggagccccagatatagctttcccccgaataaataatataagattttgattactacccccttcattaaccttattaatttctagaagaattgtagaaaatggagcaggaactggatgaacagtttacccccctttatcatctaatattgctcatagaggaagttcagttgatttagctattttttccttacatttagcaggaatttcatcaatcttaggagctattaattttattacaactattattaatatacgaattaatcatatatcattcgatcaaatacctctttttgtatgagcagtaggaattactgctttactcttattattatcattacctgtattagctggtgctattactatattattaacagatcgaaatcttaatacttcattttttgatccagcagggggtggtgatcctattttatatcaa'
-seq_1 = '''
+dna_1 = "aacattatattttatttttggtatttgagcaggtatagtaggaacctctttaagattattaattcgtactgaattaggtaatcctggatctttaattggagatgatcaaatttataatactattgtaacagctcatgcttttattataattttttttatagttataccaattataattggaggatttggaaattgattaattcctttaatattaggagccccagatatagctttcccccgaataaataatataagattttgattactacccccttcattaaccttattaatttctagaagaattgtagaaaatggagcaggaactggatgaacagtttacccccctttatcatctaatattgctcatagaggaagttcagttgatttagctattttttccttacatttagcaggaatttcatcaatcttaggagctattaattttattacaactattattaatatacgaattaatcatatatcattcgatcaaatacctctttttgtatgagcagtaggaattactgctttactcttattattatcattacctgtattagctggtgctattactatattattaacagatcgaaatcttaatacttcattttttgatccagcagggggtggtgatcctattttatatcaa"
+seq_1 = """
           <1..>649
                      /gene="COI"
      CDS             <1..>649
@@ -15,7 +15,7 @@ seq_1 = '''
                      HAFIMIFFMVMPIMIGGFGNWLIPLMLGAPDMAFPRMNNMSFWLLPPSLTLLISSSIV
                      ENGAGTGWTVYPPLSSNIAHSGSSVDLAIFSLHLAGISSILGAINFITTIINMRINHM
                      SFDQMPLFVWAVGITALLLLLSLPVLAGAITMLLTDRNLNTSFFDPAGGGDPILYQ"
-ORIGIN      
+ORIGIN
         1 aacattatat tttatttttg gtatttgagc aggtatagta ggaacctctt taagattatt
        61 aattcgtact gaattaggta atcctggatc tttaattgga gatgatcaaa tttataatac
       121 tattgtaaca gctcatgctt ttattataat tttttttata gttataccaa ttataattgg
@@ -27,6 +27,26 @@ ORIGIN
       481 atcattcgat caaatacctc tttttgtatg agcagtagga attactgctt tactcttatt
       541 attatcatta cctgtattag ctggtgctat tactatatta ttaacagatc gaaatcttaa
       601 tacttcattt tttgatccag cagggggtgg tgatcctatt ttatatcaa
-'''
-response_1 ={'sequence': 'acattatattttatttttggtatttgagcaggtatagtaggaacctctttaagattattaattcgtactgaattaggtaatcctggatctttaattggagatgatcaaatttataatactattgtaacagctcatgcttttattataattttttttatagttataccaattataattggaggatttggaaattgattaattcctttaatattaggagccccagatatagctttcccccgaataaataatataagattttgattactacccccttcattaaccttattaatttctagaagaattgtagaaaatggagcaggaactggatgaacagtttacccccctttatcatctaatattgctcatagaggaagttcagttgatttagctattttttccttacatttagcaggaatttcatcaatcttaggagctattaattttattacaactattattaatatacgaattaatcatatatcattcgatcaaatacctctttttgtatgagcagtaggaattactgctttactcttattattatcattacctgtattagctggtgctattactatattattaacagatcgaaatcttaatacttcattttttgatccagcagggggtggtgatcctattttatatcaa', 'location': [(1, 649)], 'loc': '          <1..>649                     ', 'product': 'cytochrome oxidase subunit I', 'proteinid': '"CAJ77512.1"', 'note': '', 'gene': '"COI"', 'genesynonym': 'not found', 'locustag': 'not found'}
-response_2 ={'sequence': '', 'location': "not found", 'loc': "not found", 'product': "not found", 'proteinid': "not found", 'note': '', 'gene': "not found", 'genesynonym': 'not found', 'locustag': 'not found'}
+"""
+response_1 = {
+    "sequence": "acattatattttatttttggtatttgagcaggtatagtaggaacctctttaagattattaattcgtactgaattaggtaatcctggatctttaattggagatgatcaaatttataatactattgtaacagctcatgcttttattataattttttttatagttataccaattataattggaggatttggaaattgattaattcctttaatattaggagccccagatatagctttcccccgaataaataatataagattttgattactacccccttcattaaccttattaatttctagaagaattgtagaaaatggagcaggaactggatgaacagtttacccccctttatcatctaatattgctcatagaggaagttcagttgatttagctattttttccttacatttagcaggaatttcatcaatcttaggagctattaattttattacaactattattaatatacgaattaatcatatatcattcgatcaaatacctctttttgtatgagcagtaggaattactgctttactcttattattatcattacctgtattagctggtgctattactatattattaacagatcgaaatcttaatacttcattttttgatccagcagggggtggtgatcctattttatatcaa",
+    "location": [(1, 649)],
+    "loc": "          <1..>649                     ",
+    "product": "cytochrome oxidase subunit I",
+    "proteinid": '"CAJ77512.1"',
+    "note": "",
+    "gene": '"COI"',
+    "genesynonym": "not found",
+    "locustag": "not found",
+}
+response_2 = {
+    "sequence": "",
+    "location": "not found",
+    "loc": "not found",
+    "product": "not found",
+    "proteinid": "not found",
+    "note": "",
+    "gene": "not found",
+    "genesynonym": "not found",
+    "locustag": "not found",
+}

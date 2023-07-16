@@ -1,4 +1,4 @@
-response_1 = '''    <TaxId>330314</TaxId>
+response_1 = """    <TaxId>330314</TaxId>
     <ScientificName>Parnassius mnemosyne ochraceus</ScientificName>
     <OtherNames>
         <Synonym>Parnassius mnemosyne ochracea</Synonym>
@@ -187,4 +187,4 @@ response_1 = '''    <TaxId>330314</TaxId>
 </Taxon>
 
 </TaxaSet>
-'''
+"""
