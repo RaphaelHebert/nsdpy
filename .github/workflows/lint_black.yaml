@@ -1,3 +1,5 @@
+name: black-action
+
 on: [push, pull_request]
 
 jobs:
