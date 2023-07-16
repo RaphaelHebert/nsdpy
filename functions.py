@@ -11,7 +11,8 @@ import requests  # https://requests.readthedocs.io/en/master/
 def testSnippet():
     mes = "badlyformattedline"
     vars = {"another": "string"}
-    return (mes, vars)
+    ars = {"another": "string"}
+    return (mes, vars, ars)
 
 
 def countDown(iteration, total, message=""):
