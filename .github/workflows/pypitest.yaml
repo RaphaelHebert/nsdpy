@@ -28,5 +28,5 @@ jobs:
           PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
           TEST: ${{ secrets.SECRET }}
         run: |
-          echo $TEST
-          poetry publish --build --username __token__ --password $PYPI_TOKEN
+          echo "$TEST"
+          poetry publish --build --username __token__ --password "$PYPI_TOKEN"
