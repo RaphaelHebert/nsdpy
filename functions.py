@@ -8,13 +8,6 @@ from collections import Counter
 import requests  # https://requests.readthedocs.io/en/master/
 
 
-def testSnippet():
-    mes = "badlyformattedline"
-    vars = {"another": "string"}
-    ars = {"another": "string"}
-    return (mes, vars, ars)
-
-
 def countDown(iteration, total, message=""):
     """
     Take the number of iteration, the range of a forloop and a message and output a message with the percent of job done
