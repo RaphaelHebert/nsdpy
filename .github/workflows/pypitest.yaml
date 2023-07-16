@@ -40,7 +40,7 @@ jobs:
       - name: Build and Publish Package
         run: |
           poetry build
-          poetry publish --repository https://test.pypi.org/legacy/
+          poetry publish --repository "https://test.pypi.org/legacy/"
     # steps:
     #   - name: Checkout
     #     uses: actions/checkout@v2
