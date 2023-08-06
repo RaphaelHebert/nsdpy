@@ -764,7 +764,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
 def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     """
-    Retrieves fasta files from nuccore db calls and parse it find
+    Retrieves fasta files from nuccore db calls and parse it to find
 
     INPUTS
         path: (STRING) output_path
@@ -857,7 +857,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             try:
                 dispatch = dict_taxo[taxid]["dispatch"]
             except KeyError:
-                name = "others"
+                dispatch = "others"
 
             if classif == 2:
                 dispatch = "sequences"
@@ -900,9 +900,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
             keys.append(key)
 
-        if verb > 1:
+        if verb and verb > 1:
             print(countDown(x, nb, "Downloading the fasta files"))
-
     return keys
 
 
