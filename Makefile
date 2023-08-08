@@ -4,7 +4,7 @@ install:
 	pip3 install -r requirements.txt
 
 installdev:
-	pip3 install -r requirements-dev.txt && pre-commit run --all-files
+	pip3 install -r requirements-dev.txt && pre-commit run --all-files 
 
 postinstall:
 	pre-commit run --all-files

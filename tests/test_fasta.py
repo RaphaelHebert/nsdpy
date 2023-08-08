@@ -10,7 +10,9 @@ expected_download_normal_result = attrgetter("fasta_expected_result")(fasta_data
 expected_normal_result = attrgetter("fasta_expected_returned_result")(fasta_data)
 expected_normal_dict_id = attrgetter("fasta_expected_result_dict_id")(fasta_data)
 
-
+## TODO:
+# test for output file -t option (./tsv/filename.tsv)
+# test for fasta output file (./fasta/filename.fasta with -t and /filename.fasta without)
 class testsFunctions(unittest.TestCase):
     @patch("functions.download")
     def test_fasta(self, get_content_mock):

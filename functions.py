@@ -809,13 +809,15 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
         # Parameters
-        parameters = {}
-        parameters["db"] = "nuccore"
-        parameters["id"] = ",".join(ids)
+        parameters = {
+            "db": "nuccore",
+            "id": ",".join(ids),
+            "rettype": "fasta",
+            "retmode": "text"
+        }
         if api_key:
             parameters["api_key"] = api_key
-        parameters["rettype"] = "fasta"
-        parameters["retmode"] = "text"
+
 
         ## Download
         raw_result = download(parameters, EFETCH_URL)
