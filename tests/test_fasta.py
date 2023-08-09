@@ -17,6 +17,7 @@ expected_normal_dict_id = attrgetter("fasta_expected_result_dict_id")(fasta_data
 # test for output file -t option (./tsv/filename.tsv)
 # test for fasta output file (./fasta/filename.fasta with -t and /filename.fasta without)
 
+
 class testsFunctions(unittest.TestCase):
     @patch("functions.download")
     def test_fasta(self, get_content_mock):
@@ -41,8 +42,12 @@ class testsFunctions(unittest.TestCase):
         # function output
         self.assertEqual(fasta_result, expected_normal_result)
         # files
-        self.assertTrue(filecmp.cmp("./tests/data/fasta_expected.fasta", "./fasta/others.fasta"))
-        self.assertTrue(filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/others.tsv"))
+        self.assertTrue(
+            filecmp.cmp("./tests/data/fasta_expected.fasta", "./fasta/others.fasta")
+        )
+        self.assertTrue(
+            filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/others.tsv")
+        )
 
         # # should return an empty dict
         # parse_result = parseClassifXML("some random strings")
@@ -54,6 +59,7 @@ class testsFunctions(unittest.TestCase):
             shutil.rmtree("fasta/")
         if os.path.exists("tsv/"):
             shutil.rmtree("tsv/")
+
 
 if __name__ == "__main__":
     unittest.main()
