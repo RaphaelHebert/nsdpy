@@ -46,7 +46,6 @@ class testsFunctions(unittest.TestCase):
         )
 
     def test_fasta_cleanup(self):
-        # make sure the created file in test_taxids is cleaned up even on test fail
         if os.path.exists("fasta/"):
             shutil.rmtree("fasta/")
         if os.path.exists("tsv/"):
