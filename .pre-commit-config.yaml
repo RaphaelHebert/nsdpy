@@ -1,3 +1,4 @@
+# do not modify the test data files as nsdpy output files are not formated to respect black hook linting
 exclude: ^(tests/data/fasta_expected.fasta|tests/data/fasta_expected.tsv)
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

@@ -764,7 +764,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
 def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     """
-    Retrieves fasta files from nuccore db calls and parse it to find
+    Retrieves fasta files from nuccore db calls and parse it to find DNA sequence and info for the information line of the created fasta file
 
     INPUTS
         path: (STRING) output_path
@@ -814,9 +814,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             "id": ",".join(ids),
             "rettype": "fasta",
             "retmode": "text",
+            "api_key": api_key if api_key else None,
         }
-        if api_key:
-            parameters["api_key"] = api_key
 
         ## Download
         raw_result = download(parameters, EFETCH_URL)
