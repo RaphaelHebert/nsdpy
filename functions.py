@@ -858,7 +858,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             try:
                 dispatch = dict_taxo[taxid]["dispatch"]
             except KeyError:
-                dispatch = "others"
+                dispatch = "OTHERS"
 
             if classif == 2:
                 dispatch = "sequences"

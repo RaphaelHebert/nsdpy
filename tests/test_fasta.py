@@ -43,10 +43,10 @@ class testsFunctions(unittest.TestCase):
         self.assertEqual(fasta_result, expected_normal_result)
         # files
         self.assertTrue(
-            filecmp.cmp("./tests/data/fasta_expected.fasta", "./fasta/others.fasta")
+            filecmp.cmp("./tests/data/fasta_expected.fasta", "./fasta/OTHERS.fasta")
         )
         self.assertTrue(
-            filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/others.tsv")
+            filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/OTHERS.tsv")
         )
 
         # # should return an empty dict
