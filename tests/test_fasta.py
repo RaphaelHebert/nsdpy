@@ -13,10 +13,6 @@ expected_download_normal_result = attrgetter("fasta_expected_result")(fasta_data
 expected_normal_result = attrgetter("fasta_expected_returned_result")(fasta_data)
 expected_normal_dict_id = attrgetter("fasta_expected_result_dict_id")(fasta_data)
 
-## TODO:
-# test for output file -t option (./tsv/filename.tsv)
-# test for fasta output file (./fasta/filename.fasta with -t and /filename.fasta without)
-
 
 class testsFunctions(unittest.TestCase):
     @patch("functions.download")
@@ -26,8 +22,10 @@ class testsFunctions(unittest.TestCase):
         dict_ids = expected_normal_dict_id
         dict_taxo = {}
         QUERY = ("mocked_query", "mocked_key")
+        OPTIONS = (None, None, None, None, True, None)  # -t option
         list_of_ids = ["mocked_id_one", "mocked_id_two", "mocked_id_three"]
-        # split in some parts and passed to the mocked dl function
+
+        # split in parts and passed to the mocked dl function
 
         # mock
         class Response:
@@ -36,8 +34,6 @@ class testsFunctions(unittest.TestCase):
         get_content_mock.return_value = Response()
 
         # should return expected result
-        OPTIONS = (None, None, None, None, True, None)
-
         fasta_result = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
         # function output
         self.assertEqual(fasta_result, expected_normal_result)
@@ -48,10 +44,6 @@ class testsFunctions(unittest.TestCase):
         self.assertTrue(
             filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/OTHERS.tsv")
         )
-
-        # # should return an empty dict
-        # parse_result = parseClassifXML("some random strings")
-        # self.assertEqual(parse_result, {})
 
     def test_fasta_cleanup(self):
         # make sure the created file in test_taxids is cleaned up even on test fail
