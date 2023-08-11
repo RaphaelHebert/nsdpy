@@ -27,18 +27,19 @@ class Response:
     text = expected_download_normal_result
 
 
+arguments = {
+    "path": ".",
+    "dict_ids": expected_normal_dict_id,
+    "dict_taxo": {},
+    "QUERY": ("mocked_query", "mocked_key"),
+    "list_of_ids": ["mocked_id_one", "mocked_id_two", "mocked_id_three"],
+}
+
+
 class testsFunctions(unittest.TestCase):
     @patch("functions.download")
     def test_fasta(self, get_content_mock):
-        arguments = {
-            "path": ".",
-            "dict_ids": expected_normal_dict_id,
-            "dict_taxo": {},
-            "QUERY": ("mocked_query", "mocked_key"),
-            "OPTIONS": (None, None, None, None, True, None),  # -t option
-            "list_of_ids": ["mocked_id_one", "mocked_id_two", "mocked_id_three"],
-        }
-
+        OPTIONS = (None, None, None, None, True, None)  # -t option
         get_content_mock.return_value = Response()
 
         # should return expected result
@@ -48,7 +49,7 @@ class testsFunctions(unittest.TestCase):
             arguments["dict_taxo"],
             arguments["QUERY"],
             arguments["list_of_ids"],
-            arguments["OPTIONS"],
+            OPTIONS,
         )
         # function output
         self.assertEqual(fasta_result, expected_normal_result)
@@ -64,32 +65,41 @@ class testsFunctions(unittest.TestCase):
 
     @patch("sys.stdout", new_callable=io.StringIO)
     def test_fasta_stdout(self, mock_stdout):
+        OPTIONS = (2, None, None, None, True, None)  # -t option
 
-        arguments = {
-            "path": ".",
-            "dict_ids": expected_normal_dict_id,
-            "dict_taxo": {},
-            "QUERY": ("mocked_query", "mocked_key"),
-            "OPTIONS": (1, None, None, None, True, None),  # -t option
-            "list_of_ids": ["mocked_id_one", "mocked_id_two", "mocked_id_three"],
-        }
+        with patch("functions.download") as mocked_dl:
+            mocked_dl.side_effect = [Response()]
+            with patch("functions.countDown") as mocked_countDown:
+                # mock countDown output
+                mocked_countDown.side_effect = ["countDownResult"]
+                fasta(
+                    arguments["path"],
+                    arguments["dict_ids"],
+                    arguments["dict_taxo"],
+                    arguments["QUERY"],
+                    arguments["list_of_ids"],
+                    OPTIONS,
+                )
+                # get the arguments countDown is called with
+                args = mocked_countDown.call_args.args
 
-        with patch("functions.download") as mocked_get:
-            mocked_get.side_effect = [Response()]
-            fasta(
-                arguments["path"],
-                arguments["dict_ids"],
-                arguments["dict_taxo"],
-                arguments["QUERY"],
-                arguments["list_of_ids"],
-                arguments["OPTIONS"],
-            )
-            self.assertEqual(mock_stdout.getvalue(), "Downloading the fasta files...\n")
+                self.assertEqual(
+                    mock_stdout.getvalue(),
+                    "Downloading the fasta files...\ncountDownResult\n",
+                )
+                self.assertEqual(args, (0, 1, "Downloading the fasta files"))
 
-        # self.assertEqual(mock_stdout.getvalue(), "Downloading the fasta files...")
         # clear mock_stdout value
         mock_stdout.seek(0)
         mock_stdout.truncate(0)
+
+        cleanup("tsv/")
+        cleanup("fasta/")
+
+    def test_taxids_cleanup(self):
+        # cleanup in case a test fail
+        cleanup("tsv/")
+        cleanup("fasta/")
 
 
 if __name__ == "__main__":
