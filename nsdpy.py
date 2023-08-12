@@ -16,8 +16,9 @@ from functions import (
     taxids,
     cds_fasta,
     taxo,
-    fasta,
     duplicates,
+    efetchDl,
+    parsefastaResult,
 )
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -318,7 +319,19 @@ def main():
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
     if args.cds is None:
-        found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+        found = efetchDl(
+            QUERY,
+            list_of_ids,
+            parsefastaResult,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta",
+            "text",
+            OPTIONS=None,
+        )
+        # found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
         found = cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
 

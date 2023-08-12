@@ -690,7 +690,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
     return found
 
 
-def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+def parse_fasta_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
     """
     Retrieves fasta files from nuccore db calls and parse it to find DNA sequence and info for the information line of the created fasta file
 
@@ -711,125 +711,89 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
 
-    ## Unpack parameters
-    (_, api_key) = QUERY
-    (verb, _, classif, _, tsv, information) = OPTIONS
-
-    if verb and verb > 0:
-        print("Downloading the fasta files...")
-
     keys = []
-    count = len(list_of_ids)
 
-    # Number of accession numbers to be sent at each API query
-    retmax = 200
-    if count < retmax:
-        retmax = count
+    ## Unpack parameters
+    (_, _, classif, _, tsv, information) = OPTIONS
 
-    if count % retmax == 0:
-        nb = count // retmax
-    else:
-        nb = (count // retmax) + 1
+    ## Extract available informations
+    result = result.split(">")
 
-    for x in range(nb):
-        ## Split the list of ids
-        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
-        ## Check that id parameters is not empty
-        ids = [i for i in ids if i]
-        # Parameters
-        parameters = {
-            "db": "nuccore",
-            "id": ",".join(ids),
-            "rettype": "fasta",
-            "retmode": "text",
-            "api_key": api_key if api_key else None,
-        }
+    ## Store analyzed Accession version numbers
+    for seq in result:
+        try:
+            id_line, dna = seq.split("\n", 1)
+        except ValueError:
+            continue
 
-        ## Download
-        raw_result = download(parameters, EFETCH_URL)
-        raw_result = raw_result.text
-
-        ## Extract available informations
-        result = raw_result.split(">")
-
-        ## Store analyzed Accession version numbers
-        for seq in result:
-            try:
-                id_line, dna = seq.split("\n", 1)
-            except ValueError:
-                continue
-
-            try:
-                key = id_line.split()[0]
-            except IndexError:
-                continue
-
-            # from dict_ids
-            try:
-                taxid = dict_ids[key]
-            except KeyError:
-                taxid = "not found"
-
-            # from dict_taxo
-            try:
-                lineage = dict_taxo[taxid]["Lineage"]
-                lineage = ", ".join(lineage)
-            except KeyError:
-                lineage = "not found"
-
-            try:
-                name = dict_taxo[taxid]["Name"]
-            except KeyError:
-                name = "not found"
-
-            try:
-                dispatch = dict_taxo[taxid]["dispatch"]
-            except KeyError:
-                dispatch = "OTHERS"
-
-            if classif == 2:
-                dispatch = "sequences"
-
-            data = (name, key, taxid, lineage, dna)
-
-            # Create folders for .tsv files and .fasta files
-            if tsv:
-                if not os.path.exists(path + "/fasta"):
-                    os.makedirs(path + "/fasta")
-                if not os.path.exists(path + "/tsv"):
-                    os.makedirs(path + "/tsv")
-                # Create paths
-                fasta_file = path + "/fasta/" + dispatch + ".fasta"
-                tsv_file = path + "/tsv/" + dispatch + ".tsv"
-            else:
-                fasta_file = path + "/" + dispatch + ".fasta"
-                tsv_file = path + "/" + dispatch + ".tsv"
-
-            # Write fasta file
-            if information:
-                fasta_name = "_".join(name.split())
-                id_line = (
-                    fasta_name
-                    + "-"
-                    + key
-                    + " | "
-                    + taxid
-                    + " | "
-                    + lineage
-                    + " | "
-                    + id_line
-                )
-            with open(fasta_file, "a") as f:
-                f.write(f">{id_line}\n")
-                f.write(f"{dna}\n")
-
-            if tsv:
-                tsv_file_writer(tsv_file, data, OPTIONS)
-
+        try:
+            key = id_line.split()[0]
             keys.append(key)
+        except IndexError:
+            continue
 
-        if verb and verb > 1:
-            print(countDown(x, nb, "Downloading the fasta files"))
+        # from dict_ids
+        try:
+            taxid = dict_ids[key]
+        except KeyError:
+            taxid = "not found"
+
+        # from dict_taxo
+        try:
+            lineage = dict_taxo[taxid]["Lineage"]
+            lineage = ", ".join(lineage)
+        except KeyError:
+            lineage = "not found"
+
+        try:
+            name = dict_taxo[taxid]["Name"]
+        except KeyError:
+            name = "not found"
+
+        try:
+            dispatch = dict_taxo[taxid]["dispatch"]
+        except KeyError:
+            dispatch = "OTHERS"
+
+        if classif == 2:
+            dispatch = "sequences"
+
+        data = (name, key, taxid, lineage, dna)
+
+        # Create folders for .tsv files and .fasta files
+        if tsv:
+            if not os.path.exists(path + "/fasta"):
+                os.makedirs(path + "/fasta")
+            if not os.path.exists(path + "/tsv"):
+                os.makedirs(path + "/tsv")
+            # Create paths
+            fasta_file = path + "/fasta/" + dispatch + ".fasta"
+            tsv_file = path + "/tsv/" + dispatch + ".tsv"
+        else:
+            fasta_file = path + "/" + dispatch + ".fasta"
+            tsv_file = path + "/" + dispatch + ".tsv"
+
+        # Write fasta file
+        if information:
+            fasta_name = "_".join(name.split())
+            id_line = (
+                fasta_name
+                + "-"
+                + key
+                + " | "
+                + taxid
+                + " | "
+                + lineage
+                + " | "
+                + id_line
+            )
+        with open(fasta_file, "a") as f:
+            f.write(f">{id_line}\n")
+            f.write(f"{dna}\n")
+
+        if tsv:
+            tsv_file_writer(tsv_file, data, OPTIONS)
+
     return keys
 
 
@@ -1364,7 +1328,87 @@ def parseClassifXML(xml):
     return classif
 
 
+def efetch_dl(
+    QUERY,
+    list_of_ids,
+    callback,
+    path,
+    dict_ids,
+    dict_taxo,
+    db="nuccore",
+    rettype="fasta",
+    retmode="text",
+    OPTIONS=None,
+):
+    """
+    loop over a list of id to fetch result from efetch, and perform the callback action on results
+
+    INPUTS
+        callback: (FUNCTION)
+        QUERY: (TUPLE) (query: STRING, apikey: STRING)
+        list_of_ids: (LIST) [accession_version_numbers]
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+    """
+
+    if OPTIONS is None:
+        OPTIONS = ("", "", "", "", "", "")
+
+    ## Unpack parameters
+    (_, api_key) = QUERY
+    (verb, _, _, _, _, _) = OPTIONS
+
+    if verb and verb > 0:
+        print(f"Downloading the {rettype} files...")
+
+    count = len(list_of_ids)
+
+    # Number of accession numbers to be sent at each API query
+    retmax = 200
+    if count < retmax:
+        retmax = count
+
+    if count % retmax == 0:
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
+
+    results = []
+
+    for x in range(nb):
+        ## Split the list of ids
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
+        ids = [i for i in ids if i]
+        # Parameters
+        parameters = {
+            "db": db,
+            "id": ",".join(ids),
+            "rettype": rettype,
+            "retmode": retmode,
+            "api_key": api_key,
+        }
+
+        ## Download
+        raw_result = download(parameters, EFETCH_URL)
+        result = raw_result.text if retmode == "text" else raw_result.json()
+        res = callback(result, path, dict_ids, dict_taxo, OPTIONS)
+
+        if isinstance(results, list):
+            results = results + res
+        else:
+            results.append(res)
+
+        if verb and verb > 1:
+            print(countDown(x, nb, "Downloading the fasta files"))
+
+    return results
+
+
 if __name__ == "_main_":
     countDown()
     download()
     dispatch()
+    efetch_dl()
+    parse_fasta_result()
