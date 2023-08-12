@@ -51,7 +51,7 @@ def main():
     group.add_argument(
         "-v",
         "--verbose",
-        help="Diplays downloads progress and actions",
+        help="Displays downloads progress and actions",
         action="store_true",
     )
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
@@ -61,14 +61,14 @@ def main():
     group2.add_argument(
         "-c",
         "--cds",
-        help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex",
+        help="search for a given list of genes, exp: COX1 COX2 COX3, accepts regex",
         nargs="*",
     )
     # Gene Features format
     group2.add_argument(
         "-g",
         "--gene",
-        help="download sequences in gene feature format // NOT FUNCTIONAL YET",
+        help="download sequences in gene feature format",
         nargs="*",
     )
     # file input

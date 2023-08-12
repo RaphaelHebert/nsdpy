@@ -20,14 +20,15 @@ class testsFunctions(unittest.TestCase):
         class Response:
             json = lambda _: "hello world"
 
-        parameters = {}
-        parameters["api_key"] = api_key
-        parameters["db"] = "nucleotide"
-        parameters["idtype"] = "acc"
-        parameters["retmode"] = "json"
-        parameters["retmax"] = "0"
-        parameters["usehistory"] = "y"
-        parameters["term"] = query
+        parameters = {
+            "db": "nucleotide",
+            "idtype": "acc",
+            "retmode": "json",
+            "retmax": "0",
+            "usehistory": "y",
+            "term": query,
+            "api_key": api_key,
+        }
 
         get_content_mock.reset_mock()
         get_content_mock.return_value = Response()
