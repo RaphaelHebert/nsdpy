@@ -692,7 +692,7 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
 
 def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     """
-    Retrieves fasta files from nuccore db calls and parse it find
+    Retrieves fasta files from nuccore db calls and parse it to find DNA sequence and info for the information line of the created fasta file
 
     INPUTS
         path: (STRING) output_path
@@ -737,13 +737,13 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
         # Parameters
-        parameters = {}
-        parameters["db"] = "nuccore"
-        parameters["id"] = ",".join(ids)
-        if api_key:
-            parameters["api_key"] = api_key
-        parameters["rettype"] = "fasta"
-        parameters["retmode"] = "text"
+        parameters = {
+            "db": "nuccore",
+            "id": ",".join(ids),
+            "rettype": "fasta",
+            "retmode": "text",
+            "api_key": api_key if api_key else None,
+        }
 
         ## Download
         raw_result = download(parameters, EFETCH_URL)
@@ -785,7 +785,7 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
             try:
                 dispatch = dict_taxo[taxid]["dispatch"]
             except KeyError:
-                name = "others"
+                dispatch = "OTHERS"
 
             if classif == 2:
                 dispatch = "sequences"
@@ -828,9 +828,8 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
 
             keys.append(key)
 
-        if verb > 1:
+        if verb and verb > 1:
             print(countDown(x, nb, "Downloading the fasta files"))
-
     return keys
 
 
