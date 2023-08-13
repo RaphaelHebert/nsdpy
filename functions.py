@@ -625,8 +625,6 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
     seq = ""
     text = text.splitlines()
 
-    print(f"text {len(text)}")
-
     if not text:
         return found
 
