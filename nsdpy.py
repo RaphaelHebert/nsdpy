@@ -14,11 +14,11 @@ from functions import (
     esearchquery,
     completetaxo,
     taxids,
-    cds_fasta,
+    parse_fasta_cds_result,
     taxo,
     duplicates,
-    efetchDl,
-    parsefastaResult,
+    efetch_dl,
+    parse_fasta_result,
 )
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -319,21 +319,32 @@ def main():
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
     if args.cds is None:
-        found = efetchDl(
+        found = efetch_dl(
             QUERY,
             list_of_ids,
-            parsefastaResult,
+            parse_fasta_result,
             path,
             dict_ids,
             dict_taxo,
             "nuccore",
             "fasta",
             "text",
-            OPTIONS=None,
+            OPTIONS,
         )
         # found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     else:
-        found = cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+        found = efetch_dl(
+            QUERY,
+            list_of_ids,
+            parse_fasta_cds_result,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta_cds_na",
+            "text",
+            OPTIONS,
+        )
 
     ### List the remaining access ids:
     remaining = set(list_of_ids) - set(found)

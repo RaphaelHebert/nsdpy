@@ -445,19 +445,17 @@ def completetaxo(idlist, QUERY, OPTIONS):
     return data
 
 
-def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+def parse_fasta_cds_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
     """
 
-    Query eftch with batches of ids
-    Parse the result to find match for gene in genelist
+    Used as callback function by efetch_dl.
+    Parse the efetch result to find match for gene in genelist.
 
-    a list of the accession numbers for which a gene (from genelist) have been found (LIST)
     INPUTS:
+        result: (STRING) result from efetch_dl
         path: (STRING) output_path
         dict_ids: (DICT) { accession_number: TaxId }
         dict_taxo: (DICT) { tadId: dicttemp }
-        QUERY: (TUPLE) (_, api_key)
-        list_of_ids: (LIST) [accession_version_numbers]
         OPTION: (TUPLE) (verb: (STRING), args.cds (LIST), classif (INT, or LIST), _, _, args.information (BOOL))
 
     OUTPUTS: (LIST) [accession_number] matches genelist/results
@@ -468,59 +466,17 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         OPTIONS = ("", "", "", "", "", "")
 
     ## Unpack parameters
-    (_, api_key) = QUERY
     (verb, genelist, classif, _, _, information) = OPTIONS
 
-    # Comment:
-    if verb and verb > 0:
-        print("Downloading the CDS fasta files...")
+    ## Extract available information
+    if not information and not genelist and classif == 3:
+        result_fasta = result.split(">lcl|")[1:]
+        sublist = [r.split("_cds")[0] for r in result_fasta]
 
-    # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
+    ## analyse the results
     found = []
-    count = len(list_of_ids)
-
-    # Number of accession numbers to be sent at each API query
-    retmax = 200
-    if count < retmax:
-        retmax = count
-
-    if count % retmax == 0:
-        nb = count // retmax
-    else:
-        nb = (count // retmax) + 1
-
-    for x in range(nb):
-        ## Split the list of ids
-        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
-        ## Check that id parameters is not empty
-        ids = [i for i in ids if i]
-        # Parameters
-        parameters = {
-            "id": ",".join(ids),
-            "db": "nuccore",
-            "rettype": "fasta_cds_na",
-            "retmode": "text",
-            "api_key": str(api_key) if api_key else None,
-        }
-
-        ## Download
-        raw_result = download(parameters, EFETCH_URL)
-        raw_result = raw_result.text
-
-        ## Extract available information
-        if not information and not genelist and classif == 3:
-            result_fasta = raw_result.split(">lcl|")[1:]
-            sublist = [r.split("_cds")[0] for r in result_fasta]
-
-        ## analyse the results
-        sublist = extract(
-            path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb
-        )
-        found = found + sublist
-
-        # comments
-        if verb > 1:
-            print(countDown(x, nb, "Downloading the cds_fasta files"))
+    sublist = extract(path, result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
+    found = found + sublist
 
     return found
 
@@ -547,7 +503,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
     ### find gene in a seq and write to ouput file
     ## extract accession number
     try:
-        key = seq.split(">lcl|")[1].split("_cds")[0]
+        key = seq.split("|")[1].split("_cds")[0]
     except IndexError:
         return
 
@@ -669,6 +625,8 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
     seq = ""
     text = text.splitlines()
 
+    print(f"text {len(text)}")
+
     if not text:
         return found
 
@@ -686,7 +644,14 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
             seq = str(line)
         else:
             seq = seq + "\n" + line
-
+    # parse last line as no ">lcl|" is present to signal the end of seq
+    if seq:
+        try:
+            result = subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS)
+            if result:
+                found.append(result)
+        except:
+            pass
     return found
 
 
@@ -1412,3 +1377,4 @@ if __name__ == "_main_":
     dispatch()
     efetch_dl()
     parse_fasta_result()
+    parse_fasta_cds_result()
