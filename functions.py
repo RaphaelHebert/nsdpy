@@ -1380,12 +1380,24 @@ def parse_fasta_with_gff3(result, path, dict_ids, dict_taxo, ids, OPTIONS=None):
     # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
-    gff3_file = path + "/" + "results" + ".gff3"
+    gff3_file = path + "/results.gff3"
 
+    # this can be optionnal
     with open(gff3_file, "a") as f:
         f.write(gff3_result.text)
 
-    # TODO parse the gff3_file and results according to gene options and parameters
+    # TODO parse the gff3_file according to gene options and parameters
+    # extract genes matching the regex (if provided) and extract genes position and orientation
+
+    ## parse the result line by line
+    ## discard lines starting with ##
+    ## if regex provided check the gene= part of the line and check type is "gene" (column 3)
+    ## extract the accession version number (column 1)
+    ## extract the region (start and end, column 4 and 5)
+    ## extract the strand (orientation) (column 7)
+    ## add this data to a dict of dict with accession version number as key and a dict of region:[] and orientation:"+/-" as value
+    ## use this dict to parse the fasta result
+
     return []
 
 
