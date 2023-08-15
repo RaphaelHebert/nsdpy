@@ -10,6 +10,7 @@ import requests  # https://requests.readthedocs.io/en/master/
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+NCBI_URL = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
 
 PLANTAE = [
     "Chlorophyta",
@@ -1376,33 +1377,15 @@ def efetch_dl(
 
 def parse_fasta_with_gff3(result, path, dict_ids, dict_taxo, ids, OPTIONS=None):
 
-    address = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
+    # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
-    gff3_result = requests.get(address, params=parameters, timeout=60)
-    print(gff3_result.text)
-
-    # TODO do something with the result
-    # try:
-    #     key = id_line.split()[0]
-    #     keys.append(key)
-    # except IndexError:
-    #     continue
-
-    # # from dict_ids
-    # try:
-    #     taxid = dict_ids[key]
-    # except KeyError:
-    #     taxid = "not found"
-    # try:
-    #     dispatch = dict_taxo[taxid]["dispatch"]
-    # except KeyError:
-    #     dispatch = "OTHERS"
-
+    gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
     gff3_file = path + "/" + "results" + ".gff3"
 
     with open(gff3_file, "a") as f:
         f.write(gff3_result.text)
 
+    # TODO parse the gff3_file and results according to gene options and parameters
     return []
 
 
