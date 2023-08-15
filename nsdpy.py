@@ -19,6 +19,7 @@ from functions import (
     duplicates,
     efetch_dl,
     parse_fasta_result,
+    parse_fasta_with_gff3,
 )
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -138,7 +139,6 @@ def main():
 
     # list the selected option to make it appear in report.txt
     options_report = []
-
     # taxa list
     if args.list:
         input_files = " ".join(args.list)
@@ -318,7 +318,8 @@ def main():
         dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
-    if args.cds is None:
+
+    if args.cds is None and args.gene is None:
         found = efetch_dl(
             QUERY,
             list_of_ids,
@@ -332,6 +333,21 @@ def main():
             OPTIONS,
         )
         # found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+    elif args.gene is not None:
+        print("efetch_dl for genes")
+        found = efetch_dl(
+            QUERY,
+            list_of_ids,
+            parse_fasta_with_gff3,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta",
+            "text",
+            OPTIONS,
+            True,
+        )
     else:
         found = efetch_dl(
             QUERY,

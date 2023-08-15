@@ -673,6 +673,7 @@ def parse_fasta_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
+    print(result)
 
     keys = []
 
@@ -1302,6 +1303,7 @@ def efetch_dl(
     rettype="fasta",
     retmode="text",
     OPTIONS=None,
+    gff3=False,
 ):
     """
     loop over a list of id to fetch result from efetch, and perform the callback action on results
@@ -1356,7 +1358,10 @@ def efetch_dl(
         ## Download
         raw_result = download(parameters, EFETCH_URL)
         result = raw_result.text if retmode == "text" else raw_result.json()
-        res = callback(result, path, dict_ids, dict_taxo, OPTIONS)
+        if gff3:
+            res = callback(result, path, dict_ids, dict_taxo, ids, OPTIONS)
+        else:
+            res = callback(result, path, dict_ids, dict_taxo, OPTIONS)
 
         if isinstance(results, list):
             results = results + res
@@ -1367,6 +1372,38 @@ def efetch_dl(
             print(countDown(x, nb, "Downloading the fasta files"))
 
     return results
+
+
+def parse_fasta_with_gff3(result, path, dict_ids, dict_taxo, ids, OPTIONS=None):
+
+    address = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
+    parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
+    gff3_result = requests.get(address, params=parameters, timeout=60)
+    print(gff3_result.text)
+
+    # TODO do something with the result
+    # try:
+    #     key = id_line.split()[0]
+    #     keys.append(key)
+    # except IndexError:
+    #     continue
+
+    # # from dict_ids
+    # try:
+    #     taxid = dict_ids[key]
+    # except KeyError:
+    #     taxid = "not found"
+    # try:
+    #     dispatch = dict_taxo[taxid]["dispatch"]
+    # except KeyError:
+    #     dispatch = "OTHERS"
+
+    gff3_file = path + "/" + "results" + ".gff3"
+
+    with open(gff3_file, "a") as f:
+        f.write(gff3_result.text)
+
+    return []
 
 
 if __name__ == "_main_":
