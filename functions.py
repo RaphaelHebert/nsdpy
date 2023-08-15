@@ -1305,6 +1305,7 @@ def efetch_dl(
     retmode="text",
     OPTIONS=None,
     gff3=False,
+    gene_pattern=None,
 ):
     """
     loop over a list of id to fetch result from efetch, and perform the callback action on results
@@ -1360,7 +1361,9 @@ def efetch_dl(
         raw_result = download(parameters, EFETCH_URL)
         result = raw_result.text if retmode == "text" else raw_result.json()
         if gff3:
-            res = callback(result, path, dict_ids, dict_taxo, ids, OPTIONS)
+            res = callback(
+                result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS
+            )
         else:
             res = callback(result, path, dict_ids, dict_taxo, OPTIONS)
 
@@ -1375,7 +1378,9 @@ def efetch_dl(
     return results
 
 
-def parse_fasta_with_gff3(result, path, dict_ids, dict_taxo, ids, OPTIONS=None):
+def parse_fasta_with_gff3(
+    result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
+):
 
     # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
@@ -1390,13 +1395,66 @@ def parse_fasta_with_gff3(result, path, dict_ids, dict_taxo, ids, OPTIONS=None):
     # extract genes matching the regex (if provided) and extract genes position and orientation
 
     ## parse the result line by line
-    ## discard lines starting with ##
-    ## if regex provided check the gene= part of the line and check type is "gene" (column 3)
-    ## extract the accession version number (column 1)
-    ## extract the region (start and end, column 4 and 5)
-    ## extract the strand (orientation) (column 7)
-    ## add this data to a dict of dict with accession version number as key and a dict of region:[] and orientation:"+/-" as value
-    ## use this dict to parse the fasta result
+    lines = gff3_result.text.split("\n")
+
+    gff3_extract_result = {"length": 0}
+    sequence = {}
+    match = True
+    for line in lines:
+        if line.startswith("#"):
+            if line.startswith("##sequence-region"):
+                if len(sequence.keys()):
+                    if len(gene_pattern):
+                        match = False
+                        for pattern in gene_pattern:
+                            try:
+                                # print(sequence["attributes"].split(';gene=')[1].split(';')[0])
+                                if re.match(
+                                    re.escape(pattern),
+                                    sequence["attributes"]
+                                    .split(";gene=")[1]
+                                    .split(";")[0],
+                                ):
+                                    print("match")
+                                    print(sequence["attributes"])
+                                    match = True
+                                    break
+                                elif pattern in sequence["attributes"]:
+                                    print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+                                    print(sequence["attributes"])
+                            except:
+                                break
+                    if match:
+                        gff3_extract_result[sequence["accession_version"]] = sequence
+                        gff3_extract_result["length"] = (
+                            gff3_extract_result["length"] + 1
+                        )
+                    sequence = {}
+                sequence["accession_version"] = re.findall(r"(\w+\.\d+)", line)[0]
+            continue
+
+        fields = line.strip().split("\t")
+        if len(fields) != 9:
+            continue
+
+        sequence["seqid"] = fields[0]
+        sequence["source"] = fields[1]
+        sequence["feature_type"] = fields[2]
+        sequence["start"] = int(fields[3])
+        sequence["end"] = int(fields[4])
+        sequence["score"] = fields[5]
+        sequence["strand"] = fields[6]
+        sequence["phase"] = fields[7]
+        sequence["attributes"] = fields[8]
+
+    # if len(sequence.keys()):
+    #     gff3_extract_result[sequence["accession_version"]] = sequence
+    #     gff3_extract_result["length"] = gff3_extract_result["length"] + 1
+    #     sequence = {}
+
+    # print("gff3_extract_result:", gff3_extract_result)
+
+    # print("gff3_extract_result.length:", gff3_extract_result["length"])
 
     return []
 

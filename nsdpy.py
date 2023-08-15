@@ -334,7 +334,6 @@ def main():
         )
         # found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
     elif args.gene is not None:
-        print("efetch_dl for genes")
         found = efetch_dl(
             QUERY,
             list_of_ids,
@@ -347,6 +346,7 @@ def main():
             "text",
             OPTIONS,
             True,
+            args.gene,
         )
     else:
         found = efetch_dl(
