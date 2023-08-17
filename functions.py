@@ -2,7 +2,8 @@
 import os
 import re
 import csv
-from collections import Counter
+from collections import Counter, defaultdict
+import uuid
 
 # third party imports
 import requests  # https://requests.readthedocs.io/en/master/
@@ -1378,6 +1379,16 @@ def efetch_dl(
     return results
 
 
+def parse_attributes(attributes_str):
+    attributes = {}
+    parts = attributes_str.split(";")
+    for part in parts:
+        if "=" in part:
+            key, value = part.split("=")
+            attributes[key] = value
+    return attributes
+
+
 def parse_fasta_with_gff3(
     result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
 ):
@@ -1398,63 +1409,97 @@ def parse_fasta_with_gff3(
     lines = gff3_result.text.split("\n")
 
     gff3_extract_result = {"length": 0}
-    sequence = {}
+    sequences = defaultdict(dict)
     match = True
+    count = 0
+
     for line in lines:
+        count += 1
         if line.startswith("#"):
             if line.startswith("##sequence-region"):
-                if len(sequence.keys()):
-                    if len(gene_pattern):
-                        match = False
-                        for pattern in gene_pattern:
-                            try:
-                                # print(sequence["attributes"].split(';gene=')[1].split(';')[0])
-                                if re.match(
-                                    re.escape(pattern),
-                                    sequence["attributes"]
-                                    .split(";gene=")[1]
-                                    .split(";")[0],
-                                ):
-                                    print("match")
-                                    print(sequence["attributes"])
-                                    match = True
-                                    break
-                                elif pattern in sequence["attributes"]:
-                                    print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-                                    print(sequence["attributes"])
-                            except:
-                                break
-                    if match:
-                        gff3_extract_result[sequence["accession_version"]] = sequence
-                        gff3_extract_result["length"] = (
-                            gff3_extract_result["length"] + 1
-                        )
-                    sequence = {}
-                sequence["accession_version"] = re.findall(r"(\w+\.\d+)", line)[0]
+                for value in sequences.values():
+                    selectedLine = {}
+                    for pattern in gene_pattern:
+                        selectedLine[pattern] = []
+                        try:
+                            pattern_regexp = re.escape(pattern)
+                            match_result = re.match(
+                                pattern_regexp, value["attributes"]["gene"]
+                            )
+                            if match_result:
+                                print(
+                                    "####################################################"
+                                )
+                                selectedLine[pattern] = selectedLine[pattern] + [
+                                    (value["start"], value["end"])
+                                ]
+                                gff3_extract_result[value["seqid"]] = selectedLine
+                        except Exception as e:
+                            # Handling unknown errors
+                            print("An unknown error occurred:", e)
+                            break
+                sequences = {}
+                count = 0
             continue
+
+            #     count = count + 1
+            #     if len(sequence.keys()):
+            #         if len(gene_pattern):
+            #             match = False
+            #             print(count)
+            #             for pattern in gene_pattern:
+            #                 try:
+            #                     pattern_regexp = re.escape(pattern)
+            #                     match_result = re.match(pattern_regexp, sequence["gene"])
+            #                     # print(sequence["attributes"].split(';gene=')[1].split(';')[0])
+            #                     if "NC_072680.1" in sequence["seqid"]:
+            #                         print("match")
+            #                         print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+            #                         print(sequence["gene"])
+            #                         match = True
+            #                         break
+            #                     elif pattern in sequence["gene"]:
+            #                         print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
+            #                         print(sequence["attributes"])
+            #                 except Exception as e:
+            #                     # Handling unknown errors
+            #                     print("An unknown error occurred:", e)
+            #                     break
+            #         if match:
+            #             gff3_extract_result[sequence["accession_version"]] = sequence
+            #             gff3_extract_result["length"] = (
+            #                 gff3_extract_result["length"] + 1
+            #             )
+            #         sequence = {}
+            #     sequence["accession_version"] = re.findall(r"(\w+\.\d+)", line)[0]
+            # continue
 
         fields = line.strip().split("\t")
         if len(fields) != 9:
             continue
+        attributes = parse_attributes(fields[8])
 
-        sequence["seqid"] = fields[0]
-        sequence["source"] = fields[1]
-        sequence["feature_type"] = fields[2]
-        sequence["start"] = int(fields[3])
-        sequence["end"] = int(fields[4])
-        sequence["score"] = fields[5]
-        sequence["strand"] = fields[6]
-        sequence["phase"] = fields[7]
-        sequence["attributes"] = fields[8]
+        sequence = {
+            "seqid": fields[0],
+            "source": fields[1],
+            "feature_type": fields[2],
+            "start": int(fields[3]),
+            "end": int(fields[4]),
+            "score": fields[5],
+            "strand": fields[6],
+            "phase": fields[7],
+            "attributes": attributes,
+        }
+        sequences[count] = sequence
 
     # if len(sequence.keys()):
     #     gff3_extract_result[sequence["accession_version"]] = sequence
     #     gff3_extract_result["length"] = gff3_extract_result["length"] + 1
     #     sequence = {}
 
-    # print("gff3_extract_result:", gff3_extract_result)
+    print("gff3_extract_result:", gff3_extract_result)
 
-    # print("gff3_extract_result.length:", gff3_extract_result["length"])
+    print("gff3_extract_result.length:", gff3_extract_result["length"])
 
     return []
 
