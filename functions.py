@@ -675,7 +675,6 @@ def parse_fasta_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
 
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
-    print(result)
 
     keys = []
 
@@ -1389,10 +1388,32 @@ def parse_attributes(attributes_str):
     return attributes
 
 
+def read_fasta_sequence(fasta_sequence):
+    info_line = None
+    dna_sequence = ""
+
+    for line in fasta_sequence.split("\n"):
+        line = line.strip()
+        if line.startswith(">"):
+            if info_line is None:
+                info_line = line
+            else:
+                continue
+        else:
+            dna_sequence += line + "\n"
+
+    return info_line, dna_sequence
+
+
+def complementary_dna(dna_string):
+    complement = {"A": "T", "T": "A", "C": "G", "G": "C"}
+    complementary_string = "".join(complement[base] for base in dna_string)
+    return complementary_string
+
+
 def parse_fasta_with_gff3(
     result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
 ):
-    print(result)
     # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
@@ -1447,13 +1468,53 @@ def parse_fasta_with_gff3(
 
                 gff3_extract_result[sequence["seqid"]][pattern] = gff3_extract_result[
                     sequence["seqid"]
-                ][pattern] + [(sequence["start"], sequence["end"])]
+                ][pattern] + [(sequence["start"], sequence["end"], sequence["strand"])]
 
     print("gff3_extract_result:", gff3_extract_result)
 
     # extract sequences from fasta file with the gff3 extracted infos
+    result = result.split(">")
 
-    return []
+    parsed_result = ""
+    for res in result:
+        try:
+            key = res.split()[0]
+            match = gff3_extract_result[key]
+            info_line, dna_sequence = read_fasta_sequence(res)
+            dna_sequence = dna_sequence.split("\n").join("")
+            print(dna_sequence)
+            for pattern in gene_pattern:
+                positions = match[pattern]
+                sequence_fragments = []
+                for position in positions:
+                    sequence_length = len(sequence)
+                    if position[2] == "-":
+                        position = (
+                            sequence_length + 1 - position[1],
+                            sequence_length + 1 - position[0],
+                            "+",
+                        )
+                        dna_sequence = complementary_dna(dna_sequence)
+                    # TODO check if we include the base at the end position
+                    sequence_fragments = sequence_fragments + [
+                        dna_sequence[int(position[0])],
+                        dna_sequence[int(position[1]) + 1],
+                    ]
+                sequence_fragments = sequence_fragments.join("")
+                # insert newline every 120 chars
+                sequence_fragments = "\n".join(
+                    sequence_fragments[i : i + 120]
+                    for i in range(0, len(sequence_fragments), 120)
+                )
+            # cut sequence
+            parsed_result = parsed_result + "\n" + info_line + "\n" + sequence_fragments
+        except IndexError:
+            print(res)
+            continue
+        except:
+            continue
+
+    return parse_fasta_result(parsed_result, path, dict_ids, dict_taxo, OPTIONS=None)
 
 
 if __name__ == "_main_":
@@ -1463,3 +1524,4 @@ if __name__ == "_main_":
     efetch_dl()
     parse_fasta_result()
     parse_fasta_cds_result()
+    read_fasta_sequence()
