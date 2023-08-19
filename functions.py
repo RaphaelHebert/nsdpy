@@ -1415,70 +1415,62 @@ def parse_fasta_with_gff3(
 
     for line in lines:
         count += 1
-        if line.startswith("#"):
-            if line.startswith("##sequence-region"):
-                for value in sequences.values():
-                    selectedLine = {}
-                    for pattern in gene_pattern:
-                        selectedLine[pattern] = []
-                        try:
-                            pattern_regexp = re.escape(pattern)
-                            match_result = re.match(
-                                pattern_regexp, value["attributes"]["gene"]
-                            )
-                            if match_result:
-                                print(
-                                    "####################################################"
-                                )
-                                selectedLine[pattern] = selectedLine[pattern] + [
-                                    (value["start"], value["end"])
-                                ]
-                                gff3_extract_result[value["seqid"]] = selectedLine
-                        except Exception as e:
-                            # Handling unknown errors
-                            print("An unknown error occurred:", e)
-                            break
-                sequences = {}
-                count = 0
+        # if line.startswith("##sequence-region"):
+        #     for value in sequences.values():
+        #         selectedLine = {}
+        #         for pattern in gene_pattern:
+        #             if pattern not in selectedLine.keys():
+        #                 selectedLine[pattern] = []
+        #             try:
+        #                 pattern_regexp = re.escape(pattern)
+        #                 match_result = re.match(
+        #                     pattern_regexp, value["attributes"]["gene"]
+        #                 )
+        #                 if match_result:
+        #                     selectedLine[pattern] = selectedLine[pattern] + [
+        #                         (value["start"], value["end"])
+        #                     ]
+
+        #             except Exception as e:
+        #                 # Handling unknown errors
+        #                 # print("An unknown error occurred:", e)
+        #                 break
+        #     sequences = {}
+        #     count = 0
+        #     continue
+        if line.startswith("##sequence-region") and len(sequences.keys()) > 0:
+            gff3_extract_result[sequence["seqid"]] = {}
+            for value in sequences.values():
+                for pattern in gene_pattern:
+                    if pattern not in gff3_extract_result[sequence["seqid"]].keys():
+                        gff3_extract_result[sequence["seqid"]][pattern] = []
+                    try:
+                        pattern_regexp = re.escape(pattern)
+                        match_result = re.match(
+                            pattern_regexp, value["attributes"]["gene"]
+                        )
+                        if match_result:
+                            gff3_extract_result[sequence["seqid"]][
+                                pattern
+                            ] = gff3_extract_result[sequence["seqid"]][pattern] + [
+                                (value["start"], value["end"])
+                            ]
+                    except Exception as e:
+                        break
+            sequences = {}
+            count = 0
             continue
 
-            #     count = count + 1
-            #     if len(sequence.keys()):
-            #         if len(gene_pattern):
-            #             match = False
-            #             print(count)
-            #             for pattern in gene_pattern:
-            #                 try:
-            #                     pattern_regexp = re.escape(pattern)
-            #                     match_result = re.match(pattern_regexp, sequence["gene"])
-            #                     # print(sequence["attributes"].split(';gene=')[1].split(';')[0])
-            #                     if "NC_072680.1" in sequence["seqid"]:
-            #                         print("match")
-            #                         print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-            #                         print(sequence["gene"])
-            #                         match = True
-            #                         break
-            #                     elif pattern in sequence["gene"]:
-            #                         print("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO")
-            #                         print(sequence["attributes"])
-            #                 except Exception as e:
-            #                     # Handling unknown errors
-            #                     print("An unknown error occurred:", e)
-            #                     break
-            #         if match:
-            #             gff3_extract_result[sequence["accession_version"]] = sequence
-            #             gff3_extract_result["length"] = (
-            #                 gff3_extract_result["length"] + 1
-            #             )
-            #         sequence = {}
-            #     sequence["accession_version"] = re.findall(r"(\w+\.\d+)", line)[0]
-            # continue
-
+        ## extract parameters
         fields = line.strip().split("\t")
         if len(fields) != 9:
+            if not line.startswith("#") and len(line) > 0:
+                print("len(fields) != 9")
+                print(line)
             continue
         attributes = parse_attributes(fields[8])
-
+        if "gene" in attributes.keys() and attributes["gene"] == "ND5":
+            print(attributes)
         sequence = {
             "seqid": fields[0],
             "source": fields[1],
