@@ -1405,10 +1405,45 @@ def read_fasta_sequence(fasta_sequence):
     return info_line, dna_sequence
 
 
-def complementary_dna(dna_string):
-    complement = {"A": "T", "T": "A", "C": "G", "G": "C"}
-    complementary_string = "".join(complement[base] for base in dna_string)
-    return complementary_string
+# def complementary_dna(dna_string):
+#     complement = {"A": "T", "T": "A", "C": "G", "G": "C"}
+#     complementary_string = "".join(complement[base] for base in dna_string)
+#     return complementary_string
+
+
+def merge_and_sort_overlaps(sequences, length):
+    if not sequences:
+        return []
+
+    forward_sequences = []
+    for seq in sequences:
+        if seq[2] == "-":
+            forward_sequences = forward_sequences + [
+                (length + 1 - seq[1], length + 1 - seq[0])
+            ]
+            continue
+        forward_sequences = forward_sequences + [(seq[0], seq[1])]
+
+    # Sort the sequences based on their starting indices
+    sequences.sort(key=lambda x: x[0])
+
+    merged_sequences = [sequences[0]]
+
+    for i in range(1, len(sequences)):
+        current_start, current_end = sequences[i]
+        last_merged_start, last_merged_end = merged_sequences[-1]
+
+        if current_start <= last_merged_end + 1:
+            # Overlapping, merge the sequences
+            merged_sequences[-1] = (
+                last_merged_start,
+                max(last_merged_end, current_end),
+            )
+        else:
+            # Non-overlapping, add to the merged list
+            merged_sequences.append((current_start, current_end))
+
+    return merged_sequences
 
 
 def parse_fasta_with_gff3(
@@ -1485,16 +1520,10 @@ def parse_fasta_with_gff3(
             print(dna_sequence)
             for pattern in gene_pattern:
                 positions = match[pattern]
+                positions = merge_and_sort_overlaps(positions)
                 sequence_fragments = []
                 for position in positions:
                     sequence_length = len(sequence)
-                    if position[2] == "-":
-                        position = (
-                            sequence_length + 1 - position[1],
-                            sequence_length + 1 - position[0],
-                            "+",
-                        )
-                        dna_sequence = complementary_dna(dna_sequence)
                     # TODO check if we include the base at the end position
                     sequence_fragments = sequence_fragments + [
                         dna_sequence[int(position[0])],
