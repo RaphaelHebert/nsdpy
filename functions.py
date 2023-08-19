@@ -1398,14 +1398,12 @@ def parse_fasta_with_gff3(
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
     gff3_file = path + "/results.gff3"
 
+    # write gff3 files in result folder
     # this can be optionnal
     with open(gff3_file, "a") as f:
         f.write(gff3_result.text)
 
-    # TODO parse the gff3_file according to gene options and parameters
-    # extract genes matching the regex (if provided) and extract genes position and orientation
-
-    ## parse the result line by line
+    # parse GFF3 file line by line
     lines = gff3_result.text.split("\n")
 
     gff3_extract_result = {}
@@ -1452,6 +1450,8 @@ def parse_fasta_with_gff3(
                 ][pattern] + [(sequence["start"], sequence["end"])]
 
     print("gff3_extract_result:", gff3_extract_result)
+
+    # extract sequences from fasta file with the gff3 extracted infos
 
     return []
 
