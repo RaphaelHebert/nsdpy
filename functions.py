@@ -1409,40 +1409,16 @@ def parse_fasta_with_gff3(
     lines = gff3_result.text.split("\n")
 
     gff3_extract_result = {}
-    # sequences = defaultdict(dict)
 
     for line in lines:
         if line.startswith("#"):
-            # id = line.split()[1]
-            # if id not in gff3_extract_result.keys():
-            #     gff3_extract_result[id] = {}
             continue
-        # if line.startswith("##sequence-region") and len(sequences.keys()) > 0:
-        #     ##sequence-region AB095626.1 1 807
-        #     gff3_extract_result[sequence['seqid']] = {}
-        #     for value in sequences.values():
-        #         for pattern in gene_pattern:
-        #             if pattern not in gff3_extract_result[sequence['seqid']].keys():
-        #                 gff3_extract_result[sequence['seqid']][pattern] = []
-        #             try:
-        #                 pattern_regexp = re.escape(pattern)
-        #                 match_result = re.match(
-        #                     pattern_regexp, value["attributes"]["gene"]
-        #                 )
-        #                 if match_result:
-        #                     gff3_extract_result[sequence['seqid']][pattern] = gff3_extract_result[sequence['seqid']][pattern] + [
-        #                         (value["start"], value["end"])
-        #                     ]
-        #             except Exception as e:
-        #                 break
-        #     sequences = {}
-        #     count = 0
-        #     continue
 
         ## extract parameters
         fields = line.strip().split("\t")
         if len(fields) != 9:
             continue
+
         attributes = parse_attributes(fields[8])
         sequence = {
             "seqid": fields[0],
@@ -1455,26 +1431,25 @@ def parse_fasta_with_gff3(
             "phase": fields[7],
             "attributes": attributes,
         }
-        for pattern in gene_pattern:
-            if sequence["seqid"] not in gff3_extract_result.keys():
-                print(sequence["seqid"])
-                gff3_extract_result[sequence["seqid"]] = {}
-            if pattern not in gff3_extract_result[sequence["seqid"]].keys():
-                gff3_extract_result[sequence["seqid"]][pattern] = []
-            pattern_regexp = re.escape(pattern)
-            if "gene" in sequence["attributes"].keys():
-                match_result = re.match(pattern_regexp, sequence["attributes"]["gene"])
-                if match_result:
-                    gff3_extract_result[sequence["seqid"]][
-                        pattern
-                    ] = gff3_extract_result[sequence["seqid"]][pattern] + [
-                        (sequence["start"], sequence["end"])
-                    ]
 
-    # if len(sequence.keys()):
-    #     gff3_extract_result[sequence["accession_version"]] = sequence
-    #     gff3_extract_result["length"] = gff3_extract_result["length"] + 1
-    #     sequence = {}
+        # look for pattern match in extracted parameters
+        for pattern in gene_pattern:
+            if "gene" not in sequence["attributes"].keys():
+                continue
+
+            pattern_regexp = re.escape(pattern)
+            match_result = re.match(pattern_regexp, sequence["attributes"]["gene"])
+
+            if match_result:
+                if sequence["seqid"] not in gff3_extract_result.keys():
+                    gff3_extract_result[sequence["seqid"]] = {}
+
+                if pattern not in gff3_extract_result[sequence["seqid"]].keys():
+                    gff3_extract_result[sequence["seqid"]][pattern] = []
+
+                gff3_extract_result[sequence["seqid"]][pattern] = gff3_extract_result[
+                    sequence["seqid"]
+                ][pattern] + [(sequence["start"], sequence["end"])]
 
     print("gff3_extract_result:", gff3_extract_result)
 
