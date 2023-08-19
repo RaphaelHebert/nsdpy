@@ -1392,7 +1392,7 @@ def parse_attributes(attributes_str):
 def parse_fasta_with_gff3(
     result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
 ):
-
+    print(result)
     # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
