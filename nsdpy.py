@@ -70,7 +70,7 @@ def main():
     group2.add_argument(
         "-g",
         "--gene",
-        help="download sequences in gene feature format",
+        help="download sequences in fasta and the related gff3 file. If one or more arguments are passed the gff3 file will be parsed to retrieve the gene matching the passed regexp",
         nargs="*",
     )
     # file input
@@ -366,6 +366,7 @@ def main():
     remaining = set(list_of_ids) - set(found)
     remaining = list(remaining)
 
+    print(found)
     # Comments
     if verb > 0 and args.cds is not None:
         print(
@@ -373,7 +374,10 @@ def main():
         )
 
     ### taxo (call EFETCH to query the nuccore database to get the .gb files)
-    analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
+    sequences = []
+    analyse = []
+    if args.gene is None:
+        analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
 
     ### Summurize
     # Get the ending time of the run
@@ -413,6 +417,15 @@ def main():
                 f"total number of accession version identifiers \nfor which no gene has been retrieved:                                                  {len(notfound)}"
             )
             print("see the notfound.txt for the detail")
+    elif args.gene is not None:
+        if verb > 0:
+            print(
+                f"number of accession number from NCBI query:                          {total_number_of_results}"
+            )
+            if args.gene:
+                print(
+                    f"number of sequences with a match:                                    {len(found)}"
+                )
 
     else:
         if verb > 0:
