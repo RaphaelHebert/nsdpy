@@ -1381,9 +1381,9 @@ def parse_attributes(attributes_str):
     attributes = {}
     parts = attributes_str.split(";")
     for part in parts:
-        if "=" in part:
+        if "=" in part and part[-1] != "=":
             key, value = part.split("=")
-            attributes[key] = value
+            attributes[key.strip()] = value.strip()
     return attributes
 
 
