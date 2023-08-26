@@ -1423,12 +1423,12 @@ def merge_and_sort_overlaps(sequences, length):
         forward_sequences = forward_sequences + [(seq[0], seq[1])]
 
     # Sort the sequences based on their starting indices
-    sequences.sort(key=lambda x: x[0])
+    forward_sequences.sort(key=lambda x: x[0])
 
-    merged_sequences = [sequences[0]]
+    merged_sequences = [forward_sequences[0]]
 
-    for i in range(1, len(sequences[:-1])):
-        current_start, current_end = sequences[i]
+    for seq in forward_sequences:
+        current_start, current_end = seq
         last_merged_start, last_merged_end = merged_sequences[-1]
 
         if current_start <= last_merged_end + 1:
@@ -1505,7 +1505,6 @@ def parse_fasta_with_gff3(
 
     # extract sequences from fasta file with the gff3 extracted infos
     result = result.split(">")
-
     parsed_result = ""
     for res in result:
         try:
@@ -1513,7 +1512,6 @@ def parse_fasta_with_gff3(
             match = gff3_extract_result[key]
             info_line, dna_sequence = read_fasta_sequence(res)
             for pattern in gene_pattern:
-                print(pattern)
                 positions = match[pattern]
                 positions = merge_and_sort_overlaps(positions, len(dna_sequence))
                 sequence_fragments = []
@@ -1521,22 +1519,15 @@ def parse_fasta_with_gff3(
                     sequence_fragments = sequence_fragments + [
                         dna_sequence[int(position[0]) : int(position[1]) + 1]
                     ]
-                print(sequence_fragments)
                 sequence_fragments = "".join(sequence_fragments)
-                # # insert newline every 120 chars
-                # sequence_fragments = '\n'.join(
-                #     sequence_fragments[i : i + 120]
-                #     for i in range(0, len(sequence_fragments), 120)
-                # )
+                # insert newline every 120 chars
+                sequence_fragments = "\n".join(
+                    sequence_fragments[i : i + 120]
+                    for i in range(0, len(sequence_fragments), 120)
+                )
             # cut sequence
             parsed_result = (
-                parsed_result
-                + "\n"
-                + ">"
-                + info_line
-                + "\n"
-                + sequence_fragments
-                + "\n"
+                parsed_result + "\n" + ">" + info_line + "\n" + sequence_fragments
             )
             print(parsed_result)
         except IndexError:
