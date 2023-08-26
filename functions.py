@@ -1388,7 +1388,13 @@ def parse_attributes(attributes_str):
 
 
 def read_fasta_sequence(fasta_sequence):
+    # fasta sequence has been extracted from a string of many fasta sequence
+    # by spliting it with ('>') thus the infoline does not contain any '>' and the firest line should be the infoline
     info_line = None
+    if fasta_sequence == "":
+        return (info_line, "")
+
+    fasta_sequence = fasta_sequence.strip()
     dna_sequence = ""
     for index, line in enumerate(fasta_sequence.split("\n")):
         line = line.strip()
