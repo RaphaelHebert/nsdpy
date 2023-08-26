@@ -8,13 +8,13 @@ class TestExtractFastaWithGFF3Info(unittest.TestCase):
         gff3_extract_result = {"Header": {"pattern1": [(1, 5, "+"), (9, 12, "-")]}}
         gene_pattern = ["pattern1"]
 
-        expected_output = ">Header\nAGCTGAAAA"
+        expected_output = ">Header [pattern=pattern1]\nAGCTGAAAA"
 
         result = extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern)
         self.assertEqual(result, expected_output)
 
     def test_multiple_patterns(self):
-        result = ">Header\nAGCTGATCGAAAATTTTTAAA"
+        result = ">Header \nAGCTGATCGAAAATTTTTAAA"
         gff3_extract_result = {
             "Header": {
                 "pattern1": [(1, 5, "+"), (9, 12, "-")],
@@ -23,7 +23,7 @@ class TestExtractFastaWithGFF3Info(unittest.TestCase):
         }
         gene_pattern = ["pattern1", "pattern2"]
 
-        expected_output = ">Header\nAGCTGAAAA\n>Header\nGCTGAAAAT"
+        expected_output = ">Header [pattern=pattern1]\nAGCTGAAAA\n>Header [pattern=pattern2]\nGCTGAAAAT"
 
         result = extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern)
         self.assertEqual(result, expected_output)

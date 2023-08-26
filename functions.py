@@ -1537,13 +1537,20 @@ def extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern):
 
                 # cut sequence
                 if parsed_result == "":
-                    parsed_result = ">" + info_line + "\n" + sequence_fragments
+                    parsed_result = (
+                        ">"
+                        + info_line
+                        + f" [pattern={pattern}]"
+                        + "\n"
+                        + sequence_fragments
+                    )
                 else:
                     parsed_result = (
                         parsed_result
                         + "\n"
                         + ">"
                         + info_line
+                        + f" [pattern={pattern}]"
                         + "\n"
                         + sequence_fragments
                     )
@@ -1552,21 +1559,46 @@ def extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern):
     return parsed_result
 
 
-def parse_fasta_with_gff3(
-    result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
-):
-    # Retrieve gff3 files and write the result on a file
+def download_gff3(ids, path, write_file=True):
+    """
+
+    Retrieve gff3 files and optionnaly write the result in a file
+
+    INPUTS:
+        ids: (LIST) [id] accession sequence id
+        path: (STRING)
+        write_file: (BOOL)
+
+    OUTPUTS:
+        (DICT) {ok: (BOOL),
+                text: (STRING),
+                url: (STRING)
+                }   result from request.get call
+
+    """
+
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
 
+    print("gff3_result", gff3_result.text)
     gff3_file = path + "/results.gff3"
 
     ## TODO handle error if gff3_result.ok not True
 
     # write gff3 files in result folder
     # this can be optionnal
-    with open(gff3_file, "a") as f:
-        f.write(gff3_result.text)
+    if write_file:
+        with open(gff3_file, "a") as f:
+            f.write(gff3_result.text)
+
+    return gff3_result
+
+
+def parse_fasta_with_gff3(
+    result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
+):
+
+    gff3 = download_gff3(ids, path, True)
 
     # parse GFF3 file line by line
     lines = gff3_result.text.split("\n")
