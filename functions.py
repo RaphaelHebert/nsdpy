@@ -1378,6 +1378,17 @@ def efetch_dl(
 
 
 def parse_attributes(attributes_str):
+    """
+
+    extracts attributes from a string extracted from the column #9 of a gff3 info
+
+    INPUTS:
+        attributes_str: (STRING)
+
+    OUTPUTS:
+        (DICT): {attribute: value}
+
+    """
     attributes = {}
     parts = attributes_str.split(";")
     for part in parts:
@@ -1388,6 +1399,17 @@ def parse_attributes(attributes_str):
 
 
 def read_fasta_sequence(fasta_sequence):
+    """
+
+    extracts dna_sequence and infoline from a fasta like formatted string (without ">" char on the infoline)
+
+    INPUTS:
+        fasta_sequence: (STRING)
+
+    OUTPUTS:
+        (TUPLE): (STRING, STRING)
+
+    """
     # fasta sequence has been extracted from a string of many fasta sequence
     # by spliting it with ('>') thus the infoline does not contain any '>' and the firest line should be the infoline
     info_line = None
@@ -1416,6 +1438,19 @@ def read_fasta_sequence(fasta_sequence):
 
 
 def merge_and_sort_overlaps(sequences, length):
+    """
+
+    from the start, end and orientation information of a subsequence and the length of the sequence,
+    compute the correct start and end for backward orientated sequence, merge overlaps, and sort sequences by starting point
+
+    INPUTS:
+        sequences: (LIST(TUPLE)) [(int, int, char("+/-"))]
+        length: (INT)
+
+    OUTPUTS:
+        (LIST(TUPLE)) [(int, int)]
+
+    """
     if not sequences:
         return []
 
@@ -1450,13 +1485,83 @@ def merge_and_sort_overlaps(sequences, length):
     return merged_sequences
 
 
+def insert_newline(text, length):
+    """
+
+    Insert newline char every x char
+
+    INPUTS:
+        text: (STRING)
+        length: (INT)
+
+    OUTPUTS:
+        (STRING)
+
+    """
+    return "\n".join(text[i : i + length] for i in range(0, len(text), length))
+
+
+def extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern):
+    """
+
+    Search for gene_patterns in gff3_extract_result and extract dna sequences from result
+
+    INPUTS:
+        result: (STRING) extracted from a .fasta file
+        gff3_extract_result: (DICT) { pattern: [(start, end, orientation)] } attributes extracted from a .gff3 file
+        gene_pattern: (LIST) [pattern] patterns given as parameters from the --gene options
+
+    OUTPUTS:
+        (STRING) .fasta formatted string
+
+    """
+    result = result.split(">")
+    parsed_result = ""
+    for res in result:
+        try:
+            key = res.split()[0]
+            match = gff3_extract_result[key]
+            info_line, dna_sequence = read_fasta_sequence(res)
+            for pattern in gene_pattern:
+                positions = match[pattern]
+                positions = merge_and_sort_overlaps(positions, len(dna_sequence))
+                sequence_fragments = []
+                for position in positions:
+                    sequence_fragments = sequence_fragments + [
+                        dna_sequence[int(position[0] - 1) : int(position[1])]
+                    ]
+                sequence_fragments = "".join(sequence_fragments)
+
+                # insert newline every 120 chars
+                sequence_fragments = insert_newline(sequence_fragments, 120)
+
+                # cut sequence
+                if parsed_result == "":
+                    parsed_result = ">" + info_line + "\n" + sequence_fragments
+                else:
+                    parsed_result = (
+                        parsed_result
+                        + "\n"
+                        + ">"
+                        + info_line
+                        + "\n"
+                        + sequence_fragments
+                    )
+        except:
+            continue
+    return parsed_result
+
+
 def parse_fasta_with_gff3(
     result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
 ):
     # Retrieve gff3 files and write the result on a file
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+
     gff3_file = path + "/results.gff3"
+
+    ## TODO handle error if gff3_result.ok not True
 
     # write gff3 files in result folder
     # this can be optionnal
@@ -1510,40 +1615,10 @@ def parse_fasta_with_gff3(
                 ][pattern] + [(sequence["start"], sequence["end"], sequence["strand"])]
 
     # extract sequences from fasta file with the gff3 extracted infos
-    result = result.split(">")
-    parsed_result = ""
-    for res in result:
-        try:
-            key = res.split()[0]
-            match = gff3_extract_result[key]
-            info_line, dna_sequence = read_fasta_sequence(res)
-            for pattern in gene_pattern:
-                positions = match[pattern]
-                positions = merge_and_sort_overlaps(positions, len(dna_sequence))
-                sequence_fragments = []
-                for position in positions:
-                    sequence_fragments = sequence_fragments + [
-                        dna_sequence[int(position[0]) : int(position[1]) + 1]
-                    ]
-                sequence_fragments = "".join(sequence_fragments)
-                # insert newline every 120 chars
-                sequence_fragments = "\n".join(
-                    sequence_fragments[i : i + 120]
-                    for i in range(0, len(sequence_fragments), 120)
-                )
-            # cut sequence
-            parsed_result = (
-                parsed_result + "\n" + ">" + info_line + "\n" + sequence_fragments
-            )
-            print(parsed_result)
-        except IndexError:
-            continue
-        except:
-            continue
-    print(
-        "from fasta",
-        parse_fasta_result(parsed_result, path, dict_ids, dict_taxo, OPTIONS=None),
+    parsed_result = extract_fasta_with_gff3_info(
+        result, gff3_extract_result, gene_pattern
     )
+
     return parse_fasta_result(parsed_result, path, dict_ids, dict_taxo, OPTIONS=None)
 
 
