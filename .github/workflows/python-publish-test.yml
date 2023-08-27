@@ -32,11 +32,11 @@ jobs:
           python -m unittest discover tests -p '*_test.py'
 
   publish:
-    env:
-      REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
     needs: tests
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch' && github.actor == $REPO_OWNER_USERNAME
+    env:
+      REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
+    if: github.event_name == 'workflow_dispatch' && github.actor == ${REPO_OWNER_USERNAME}
 
     steps:
       - name: Checkout Repository
