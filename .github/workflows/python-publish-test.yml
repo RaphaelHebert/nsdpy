@@ -52,9 +52,12 @@ jobs:
       - name: Check Last Published Version on PyPI Test
         id: check_version
         run: |
-          LAST_VERSION=$(poetry search nsdpy | grep -oP '(?<=\[==)([^,]+)')
+          pip install -i https://test.pypi.org/simple/ nsdpy
+          LAST_VERSION=$(nsdpy --version)
+          echo "$LAST_VERSION"
           echo "Last published version on test PyPI: $LAST_VERSION"
           echo "::set-output name=last_version::$LAST_VERSION"
+          pip uninstall nsdpy
 
       - name: Increment Version and Check for Existing Tag
         id: increment_version_and_check_tag
