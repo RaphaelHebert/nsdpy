@@ -1,0 +1,93 @@
+name: Publish to PyPI Test
+
+on:
+  workflow_dispatch:
+    permissions:
+      users:
+        - ${{ github.repository_owner }}
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Run Unittest Tests
+        run: |
+          python -m unittest discover tests -p '*_test.py'
+
+  publish:
+    needs: tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Check Last Published Version on PyPI Test
+        id: check_version
+        run: |
+          LAST_VERSION=$(poetry search nsdpy --index https://test.pypi.org/simple/ | grep -oP '(?<=\[==)([^,]+)')
+          echo "Last published version on test PyPI: $LAST_VERSION"
+          echo "::set-output name=last_version::$LAST_VERSION"
+
+      - name: Increment Version and Check for Existing Tag
+        id: increment_version_and_check_tag
+        run: |
+          LAST_VERSION=${{ steps.check_version.outputs.last_version }}
+          NEW_VERSION=$(python -c "parts = '$LAST_VERSION'.split('-'); version_parts = parts[0].split('.'); version_parts[-1] = str(int(version_parts[-1]) + 1); print('.'.join(version_parts) + '-beta' + parts[1])")
+          echo "Incremented version: $NEW_VERSION"
+          git fetch --tags
+          TAG_EXISTS=$(git tag -l "$NEW_VERSION")
+          echo "::set-output name=new_version::$NEW_VERSION"
+          echo "::set-output name=tag_exists::$TAG_EXISTS"
+
+      - name: Update Version and Files
+        if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
+        run: |
+          NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
+          sed -i "s/__version__ = .*/__version__ = \"$NEW_VERSION\"/" main.py
+          poetry version $NEW_VERSION
+          git config --global user.email "github-actions@example.com"
+          git config --global user.name "GitHub Actions"
+          git commit -am "Bump version to $NEW_VERSION [skip ci]"
+          git push origin $BRANCH_NAME
+
+      - name: Create Tag and Push
+        if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
+        run: |
+          NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
+          BRANCH_NAME=${GITHUB_REF##*/}
+          COMMIT_SHA=$(git rev-parse HEAD)
+          git tag -a $NEW_VERSION -m "Version $NEW_VERSION, Branch: $BRANCH_NAME, Commit: $COMMIT_SHA"
+          git push origin $NEW_VERSION
+
+      - name: Build and Publish to PyPI Test
+        if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
+        run: |
+          poetry build
+          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
+          poetry publish --build --repository testpypi
