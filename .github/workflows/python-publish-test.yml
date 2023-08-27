@@ -49,15 +49,13 @@ jobs:
           pip install poetry
           poetry install
 
-      - name: Check Last Published Version on PyPI Test
+      - name: Check Last Version
         id: check_version
         run: |
-          pip3 install -i https://test.pypi.org/simple/ nsdpy
-          LAST_VERSION=$(nsdpy --version)
+          LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "$LAST_VERSION"
-          echo "Last published version on test PyPI: $LAST_VERSION"
+          echo "Last version: $LAST_VERSION"
           echo "::set-output name=last_version::$LAST_VERSION"
-          pip uninstall nsdpy
 
       - name: Increment Version and Check for Existing Tag
         id: increment_version_and_check_tag
@@ -74,7 +72,7 @@ jobs:
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
           NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
-          sed -i "s/__version__ = .*/__version__ = \"$NEW_VERSION\"/" main.py
+          sed -i "s/__version__ = .*/__version__ = \"$NEW_VERSION\"/" nsdpy.py
           poetry version $NEW_VERSION
           git config --global user.email "github-actions@example.com"
           git config --global user.name "GitHub Actions"
