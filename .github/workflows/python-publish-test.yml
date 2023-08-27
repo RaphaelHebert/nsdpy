@@ -52,7 +52,7 @@ jobs:
       - name: Check Last Published Version on PyPI Test
         id: check_version
         run: |
-          LAST_VERSION=$(poetry search nsdpy --index https://test.pypi.org/simple/ | grep -oP '(?<=\[==)([^,]+)')
+          LAST_VERSION=$(poetry search nsdpy | grep -oP '(?<=\[==)([^,]+)')
           echo "Last published version on test PyPI: $LAST_VERSION"
           echo "::set-output name=last_version::$LAST_VERSION"
 
