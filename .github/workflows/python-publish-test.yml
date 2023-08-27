@@ -1,10 +1,13 @@
 name: Publish to PyPI Test
 
+env:
+  REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
+
 on:
   workflow_dispatch:
     permissions:
       users:
-        - ${{ secrets.REPO_OWNER_USERNAME }}
+        - $REPO_OWNER_USERNAME
 
 jobs:
   tests:
