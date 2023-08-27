@@ -61,7 +61,7 @@ jobs:
         id: increment_version_and_check_tag
         run: |
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
-          NEW_VERSION=$(python -c "parts = '$LAST_VERSION'.split('-'); version_parts = parts[0].split('.'); version_parts[-1] = str(int(version_parts[-1]) + 1); print('.'.join(version_parts) + parts[1])")
+          NEW_VERSION=$(python -c "parts = '$LAST_VERSION'.split('-'); version_parts = parts[0].split('.'); version_parts[-1] = str(int(version_parts[-1]) + 1); print('.'.join(version_parts) + '-' + parts[1])")
           echo "Incremented version: $NEW_VERSION"
           git fetch --tags
           TAG_EXISTS=$(git tag -l "$NEW_VERSION")
