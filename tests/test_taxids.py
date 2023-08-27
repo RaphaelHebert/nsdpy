@@ -58,7 +58,7 @@ class testsFunctions(unittest.TestCase):
         self.assertTrue(filecmp.cmp("./tests/data/TaxIDs_expected.txt", "TaxIDs.txt"))
 
     def test_taxids_cleanup(self):
-        # this is to make sure the created file in test_taxids is cleaned up even on test fail
+        # make sure the created file in test_taxids is cleaned up even on test fail
         if os.path.exists("./TaxIDs.txt"):
             os.remove("./TaxIDs.txt")
 

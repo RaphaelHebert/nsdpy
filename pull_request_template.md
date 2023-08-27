@@ -8,7 +8,7 @@
 - [ ] added or updated UT
 - [ ] updated the documentation
 - [ ] commented code
-- [ ] manualy tested code
+- [ ] manually tested code
 
 ## COMMENTS
 

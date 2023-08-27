@@ -1,7 +1,14 @@
-__version__ = "0.2.3"
+__version__ = "0.3.7-beta"
 __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
+
+import sys
+import os
+import argparse  # parsing command line arguments
+from datetime import datetime
+
+# local imports
 
 from functions import (
     esearchquery,
@@ -12,10 +19,8 @@ from functions import (
     fasta,
     duplicates,
 )
-import sys
-import os
-import argparse  # parsing command line arguments
-from datetime import datetime
+
+ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 
 
 def main():
@@ -25,15 +30,15 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    ##VERSION
+    ## VERSION
     parser.add_argument("-V", "--version", action="version", version=__version__)
 
-    ##POSITIONAL ARGUMENTS
+    ## POSITIONAL ARGUMENTS
     parser.add_argument(
         "-r", "--request", required=True, help="The request to the NCBI database"
     )
 
-    ##OPTIONAL ARGUMENTS
+    ## OPTIONAL ARGUMENTS
     # api key
     parser.add_argument(
         "-a",
@@ -50,11 +55,20 @@ def main():
         action="store_true",
     )
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
-    # gene selection
-    parser.add_argument(
+    # Sequence types
+    group2 = parser.add_mutually_exclusive_group()
+    # Gene selection
+    group2.add_argument(
         "-c",
         "--cds",
         help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex",
+        nargs="*",
+    )
+    # Gene Features format
+    group2.add_argument(
+        "-g",
+        "--gene",
+        help="download sequences in gene feature format // NOT FUNCTIONAL YET",
         nargs="*",
     )
     # file input
@@ -99,6 +113,13 @@ def main():
         action="count",
         default=2,
     )
+    group3.add_argument(
+        "-x",
+        "--custom",
+        help="classify the result for the given taxonomic level",
+        nargs="+",
+        type=str,
+    )
 
     # information line
     parser.add_argument(
@@ -130,10 +151,12 @@ def main():
             if not os.path.exists(file):
                 sys.exit(f"The file {file} cannot be found")
             if file[-4:] != ".txt":
-                sys.exit(f"The list of taxa {file} must be a .txt file")
+                sys.exit(
+                    f"The list of taxa {file} must be a file with a .txt extension"
+                )
 
     # list of chosen options to display in the report.tsv
-    ##parse options
+    ## parse options
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -144,6 +167,8 @@ def main():
         options_report.append(f"--cds (-c) {' '.join(args.cds)}")
     if args.apikey:
         options_report.append(f"--apikey (-a) {args.apikey[0]}")
+    if args.gene:
+        options_report.append(f"--gene (-g) {' '.join(args.gene)}")
 
     # verbose
     if args.verbose:
@@ -163,8 +188,12 @@ def main():
         classif = 0
         options_report.append("--phylum (-p)")
     elif args.levels:
+        # here isinstance(classif, list) == true
         classif = args.levels
         options_report.append(f"--levels (-l) {args.levels[0]}")
+    elif args.custom:
+        classif = args.custom[0]
+        options_report.append(f"--custom (-x) {args.custom}")
     elif args.species:
         classif = args.species
         if args.species != 2:
@@ -199,7 +228,7 @@ def main():
         taxa_list = [taxon + "[ORGN] OR " for taxon in taxa_list]
 
         # Base URL with params
-        esearch_address = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+        esearch_address = ESEARCH_URL
         base_URL_length = len(esearch_address) + 100  # Keep 100 chars for params
 
         # Base query
@@ -245,7 +274,7 @@ def main():
         ## esearchquery
         y = esearchquery(QUERY)
 
-        ##check errors (if bad API key etc) errors returned by the Entrez API
+        ## check errors (if bad API key etc) errors returned by the Entrez API
         if "error" in y.keys():
             errors = y["error"]
             sys.exit(errors)
@@ -261,7 +290,7 @@ def main():
         querykey = str(y["esearchresult"]["querykey"])
         params = (querykey, webenv, count)
 
-        ###Taxids
+        ### Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
 
@@ -284,7 +313,7 @@ def main():
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
     dict_taxo = {}
-    if classif != 3 or args.information:
+    if classif != 2 or args.information:
         dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
@@ -306,7 +335,7 @@ def main():
     ### taxo (call EFETCH to query the nuccore database to get the .gb files)
     analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
 
-    ### summarise
+    ### Summurize
     # Get the ending time of the run
     ending_time = str(datetime.now())
     ending_time = "_".join(ending_time.split())[:19]
@@ -368,7 +397,7 @@ def main():
             if len(notfound) > 0:
                 print(f'see "notfound.txt"')
 
-    ##write summary
+    ## Write summary
     if args.cds is None:
         filters = ""
         filetype = "fasta"
