@@ -1310,9 +1310,17 @@ def efetch_dl(
     loop over a list of id to fetch result from efetch, and perform the callback action on results
 
     INPUTS
-        callback: (FUNCTION)
         QUERY: (TUPLE) (query: STRING, apikey: STRING)
         list_of_ids: (LIST) [accession_version_numbers]
+        callback: (FUNCTION)
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        dict_taxo: (DICT) { tadId: dicttemp }
+        db: (STRING)
+        rettype: (STRING)
+        retmode: (STRING)
+        gff3: (BOOL)
+        gene_pattern: (LIST) [ STRING ] gene paterns
         OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
 
     OUTPUTS:
@@ -1580,7 +1588,6 @@ def download_gff3(ids, path, write_file=True):
     parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
     gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
 
-    print("gff3_result", gff3_result.text)
     gff3_file = path + "/results.gff3"
 
     ## TODO handle error if gff3_result.ok not True
@@ -1597,8 +1604,25 @@ def download_gff3(ids, path, write_file=True):
 def parse_fasta_with_gff3(
     result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
 ):
+    """
 
-    gff3 = download_gff3(ids, path, True)
+    Parse a string from a fasta file to extract the gene according to data from a .gff3 file
+
+    INPUTS:
+        result: (STRING) a string with the fasta like results
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        dict_taxo: (DICT) { tadId: dicttemp }
+        ids: (LIST) [ STRING ]
+        gene_pattern: (LIST) [ STRING ] gene paterns
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+        (LIST) [ matching_accession_number ]
+            if selected tsv fils and/or info
+    """
+
+    gff3_result = download_gff3(ids, path, False)
 
     # parse GFF3 file line by line
     lines = gff3_result.text.split("\n")
@@ -1615,6 +1639,7 @@ def parse_fasta_with_gff3(
             continue
 
         attributes = parse_attributes(fields[8])
+
         sequence = {
             "seqid": fields[0],
             "source": fields[1],
