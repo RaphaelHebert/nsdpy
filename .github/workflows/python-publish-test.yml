@@ -2,6 +2,7 @@ name: Publish to PyPI Test
 
 env:
   REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
+  BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
 on:
   workflow_dispatch:
@@ -70,11 +71,13 @@ jobs:
 
       - name: Update Version and Files
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
+        with:
+          token: $BOT_ACCESS_TOKEN
         run: |
           NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
           sed -i "s/__version__ = .*/__version__ = \"$NEW_VERSION\"/" nsdpy.py
           poetry version $NEW_VERSION
-          git config --global user.email "github-actions@example.com"
+          git config --global user.email "github-actions@gg.com"
           git config --global user.name "GitHub Actions"
           git commit -am "Bump version to $NEW_VERSION [skip ci]"
           git push origin $BRANCH_NAME
