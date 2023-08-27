@@ -52,7 +52,7 @@ jobs:
       - name: Check Last Published Version on PyPI Test
         id: check_version
         run: |
-          pip install -i https://test.pypi.org/simple/ nsdpy
+          pip3 install -i https://test.pypi.org/simple/ nsdpy
           LAST_VERSION=$(nsdpy --version)
           echo "$LAST_VERSION"
           echo "Last published version on test PyPI: $LAST_VERSION"
