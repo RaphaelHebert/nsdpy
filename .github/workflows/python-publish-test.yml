@@ -1,4 +1,4 @@
-name: Publish to PyPI Test
+name: Deploy INT
 
 on:
   workflow_dispatch:
