@@ -1,10 +1,10 @@
-name: Deploy INT
+name: Publish to PyPI Test
 
 on:
   workflow_dispatch:
     permissions:
       users:
-        - ${{ github.repository_owner }}
+        - ${{ secrets.REPO_OWNER_USERNAME }}
 
 jobs:
   tests:
@@ -31,6 +31,7 @@ jobs:
   publish:
     needs: tests
     runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' && github.actor == secrets.REPO_OWNER_USERNAME
 
     steps:
       - name: Checkout Repository
