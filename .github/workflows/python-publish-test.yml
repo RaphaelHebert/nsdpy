@@ -90,9 +90,9 @@ jobs:
 
       - name: Build and Publish to PyPI Test
         env:
-          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+          PYPI_API_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
-          echo ${PYPI_API_TOKEN}
+          echo $PYPI_API_TOKEN
           poetry build
-          poetry publish --build -u __token__ -p "$PYPI_API_TOKEN"
+          poetry publish --build -u __token__ -p $PYPI_API_TOKEN
