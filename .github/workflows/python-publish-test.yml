@@ -3,7 +3,6 @@ name: Publish to PyPI Test
 env:
   REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
   BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
-  PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
 
 on:
   workflow_dispatch:
@@ -90,7 +89,9 @@ jobs:
       #     git push origin $NEW_VERSION
 
       - name: Build and Publish to PyPI Test
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
           poetry build
-          poetry publish --build -u __token__ -p $PYPI_API_TOKEN
+          poetry publish --build -u __token__ -p "$PYPI_API_TOKEN"
