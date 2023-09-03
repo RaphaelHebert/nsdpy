@@ -60,12 +60,13 @@ jobs:
           fi
           echo "$LAST_VERSION"
           echo "Last version: $LAST_VERSION"
-          echo "::set-output name=last_version::$LAST_VERSION"
+          echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for Existing Tag
         id: increment_version_and_check_tag
         run: |
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
+          echo 'result of last version: $LAST_VERSION'
           git fetch --tags
           TAG_EXISTS=$(git tag -l "$LAST_VERSION")
           if [ -z "$TAG_EXISTS" ]; then
