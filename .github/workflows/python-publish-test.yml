@@ -54,8 +54,7 @@ jobs:
         run: |
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "version is $LAST_VERSION"
-          grep -h .*-beta$ <<< $LAST_VERSION
-          if [ $? -eq 1 ]; then
+          if grep -q ".*-beta$" <<< "$LAST_VERSION"; then
           echo "Version is not a test version: should end with -beta"
           exit 1
           fi
