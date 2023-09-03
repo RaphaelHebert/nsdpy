@@ -2,7 +2,6 @@ name: Publish to PyPI Test
 
 env:
   REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
-  BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
 
 on:
   workflow_dispatch:
@@ -11,29 +10,29 @@ on:
         - $REPO_OWNER_USERNAME
 
 jobs:
-  # tests:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout Repository
-  #       uses: actions/checkout@v2
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v2
-  #       with:
-  #         python-version: 3.x
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
 
-  #     - name: Install Dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install poetry
-  #         poetry install
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
 
-  #     - name: Run Unittest Tests
-  #       run: |
-  #         python -m unittest discover tests -p '*_test.py'
+      - name: Run Unittest Tests
+        run: |
+          python -m unittest discover tests -p '*_test.py'
 
   publish:
-    # needs: tests
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
@@ -66,15 +65,15 @@ jobs:
         id: increment_version_and_check_tag
         run: |
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
-          echo 'result of last version: $LAST_VERSION'
-          git fetch --tags
+          echo "result of last version: $LAST_VERSION"
+          git fetch --tags --quiet
           TAG_EXISTS=$(git tag -l "$LAST_VERSION")
           if [ -z "$TAG_EXISTS" ]; then
           echo "No matching tags found for version $LAST_VERSION"
           exit 1
           fi
           echo "Matching tags: $TAG_EXISTS"
-          echo "::set-output name=tags::$TAG_EXISTS"
+          echo "tags=$TAG_EXISTS" >> $GITHUB_OUTPUT
 
       #     echo "::set-output name=new_version::$NEW_VERSION"
       #     echo "::set-output name=tag_exists::$TAG_EXISTS"
