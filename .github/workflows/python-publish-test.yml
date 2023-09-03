@@ -92,5 +92,4 @@ jobs:
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
           poetry build
-          poetry config pypi-token.pypi ${{ secrets.PYPI_API_TOKEN }}
-          poetry publish --build --repository testpypi
+          poetry publish --build -u __token__ -p ${{ secrets.PYPI_API_TOKEN }}
