@@ -105,4 +105,5 @@ jobs:
         run: |
           echo $BOT_ACCESS_TOKEN
           poetry build
+          poetry config repositories.test-pypi https://test.pypi.org/legacy/
           poetry publish --build --username __token__ --password $BOT_ACCESS_TOKEN
