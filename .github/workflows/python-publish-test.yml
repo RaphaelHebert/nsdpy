@@ -49,22 +49,33 @@ jobs:
           pip install poetry
           poetry install
 
-      # - name: Check Last Version
-      #   id: check_version
-      #   run: |
-      #     LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
-      #     echo "$LAST_VERSION"
-      #     echo "Last version: $LAST_VERSION"
-      #     echo "::set-output name=last_version::$LAST_VERSION"
+      - name: Check Version
+        id: check_version
+        run: |
+          LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
+          echo "version is $LAST_VERSION"
+          grep -h .*-beta$ <<< $LAST_VERSION
+          if [ $? -eq 1 ]; then
+          echo "Version is not a test version: should end with -beta"
+          exit 1
+          fi
+          echo "$LAST_VERSION"
+          echo "Last version: $LAST_VERSION"
+          echo "::set-output name=last_version::$LAST_VERSION"
 
-      # - name: Increment Version and Check for Existing Tag
-      #   id: increment_version_and_check_tag
-      #   run: |
-      #     LAST_VERSION=${{ steps.check_version.outputs.last_version }}
-      #     NEW_VERSION=$(python -c "parts = '$LAST_VERSION'.split('-'); version_parts = parts[0].split('.'); version_parts[-1] = str(int(version_parts[-1]) + 1); print('.'.join(version_parts) + '-' + parts[1])")
-      #     echo "Incremented version: $NEW_VERSION"
-      #     git fetch --tags
-      #     TAG_EXISTS=$(git tag -l "$NEW_VERSION")
+      - name: Check for Existing Tag
+        id: increment_version_and_check_tag
+        run: |
+          LAST_VERSION=${{ steps.check_version.outputs.last_version }}
+          git fetch --tags
+          TAG_EXISTS=$(git tag -l "$LAST_VERSION")
+          if [ -z "$TAG_EXISTS" ]; then
+          echo "No matching tags found for version $LAST_VERSION"
+          exit 1
+          fi
+          echo "Matching tags: $TAG_EXISTS"
+          echo "::set-output name=tags::$TAG_EXISTS"
+
       #     echo "::set-output name=new_version::$NEW_VERSION"
       #     echo "::set-output name=tag_exists::$TAG_EXISTS"
 
