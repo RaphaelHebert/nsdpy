@@ -105,4 +105,4 @@ jobs:
         run: |
           echo $BOT_ACCESS_TOKEN
           poetry build
-          poetry publish --build -username __token__ -password $BOT_ACCESS_TOKEN
+          poetry publish --build --username __token__ --password $BOT_ACCESS_TOKEN
