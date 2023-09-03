@@ -93,6 +93,6 @@ jobs:
           PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
-          echo  "${PYPI_API_TOKEN}"
+          echo ${PYPI_API_TOKEN}
           poetry build
           poetry publish --build -u __token__ -p "$PYPI_API_TOKEN"
