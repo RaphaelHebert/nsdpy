@@ -86,6 +86,13 @@ def main():
         action="store_true",
     )
     parser.add_argument(
+        "-f",
+        "--gff",
+        default=None,
+        help="download the gff3 files for the TaxIDs found for the query",
+        action="store_true",
+    )
+    parser.add_argument(
         "-t",
         "--tsv",
         default=None,
@@ -157,6 +164,8 @@ def main():
 
     # list of chosen options to display in the report.tsv
     ## parse options
+    if args.gff:
+        options_report.append("--gff (-g)")
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -309,6 +318,10 @@ def main():
     list_of_ids = list(dict_ids.keys())
     reverse = set(dict_ids.values())
     list_of_TaxIDs = list(reverse)
+
+    # dl the gff3 files
+    if args.gff:
+        print("WARNING: gff option is experimental")
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
