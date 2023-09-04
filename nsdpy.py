@@ -18,6 +18,7 @@ from functions import (
     taxo,
     fasta,
     duplicates,
+    download_gff3,
 )
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -222,6 +223,13 @@ def main():
     #########  RUN THE RUN!!  ####################
     ##############################################
 
+    if args.gff:
+        answer = input(
+            "\n    !!!! WARNING !!!! \n gff option is experimental, read the documentation: https://nsdpy.readthedocs.io/en/latest/main.html#overview \nAre you sure you want to continue ('y'/'yes')?\n"
+        )
+        if answer.lower() not in ["y", "yes"]:
+            sys.exit(f"ABORTED: {','.join(options_report)}")
+
     # Create the directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
@@ -321,7 +329,7 @@ def main():
 
     # dl the gff3 files
     if args.gff:
-        print("WARNING: gff option is experimental")
+        download_gff3(list_of_ids, path)
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected

@@ -10,6 +10,7 @@ import requests  # https://requests.readthedocs.io/en/master/
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+NCBI_URL = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
 
 PLANTAE = [
     "Chlorophyta",
@@ -1438,6 +1439,40 @@ def parseClassifXML(xml):
                 classif[rank] = name
 
     return classif
+
+
+def download_gff3(ids, path, write_file=True):
+    """
+
+    Retrieve gff3 files and optionnaly write the result in a file
+
+    INPUTS:
+        ids: (LIST) [id] accession sequence id
+        path: (STRING)
+        write_file: (BOOL)
+
+    OUTPUTS:
+        (DICT) {ok: (BOOL),
+                text: (STRING),
+                url: (STRING)
+                }   result from request.get call
+
+    """
+
+    parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
+    gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+
+    gff3_file = path + "/results.gff3"
+
+    ## TODO handle error if gff3_result.ok not True
+
+    # write gff3 files in result folder
+    # this can be optionnal
+    if write_file:
+        with open(gff3_file, "a") as f:
+            f.write(gff3_result.text)
+
+    return gff3_result
 
 
 if __name__ == "_main_":
