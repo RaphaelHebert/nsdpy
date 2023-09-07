@@ -14,10 +14,12 @@ from functions import (
     esearchquery,
     completetaxo,
     taxids,
-    cds_fasta,
+    parse_fasta_cds_result,
     taxo,
-    fasta,
     duplicates,
+    efetch_dl,
+    parse_fasta_result,
+    parse_fasta_with_gff3,
 )
 
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -51,7 +53,7 @@ def main():
     group.add_argument(
         "-v",
         "--verbose",
-        help="Diplays downloads progress and actions",
+        help="Displays downloads progress and actions",
         action="store_true",
     )
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
@@ -61,14 +63,14 @@ def main():
     group2.add_argument(
         "-c",
         "--cds",
-        help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex",
+        help="search for a given list of genes, exp: COX1 COX2 COX3, accepts regex",
         nargs="*",
     )
     # Gene Features format
     group2.add_argument(
         "-g",
         "--gene",
-        help="download sequences in gene feature format // NOT FUNCTIONAL YET",
+        help="download sequences in fasta and the related gff3 file. If one or more arguments are passed the gff3 file will be parsed to retrieve the gene matching the passed regexp",
         nargs="*",
     )
     # file input
@@ -137,7 +139,6 @@ def main():
 
     # list the selected option to make it appear in report.txt
     options_report = []
-
     # taxa list
     if args.list:
         input_files = " ".join(args.list)
@@ -317,15 +318,55 @@ def main():
         dict_taxo = completetaxo(list_of_TaxIDs, QUERY, OPTIONS)
 
     ### Download the sequences (call to EFETCH to query the nuccore database)
-    if args.cds is None:
-        found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+
+    if args.cds is None and args.gene is None:
+        found = efetch_dl(
+            QUERY,
+            list_of_ids,
+            parse_fasta_result,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta",
+            "text",
+            OPTIONS,
+        )
+        # found = fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+    elif args.gene is not None:
+        found = efetch_dl(
+            QUERY,
+            list_of_ids,
+            parse_fasta_with_gff3,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta",
+            "text",
+            OPTIONS,
+            True,
+            args.gene,
+        )
     else:
-        found = cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS)
+        found = efetch_dl(
+            QUERY,
+            list_of_ids,
+            parse_fasta_cds_result,
+            path,
+            dict_ids,
+            dict_taxo,
+            "nuccore",
+            "fasta_cds_na",
+            "text",
+            OPTIONS,
+        )
 
     ### List the remaining access ids:
     remaining = set(list_of_ids) - set(found)
     remaining = list(remaining)
 
+    print(found)
     # Comments
     if verb > 0 and args.cds is not None:
         print(
@@ -333,7 +374,10 @@ def main():
         )
 
     ### taxo (call EFETCH to query the nuccore database to get the .gb files)
-    analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
+    sequences = []
+    analyse = []
+    if args.gene is None:
+        analyse, sequences = taxo(path, remaining, dict_ids, QUERY, dict_taxo, OPTIONS)
 
     ### Summurize
     # Get the ending time of the run
@@ -373,6 +417,15 @@ def main():
                 f"total number of accession version identifiers \nfor which no gene has been retrieved:                                                  {len(notfound)}"
             )
             print("see the notfound.txt for the detail")
+    elif args.gene is not None:
+        if verb > 0:
+            print(
+                f"number of accession number from NCBI query:                          {total_number_of_results}"
+            )
+            if args.gene:
+                print(
+                    f"number of sequences with a match:                                    {len(found)}"
+                )
 
     else:
         if verb > 0:

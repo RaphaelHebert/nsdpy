@@ -10,6 +10,7 @@ import requests  # https://requests.readthedocs.io/en/master/
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+NCBI_URL = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
 
 PLANTAE = [
     "Chlorophyta",
@@ -168,22 +169,19 @@ def esearchquery(QUERY):
     ## unpack QUERY:
     (query, api_key) = QUERY
 
-    ## build api address
-    esearchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     # parameters
-    parameters = {}
-    if api_key:
-        parameters["api_key"] = str(api_key)
-    parameters["db"] = "nucleotide"
-    parameters["idtype"] = "acc"
-    parameters["retmode"] = "json"
-    parameters["retmax"] = "0"
-    parameters["usehistory"] = "y"
-    # user's query
-    parameters["term"] = query
+    parameters = {
+        "db": "nucleotide",
+        "idtype": "acc",
+        "retmode": "json",
+        "retmax": "0",
+        "usehistory": "y",
+        "term": query,
+        "api_key": str(api_key) if api_key else None,
+    }
 
     ### send request to the API
-    y = download(parameters, esearchaddress)
+    y = download(parameters, ESEARCH_URL)
     if y == 1:
         return {"error": "wrong address for esearch"}
     return y.json()
@@ -226,17 +224,17 @@ def taxids(params, path, OPTIONS=None):
         nb = (count // retmax) + 1
 
     for x in range(nb):
-        ##build the API address
-        esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
         # parameters
-        parameters = {}
-        parameters["db"] = "taxonomy"
-        parameters["query_key"] = querykey
-        parameters["WebEnv"] = webenv
-        parameters["retstart"] = str(x * retmax)
-        parameters["retmax"] = str(retmax)
-        parameters["rettype"] = "uilist"
-        parameters["retmode"] = "text"
+        parameters = {
+            "db": "taxonomy",
+            "query_key": querykey,
+            "WebEnv": webenv,
+            "retstart": str(x * retmax),
+            "retmax": str(retmax),
+            "rettype": "uilist",
+            "retmode": "text",
+        }
+
         result = download(parameters, ESUMMARY_URL)
 
         # comments
@@ -294,73 +292,6 @@ def dispatch(lineage, classif):
         (STRING) rank
 
     """
-    ###Phylums
-    Plantae = [
-        "Chlorophyta",
-        "Charophyta",
-        "Bryophyta",
-        "Marchantiophyta",
-        "Lycopodiophyta",
-        "Ophioglossophyta",
-        "Pteridophyta",
-        "Cycadophyta",
-        "Ginkgophyta",
-        "Gnetophyta",
-        "Pinophyta",
-        "Magnoliophyta",
-        "Equisetidae",
-        "Psilophyta",
-        "Bacillariophyta",
-        "Cyanidiophyta",
-        "Glaucophyta",
-        "Prasinophyceae",
-        "Rhodophyta",
-    ]
-    Fungi = [
-        "Chytridiomycota",
-        "Zygomycota",
-        "Ascomycota",
-        "Basidiomycota",
-        "Glomeromycota",
-    ]
-    Metazoa = [
-        "Acanthocephala",
-        "Acoelomorpha",
-        "Annelida",
-        "Arthropoda",
-        "Brachiopoda",
-        "Ectoprocta",
-        "Bryozoa",
-        "Chaetognatha",
-        "Chordata",
-        "Cnidaria",
-        "Ctenophora",
-        "Cycliophora",
-        "Echinodermata",
-        "Echiura",
-        "Entoprocta",
-        "Gastrotricha",
-        "Gnathostomulida",
-        "Hemichordata",
-        "Kinorhyncha",
-        "Loricifera",
-        "Micrognathozoa",
-        "Mollusca",
-        "Nematoda",
-        "Nematomorpha",
-        "Nemertea",
-        "Onychophora" "Orthonectida",
-        "Phoronida",
-        "Placozoa",
-        "Plathelminthes",
-        "Porifera",
-        "Priapulida",
-        "Rhombozoa",
-        "Rotifera",
-        "Sipuncula",
-        "Tardigrada",
-        "Xenoturbella",
-    ]
 
     ##no option selected
     if classif == 2:
@@ -451,17 +382,15 @@ def completetaxo(idlist, QUERY, OPTIONS):
         idsublist = idlist[retstart : (retstart + retmax)]
         idsublist = ",".join(idsublist)
 
-        ## build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # parameters
-        parameters["db"] = "taxonomy"
-        parameters["id"] = idsublist
-        if api_key:
-            parameters["api_key"] = api_key
+        parameters = {
+            "db": "taxonomy",
+            "id": idsublist,
+            "api_key": str(api_key) if api_key else None,
+        }
 
-        ## oop until download is correct
-        result = download(parameters, efetchaddress)
+        ## loop until download is correct
+        result = download(parameters, EFETCH_URL)
 
         # comments
         if verb > 1:
@@ -517,19 +446,17 @@ def completetaxo(idlist, QUERY, OPTIONS):
     return data
 
 
-def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+def parse_fasta_cds_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
     """
 
-    Query eftch with batches of ids
-    Parse the result to find match for gene in genelist
+    Used as callback function by efetch_dl.
+    Parse the efetch result to find match for gene in genelist.
 
-    a list of the accession numbers for which a gene (from genelist) have been found (LIST)
     INPUTS:
+        result: (STRING) result from efetch_dl
         path: (STRING) output_path
         dict_ids: (DICT) { accession_number: TaxId }
         dict_taxo: (DICT) { tadId: dicttemp }
-        QUERY: (TUPLE) (_, api_key)
-        list_of_ids: (LIST) [accession_version_numbers]
         OPTION: (TUPLE) (verb: (STRING), args.cds (LIST), classif (INT, or LIST), _, _, args.information (BOOL))
 
     OUTPUTS: (LIST) [accession_number] matches genelist/results
@@ -540,59 +467,17 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         OPTIONS = ("", "", "", "", "", "")
 
     ## Unpack parameters
-    (_, api_key) = QUERY
     (verb, genelist, classif, _, _, information) = OPTIONS
 
-    # Comment:
-    if verb and verb > 0:
-        print("Downloading the CDS fasta files...")
+    ## Extract available information
+    if not information and not genelist and classif == 3:
+        result_fasta = result.split(">lcl|")[1:]
+        sublist = [r.split("_cds")[0] for r in result_fasta]
 
-    # List of accession number for wich a gene is found or the file has been retrieve if no gene filter:
+    ## analyse the results
     found = []
-    count = len(list_of_ids)
-
-    # Number of accession numbers to be sent at each API query
-    retmax = 200
-    if count < retmax:
-        retmax = count
-
-    if count % retmax == 0:
-        nb = count // retmax
-    else:
-        nb = (count // retmax) + 1
-
-    for x in range(nb):
-        ## Split the list of ids
-        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
-        ## Check that id parameters is not empty
-        ids = [i for i in ids if i]
-        # Parameters
-        parameters = {}
-        parameters["id"] = ",".join(ids)
-        parameters["db"] = "nuccore"
-        if api_key:
-            parameters["api_key"] = api_key
-        parameters["rettype"] = "fasta_cds_na"
-        parameters["retmode"] = "text"
-
-        ## Download
-        raw_result = download(parameters, EFETCH_URL)
-        raw_result = raw_result.text
-
-        ## Extract available information
-        if not information and not genelist and classif == 3:
-            result_fasta = raw_result.split(">lcl|")[1:]
-            sublist = [r.split("_cds")[0] for r in result_fasta]
-
-        ## analyse the results
-        sublist = extract(
-            path, raw_result, dict_ids, dict_taxo, genelist, OPTIONS, verb
-        )
-        found = found + sublist
-
-        # comments
-        if verb > 1:
-            print(countDown(x, nb, "Downloading the cds_fasta files"))
+    sublist = extract(path, result, dict_ids, dict_taxo, genelist, OPTIONS, verb)
+    found = found + sublist
 
     return found
 
@@ -619,7 +504,7 @@ def subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS=None):
     ### find gene in a seq and write to ouput file
     ## extract accession number
     try:
-        key = seq.split(">lcl|")[1].split("_cds")[0]
+        key = seq.split("|")[1].split("_cds")[0]
     except IndexError:
         return
 
@@ -758,11 +643,18 @@ def extract(path, text, dict_ids, dict_taxo, genelist, OPTIONS=None, verb=""):
             seq = str(line)
         else:
             seq = seq + "\n" + line
-
+    # parse last line as no ">lcl|" is present to signal the end of seq
+    if seq:
+        try:
+            result = subextract(seq, path, dict_ids, dict_taxo, genelist, OPTIONS)
+            if result:
+                found.append(result)
+        except:
+            pass
     return found
 
 
-def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
+def parse_fasta_result(result, path, dict_ids, dict_taxo, OPTIONS=None):
     """
     Retrieves fasta files from nuccore db calls and parse it to find DNA sequence and info for the information line of the created fasta file
 
@@ -783,125 +675,89 @@ def fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
 
-    ## Unpack parameters
-    (_, api_key) = QUERY
-    (verb, _, classif, _, tsv, information) = OPTIONS
-
-    if verb and verb > 0:
-        print("Downloading the fasta files...")
-
     keys = []
-    count = len(list_of_ids)
 
-    # Number of accession numbers to be sent at each API query
-    retmax = 200
-    if count < retmax:
-        retmax = count
+    ## Unpack parameters
+    (_, _, classif, _, tsv, information) = OPTIONS
 
-    if count % retmax == 0:
-        nb = count // retmax
-    else:
-        nb = (count // retmax) + 1
+    ## Extract available informations
+    result = result.split(">")
 
-    for x in range(nb):
-        ## Split the list of ids
-        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
-        ## Check that id parameters is not empty
-        ids = [i for i in ids if i]
-        # Parameters
-        parameters = {
-            "db": "nuccore",
-            "id": ",".join(ids),
-            "rettype": "fasta",
-            "retmode": "text",
-            "api_key": api_key if api_key else None,
-        }
+    ## Store analyzed Accession version numbers
+    for seq in result:
+        try:
+            id_line, dna = seq.split("\n", 1)
+        except ValueError:
+            continue
 
-        ## Download
-        raw_result = download(parameters, EFETCH_URL)
-        raw_result = raw_result.text
-
-        ## Extract available informations
-        result = raw_result.split(">")
-
-        ## Store analyzed Accession version numbers
-        for seq in result:
-            try:
-                id_line, dna = seq.split("\n", 1)
-            except ValueError:
-                continue
-
-            try:
-                key = id_line.split()[0]
-            except IndexError:
-                continue
-
-            # from dict_ids
-            try:
-                taxid = dict_ids[key]
-            except KeyError:
-                taxid = "not found"
-
-            # from dict_taxo
-            try:
-                lineage = dict_taxo[taxid]["Lineage"]
-                lineage = ", ".join(lineage)
-            except KeyError:
-                lineage = "not found"
-
-            try:
-                name = dict_taxo[taxid]["Name"]
-            except KeyError:
-                name = "not found"
-
-            try:
-                dispatch = dict_taxo[taxid]["dispatch"]
-            except KeyError:
-                dispatch = "OTHERS"
-
-            if classif == 2:
-                dispatch = "sequences"
-
-            data = (name, key, taxid, lineage, dna)
-
-            # Create folders for .tsv files and .fasta files
-            if tsv:
-                if not os.path.exists(path + "/fasta"):
-                    os.makedirs(path + "/fasta")
-                if not os.path.exists(path + "/tsv"):
-                    os.makedirs(path + "/tsv")
-                # Create paths
-                fasta_file = path + "/fasta/" + dispatch + ".fasta"
-                tsv_file = path + "/tsv/" + dispatch + ".tsv"
-            else:
-                fasta_file = path + "/" + dispatch + ".fasta"
-                tsv_file = path + "/" + dispatch + ".tsv"
-
-            # Write fasta file
-            if information:
-                fasta_name = "_".join(name.split())
-                id_line = (
-                    fasta_name
-                    + "-"
-                    + key
-                    + " | "
-                    + taxid
-                    + " | "
-                    + lineage
-                    + " | "
-                    + id_line
-                )
-            with open(fasta_file, "a") as f:
-                f.write(f">{id_line}\n")
-                f.write(f"{dna}\n")
-
-            if tsv:
-                tsv_file_writer(tsv_file, data, OPTIONS)
-
+        try:
+            key = id_line.split()[0]
             keys.append(key)
+        except IndexError:
+            continue
 
-        if verb and verb > 1:
-            print(countDown(x, nb, "Downloading the fasta files"))
+        # from dict_ids
+        try:
+            taxid = dict_ids[key]
+        except KeyError:
+            taxid = "not found"
+
+        # from dict_taxo
+        try:
+            lineage = dict_taxo[taxid]["Lineage"]
+            lineage = ", ".join(lineage)
+        except KeyError:
+            lineage = "not found"
+
+        try:
+            name = dict_taxo[taxid]["Name"]
+        except KeyError:
+            name = "not found"
+
+        try:
+            dispatch = dict_taxo[taxid]["dispatch"]
+        except KeyError:
+            dispatch = "OTHERS"
+
+        if classif == 2:
+            dispatch = "sequences"
+
+        data = (name, key, taxid, lineage, dna)
+
+        # Create folders for .tsv files and .fasta files
+        if tsv:
+            if not os.path.exists(path + "/fasta"):
+                os.makedirs(path + "/fasta")
+            if not os.path.exists(path + "/tsv"):
+                os.makedirs(path + "/tsv")
+            # Create paths
+            fasta_file = path + "/fasta/" + dispatch + ".fasta"
+            tsv_file = path + "/tsv/" + dispatch + ".tsv"
+        else:
+            fasta_file = path + "/" + dispatch + ".fasta"
+            tsv_file = path + "/" + dispatch + ".tsv"
+
+        # Write fasta file
+        if information:
+            fasta_name = "_".join(name.split())
+            id_line = (
+                fasta_name
+                + "-"
+                + key
+                + " | "
+                + taxid
+                + " | "
+                + lineage
+                + " | "
+                + id_line
+            )
+        with open(fasta_file, "a") as f:
+            f.write(f">{id_line}\n")
+            f.write(f"{dna}\n")
+
+        if tsv:
+            tsv_file_writer(tsv_file, data, OPTIONS)
+
     return keys
 
 
@@ -994,20 +850,17 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
 
-        ## build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # parameters
-        parameters = {}
-        parameters["db"] = "nuccore"
-        parameters["id"] = ids1
-        parameters["rettype"] = "gb"
-        parameters["retmode"] = "text"
-        if api_key:
-            parameters["api_key"] = api_key
+        parameters = {
+            "db": "nuccore",
+            "id": ids1,
+            "rettype": "gb",
+            "retmode": "text",
+            "api_key": str(api_key) if api_key else None,
+        }
 
         ## loop until dl is correct
-        result = download(parameters, efetchaddress)
+        result = download(parameters, EFETCH_URL)
         result = result.text
 
         ########################################################################
@@ -1378,7 +1231,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
     return
 
 
-"""
+def parseClassifXML(xml):
+    """
     takes a string and parse it as xml format to extract the available taxonomy
 
 
@@ -1386,10 +1240,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
         xml: string
     OUTPUTS:
         classif: dict
-"""
+    """
 
-
-def parseClassifXML(xml):
     classif = {}
 
     # parse the name before lineageex as well
@@ -1440,7 +1292,398 @@ def parseClassifXML(xml):
     return classif
 
 
+def efetch_dl(
+    QUERY,
+    list_of_ids,
+    callback,
+    path,
+    dict_ids,
+    dict_taxo,
+    db="nuccore",
+    rettype="fasta",
+    retmode="text",
+    OPTIONS=None,
+    gff3=False,
+    gene_pattern=None,
+):
+    """
+    loop over a list of id to fetch result from efetch, and perform the callback action on results
+
+    INPUTS
+        QUERY: (TUPLE) (query: STRING, apikey: STRING)
+        list_of_ids: (LIST) [accession_version_numbers]
+        callback: (FUNCTION)
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        dict_taxo: (DICT) { tadId: dicttemp }
+        db: (STRING)
+        rettype: (STRING)
+        retmode: (STRING)
+        gff3: (BOOL)
+        gene_pattern: (LIST) [ STRING ] gene paterns
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+    """
+
+    if OPTIONS is None:
+        OPTIONS = ("", "", "", "", "", "")
+
+    ## Unpack parameters
+    (_, api_key) = QUERY
+    (verb, _, _, _, _, _) = OPTIONS
+
+    if verb and verb > 0:
+        print(f"Downloading the {rettype} files...")
+
+    count = len(list_of_ids)
+
+    # Number of accession numbers to be sent at each API query
+    retmax = 200
+    if count < retmax:
+        retmax = count
+
+    if count % retmax == 0:
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
+
+    results = []
+
+    for x in range(nb):
+        ## Split the list of ids
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
+        ids = [i for i in ids if i]
+        # Parameters
+        parameters = {
+            "db": db,
+            "id": ",".join(ids),
+            "rettype": rettype,
+            "retmode": retmode,
+            "api_key": api_key,
+        }
+
+        ## Download
+        raw_result = download(parameters, EFETCH_URL)
+        result = raw_result.text if retmode == "text" else raw_result.json()
+        if gff3:
+            res = callback(
+                result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS
+            )
+        else:
+            res = callback(result, path, dict_ids, dict_taxo, OPTIONS)
+
+        if isinstance(results, list):
+            results = results + res
+        else:
+            results.append(res)
+
+        if verb and verb > 1:
+            print(countDown(x, nb, "Downloading the fasta files"))
+
+    return results
+
+
+def parse_attributes(attributes_str):
+    """
+
+    extracts attributes from a string extracted from the column #9 of a gff3 info
+
+    INPUTS:
+        attributes_str: (STRING)
+
+    OUTPUTS:
+        (DICT): {attribute: value}
+
+    """
+    attributes = {}
+    parts = attributes_str.split(";")
+    for part in parts:
+        if "=" in part and part[-1] != "=":
+            key, value = part.split("=")
+            attributes[key.strip()] = value.strip()
+    return attributes
+
+
+def read_fasta_sequence(fasta_sequence):
+    """
+
+    extracts dna_sequence and infoline from a fasta like formatted string (without ">" char on the infoline)
+
+    INPUTS:
+        fasta_sequence: (STRING)
+
+    OUTPUTS:
+        (TUPLE): (STRING, STRING)
+
+    """
+    # fasta sequence has been extracted from a string of many fasta sequence
+    # by spliting it with ('>') thus the infoline does not contain any '>' and the firest line should be the infoline
+    info_line = None
+    if fasta_sequence == "":
+        return (info_line, "")
+
+    fasta_sequence = fasta_sequence.strip()
+    dna_sequence = ""
+    for index, line in enumerate(fasta_sequence.split("\n")):
+        line = line.strip()
+        if index == 0:
+            if info_line is None:
+                info_line = line
+            else:
+                continue
+        else:
+            dna_sequence += line
+
+    return info_line, dna_sequence
+
+
+# def complementary_dna(dna_string):
+#     complement = {"A": "T", "T": "A", "C": "G", "G": "C"}
+#     complementary_string = "".join(complement[base] for base in dna_string)
+#     return complementary_string
+
+
+def merge_and_sort_overlaps(sequences, length):
+    """
+
+    from the start, end and orientation information of a subsequence and the length of the sequence,
+    compute the correct start and end for backward orientated sequence, merge overlaps, and sort sequences by starting point
+
+    INPUTS:
+        sequences: (LIST(TUPLE)) [(int, int, char("+/-"))]
+        length: (INT)
+
+    OUTPUTS:
+        (LIST(TUPLE)) [(int, int)]
+
+    """
+    if not sequences:
+        return []
+
+    forward_sequences = []
+    for seq in sequences:
+        if seq[2] == "-":
+            forward_sequences = forward_sequences + [
+                (length + 1 - seq[1], length + 1 - seq[0])
+            ]
+            continue
+        forward_sequences = forward_sequences + [(seq[0], seq[1])]
+
+    # Sort the sequences based on their starting indices
+    forward_sequences.sort(key=lambda x: x[0])
+
+    merged_sequences = [forward_sequences[0]]
+
+    for seq in forward_sequences:
+        current_start, current_end = seq
+        last_merged_start, last_merged_end = merged_sequences[-1]
+
+        if current_start <= last_merged_end + 1:
+            # Overlapping, merge the sequences
+            merged_sequences[-1] = (
+                last_merged_start,
+                max(last_merged_end, current_end),
+            )
+        else:
+            # Non-overlapping, add to the merged list
+            merged_sequences.append((current_start, current_end))
+
+    return merged_sequences
+
+
+def insert_newline(text, length):
+    """
+
+    Insert newline char every x char
+
+    INPUTS:
+        text: (STRING)
+        length: (INT)
+
+    OUTPUTS:
+        (STRING)
+
+    """
+    return "\n".join(text[i : i + length] for i in range(0, len(text), length))
+
+
+def extract_fasta_with_gff3_info(result, gff3_extract_result, gene_pattern):
+    """
+
+    Search for gene_patterns in gff3_extract_result and extract dna sequences from result
+
+    INPUTS:
+        result: (STRING) extracted from a .fasta file
+        gff3_extract_result: (DICT) { pattern: [(start, end, orientation)] } attributes extracted from a .gff3 file
+        gene_pattern: (LIST) [pattern] patterns given as parameters from the --gene options
+
+    OUTPUTS:
+        (STRING) .fasta formatted string
+
+    """
+    result = result.split(">")
+    parsed_result = ""
+    for res in result:
+        try:
+            key = res.split()[0]
+            match = gff3_extract_result[key]
+            info_line, dna_sequence = read_fasta_sequence(res)
+            for pattern in gene_pattern:
+                positions = match[pattern]
+                positions = merge_and_sort_overlaps(positions, len(dna_sequence))
+                sequence_fragments = []
+                for position in positions:
+                    sequence_fragments = sequence_fragments + [
+                        dna_sequence[int(position[0] - 1) : int(position[1])]
+                    ]
+                sequence_fragments = "".join(sequence_fragments)
+
+                # insert newline every 120 chars
+                sequence_fragments = insert_newline(sequence_fragments, 120)
+
+                # cut sequence
+                if parsed_result == "":
+                    parsed_result = (
+                        ">"
+                        + info_line
+                        + f" [pattern={pattern}]"
+                        + "\n"
+                        + sequence_fragments
+                    )
+                else:
+                    parsed_result = (
+                        parsed_result
+                        + "\n"
+                        + ">"
+                        + info_line
+                        + f" [pattern={pattern}]"
+                        + "\n"
+                        + sequence_fragments
+                    )
+        except:
+            continue
+    return parsed_result
+
+
+def download_gff3(ids, path, write_file=True):
+    """
+
+    Retrieve gff3 files and optionnaly write the result in a file
+
+    INPUTS:
+        ids: (LIST) [id] accession sequence id
+        path: (STRING)
+        write_file: (BOOL)
+
+    OUTPUTS:
+        (DICT) {ok: (BOOL),
+                text: (STRING),
+                url: (STRING)
+                }   result from request.get call
+
+    """
+
+    parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
+    gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+
+    gff3_file = path + "/results.gff3"
+
+    ## TODO handle error if gff3_result.ok not True
+
+    # write gff3 files in result folder
+    # this can be optionnal
+    if write_file:
+        with open(gff3_file, "a") as f:
+            f.write(gff3_result.text)
+
+    return gff3_result
+
+
+def parse_fasta_with_gff3(
+    result, path, dict_ids, dict_taxo, ids, gene_pattern, OPTIONS=None
+):
+    """
+
+    Parse a string from a fasta file to extract the gene according to data from a .gff3 file
+
+    INPUTS:
+        result: (STRING) a string with the fasta like results
+        path: (STRING) output_path
+        dict_ids: (DICT) { accession_number: TaxId }
+        dict_taxo: (DICT) { tadId: dicttemp }
+        ids: (LIST) [ STRING ]
+        gene_pattern: (LIST) [ STRING ] gene paterns
+        OPTIONS: (TUPLE) (verb, args.cds, classif, args.taxids, args.tsv, args.information) optionnal
+
+    OUTPUTS:
+        (LIST) [ matching_accession_number ]
+            if selected tsv fils and/or info
+    """
+
+    gff3_result = download_gff3(ids, path, False)
+
+    # parse GFF3 file line by line
+    lines = gff3_result.text.split("\n")
+
+    gff3_extract_result = {}
+
+    for line in lines:
+        if line.startswith("#"):
+            continue
+
+        ## extract parameters
+        fields = line.strip().split("\t")
+        if len(fields) != 9:
+            continue
+
+        attributes = parse_attributes(fields[8])
+
+        sequence = {
+            "seqid": fields[0],
+            "source": fields[1],
+            "feature_type": fields[2],
+            "start": int(fields[3]),
+            "end": int(fields[4]),
+            "score": fields[5],
+            "strand": fields[6],
+            "phase": fields[7],
+            "attributes": attributes,
+        }
+
+        # look for pattern match in extracted parameters
+        for pattern in gene_pattern:
+            if "gene" not in sequence["attributes"].keys():
+                continue
+
+            pattern_regexp = re.escape(pattern)
+            match_result = re.match(pattern_regexp, sequence["attributes"]["gene"])
+
+            if match_result:
+                if sequence["seqid"] not in gff3_extract_result.keys():
+                    gff3_extract_result[sequence["seqid"]] = {}
+
+                if pattern not in gff3_extract_result[sequence["seqid"]].keys():
+                    gff3_extract_result[sequence["seqid"]][pattern] = []
+
+                gff3_extract_result[sequence["seqid"]][pattern] = gff3_extract_result[
+                    sequence["seqid"]
+                ][pattern] + [(sequence["start"], sequence["end"], sequence["strand"])]
+
+    # extract sequences from fasta file with the gff3 extracted infos
+    parsed_result = extract_fasta_with_gff3_info(
+        result, gff3_extract_result, gene_pattern
+    )
+
+    return parse_fasta_result(parsed_result, path, dict_ids, dict_taxo, OPTIONS=None)
+
+
 if __name__ == "_main_":
     countDown()
     download()
     dispatch()
+    efetch_dl()
+    parse_fasta_result()
+    parse_fasta_cds_result()
+    read_fasta_sequence()

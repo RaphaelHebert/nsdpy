@@ -1,13 +1,12 @@
 import unittest
 from unittest.mock import patch
 from operator import attrgetter
-import filecmp
 import os
 import io
 import shutil
 
 # local import
-from functions import fasta
+from functions import efetch_dl
 from data import fasta_data
 
 expected_download_normal_result = attrgetter("fasta_expected_result")(fasta_data)
@@ -27,6 +26,10 @@ class Response:
     text = expected_download_normal_result
 
 
+def mocked_callback_one(result, path, dict_ids, dict_taxo, OPTIONS):
+    return ["ID1"]
+
+
 arguments = {
     "path": ".",
     "dict_ids": expected_normal_dict_id,
@@ -38,33 +41,29 @@ arguments = {
 
 class testsFunctions(unittest.TestCase):
     @patch("functions.download")
-    def test_fasta(self, get_content_mock):
+    def test_efetch_dl(self, get_content_mock):
         OPTIONS = (None, None, None, None, True, None)  # -t option
         get_content_mock.return_value = Response()
 
         # should return expected result
-        fasta_result = fasta(
+        efetch_dl_result = efetch_dl(
+            arguments["QUERY"],
+            arguments["list_of_ids"],
+            mocked_callback_one,
             arguments["path"],
             arguments["dict_ids"],
             arguments["dict_taxo"],
-            arguments["QUERY"],
-            arguments["list_of_ids"],
+            "nuccore",
+            "fasta",
+            "text",
             OPTIONS,
         )
+
         # function output
-        self.assertEqual(fasta_result, expected_normal_result)
-        # files
-        self.assertTrue(
-            filecmp.cmp("./tests/data/fasta_expected.fasta", "./fasta/OTHERS.fasta")
-        )
-        self.assertTrue(
-            filecmp.cmp("./tests/data/fasta_expected.tsv", "./tsv/OTHERS.tsv")
-        )
-        cleanup("tsv/")
-        cleanup("fasta/")
+        self.assertEqual(efetch_dl_result, ["ID1"])
 
     @patch("sys.stdout", new_callable=io.StringIO)
-    def test_fasta_stdout(self, mock_stdout):
+    def test_efetch_dl_stdout(self, mock_stdout):
         OPTIONS = (2, None, None, None, True, None)  # -t option
 
         with patch("functions.download") as mocked_dl:
@@ -72,12 +71,16 @@ class testsFunctions(unittest.TestCase):
             with patch("functions.countDown") as mocked_countDown:
                 # mock countDown output
                 mocked_countDown.side_effect = ["countDownResult"]
-                fasta(
+                efetch_dl(
+                    arguments["QUERY"],
+                    arguments["list_of_ids"],
+                    mocked_callback_one,
                     arguments["path"],
                     arguments["dict_ids"],
                     arguments["dict_taxo"],
-                    arguments["QUERY"],
-                    arguments["list_of_ids"],
+                    "nuccore",
+                    "fasta",
+                    "text",
                     OPTIONS,
                 )
                 # get the arguments countDown is called with
@@ -92,14 +95,6 @@ class testsFunctions(unittest.TestCase):
         # clear mock_stdout value
         mock_stdout.seek(0)
         mock_stdout.truncate(0)
-
-        cleanup("tsv/")
-        cleanup("fasta/")
-
-    def test_taxids_cleanup(self):
-        # cleanup in case a test fail
-        cleanup("tsv/")
-        cleanup("fasta/")
 
 
 if __name__ == "__main__":
