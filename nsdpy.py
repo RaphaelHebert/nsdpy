@@ -86,13 +86,23 @@ def main():
         help="write a text file listing all the accession numbers and their related TaxIDs",
         action="store_true",
     )
+
     parser.add_argument(
         "-f",
         "--gff",
         default=None,
-        help="download the gff3 files for the TaxIDs found for the query",
+        help="download the gff3 files corresponding to the query",
         action="store_true",
     )
+
+    parser.add_argument(
+        "-y",
+        "--yes",
+        default=None,
+        help="automaticaly answer yes to every prompts",
+        action="store_true",
+    )
+
     parser.add_argument(
         "-t",
         "--tsv",
@@ -165,8 +175,10 @@ def main():
 
     # list of chosen options to display in the report.tsv
     ## parse options
+    if args.yes:
+        options_report.append("--yes (-y)")
     if args.gff:
-        options_report.append("--gff (-g)")
+        options_report.append("--gff (-f)")
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -223,7 +235,7 @@ def main():
     #########  RUN THE RUN!!  ####################
     ##############################################
 
-    if args.gff:
+    if args.gff and not args.yes:
         answer = input(
             "\n    !!!! WARNING !!!! \n gff option is experimental, read the documentation: https://nsdpy.readthedocs.io/en/latest/main.html#overview \nAre you sure you want to continue ('y'/'yes')?\n"
         )
