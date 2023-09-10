@@ -294,7 +294,7 @@ def main():
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
 
-        subdictids = taxids(params, path, OPTIONS)
+        subdictids = taxids(params, path, QUERY, OPTIONS)
         dict_ids = {**dict_ids, **subdictids}
 
         total_number_of_results = len(set(dict_ids.keys()))

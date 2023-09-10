@@ -80,6 +80,14 @@ METAZOA = [
     "Xenoturbella",
 ]
 
+EMAIL = "raphaelhebert18@gmail.com"
+TOOL = "NSDPY"
+
+BASE_PARAMETERS = {
+    "email": EMAIL,
+    "tool": TOOL,
+}
+
 
 def countDown(iteration, total, message=""):
     """
@@ -125,6 +133,8 @@ def download(parameters, address):
         if an exceptions.HTTPError is triggered: returns 1
     """
     connect = 0
+    parameters = {**BASE_PARAMETERS, **parameters}
+
     while True:
         try:
             result = requests.get(address, params=parameters, timeout=60)
@@ -171,16 +181,16 @@ def esearchquery(QUERY):
     ## build api address
     esearchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     # parameters
-    parameters = {}
-    if api_key:
-        parameters["api_key"] = str(api_key)
-    parameters["db"] = "nucleotide"
-    parameters["idtype"] = "acc"
-    parameters["retmode"] = "json"
-    parameters["retmax"] = "0"
-    parameters["usehistory"] = "y"
-    # user's query
-    parameters["term"] = query
+    parameters = {
+        **BASE_PARAMETERS,
+        **({"api_key": str(api_key)} if api_key else {}),
+        "db": "nucleotide",
+        "idtype": "acc",
+        "retmode": "json",
+        "retmax": "0",
+        "usehistory": "y",
+        "term": query,
+    }
 
     ### send request to the API
     y = download(parameters, esearchaddress)
@@ -189,7 +199,7 @@ def esearchquery(QUERY):
     return y.json()
 
 
-def taxids(params, path, OPTIONS=None):
+def taxids(params, path, QUERY, OPTIONS=None):
     """
     sends queries by batches to esummary E-utility
     parse the response to map taxids to accession numbers
@@ -198,6 +208,7 @@ def taxids(params, path, OPTIONS=None):
     INPUTS: taxids(params, path, OPTIONS)
         params: (TUPLE) (querykey, webenv, count)
         path: (STRING) output folder path
+        query: (TUPLE) (query: STRING, apikey: STRING)
         OPTIONS: (TUPLE) (verb, _, _, args.taxids, _, _)
 
     OUTPUTS: dict { accession_number: TaxIDs }
@@ -206,6 +217,9 @@ def taxids(params, path, OPTIONS=None):
     """
     if OPTIONS is None:
         OPTIONS = ("", "", "", "", "", "")
+
+    ## unpack QUERY:
+    (_, api_key) = QUERY
 
     ## unpack parameters
     (querykey, webenv, count) = params
@@ -226,17 +240,17 @@ def taxids(params, path, OPTIONS=None):
         nb = (count // retmax) + 1
 
     for x in range(nb):
-        ##build the API address
-        esummaryaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
         # parameters
-        parameters = {}
-        parameters["db"] = "taxonomy"
-        parameters["query_key"] = querykey
-        parameters["WebEnv"] = webenv
-        parameters["retstart"] = str(x * retmax)
-        parameters["retmax"] = str(retmax)
-        parameters["rettype"] = "uilist"
-        parameters["retmode"] = "text"
+        parameters = {
+            **({"api_key": str(api_key)} if api_key else {}),
+            "db": "taxonomy",
+            "query_key": querykey,
+            "WebEnv": webenv,
+            "retstart": str(x * retmax),
+            "retmax": str(retmax),
+            "rettype": "uilist",
+            "retmode": "text",
+        }
         result = download(parameters, ESUMMARY_URL)
 
         # comments
@@ -453,12 +467,12 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
         ## build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # parameters
-        parameters["db"] = "taxonomy"
-        parameters["id"] = idsublist
-        if api_key:
-            parameters["api_key"] = api_key
+        parameters = {
+            "db": "taxonomy",
+            "id": idsublist,
+            **({"api_key": api_key} if api_key else {}),
+        }
 
         ## oop until download is correct
         result = download(parameters, efetchaddress)
@@ -567,14 +581,13 @@ def cds_fasta(path, dict_ids, dict_taxo, QUERY, list_of_ids, OPTIONS=None):
         ## Check that id parameters is not empty
         ids = [i for i in ids if i]
         # Parameters
-        parameters = {}
-        parameters["id"] = ",".join(ids)
-        parameters["db"] = "nuccore"
-        if api_key:
-            parameters["api_key"] = api_key
-        parameters["rettype"] = "fasta_cds_na"
-        parameters["retmode"] = "text"
-
+        parameters = {
+            "id": ",".join(ids),
+            "db": "nuccore",
+            **({"api_key": api_key} if api_key else {}),
+            "rettype": "fasta_cds_na",
+            "retmode": "text",
+        }
         ## Download
         raw_result = download(parameters, EFETCH_URL)
         raw_result = raw_result.text
@@ -996,15 +1009,14 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
 
         ## build API address
         efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-        parameters = {}
         # parameters
-        parameters = {}
-        parameters["db"] = "nuccore"
-        parameters["id"] = ids1
-        parameters["rettype"] = "gb"
-        parameters["retmode"] = "text"
-        if api_key:
-            parameters["api_key"] = api_key
+        parameters = {
+            "db": "nuccore",
+            "id": ids1,
+            "rettype": "gb",
+            "retmode": "text",
+            **({"api_key": api_key} if api_key else {}),
+        }
 
         ## loop until dl is correct
         result = download(parameters, efetchaddress)
