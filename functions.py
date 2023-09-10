@@ -7,86 +7,8 @@ from collections import Counter
 # third party imports
 import requests  # https://requests.readthedocs.io/en/master/
 
-ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
-ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
-EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-
-PLANTAE = [
-    "Chlorophyta",
-    "Charophyta",
-    "Bryophyta",
-    "Marchantiophyta",
-    "Lycopodiophyta",
-    "Ophioglossophyta",
-    "Pteridophyta",
-    "Cycadophyta",
-    "Ginkgophyta",
-    "Gnetophyta",
-    "Pinophyta",
-    "Magnoliophyta",
-    "Equisetidae",
-    "Psilophyta",
-    "Bacillariophyta",
-    "Cyanidiophyta",
-    "Glaucophyta",
-    "Prasinophyceae",
-    "Rhodophyta",
-]
-
-FUNGI = [
-    "Chytridiomycota",
-    "Zygomycota",
-    "Ascomycota",
-    "Basidiomycota",
-    "Glomeromycota",
-]
-
-METAZOA = [
-    "Acanthocephala",
-    "Acoelomorpha",
-    "Annelida",
-    "Arthropoda",
-    "Brachiopoda",
-    "Ectoprocta",
-    "Bryozoa",
-    "Chaetognatha",
-    "Chordata",
-    "Cnidaria",
-    "Ctenophora",
-    "Cycliophora",
-    "Echinodermata",
-    "Echiura",
-    "Entoprocta",
-    "Gastrotricha",
-    "Gnathostomulida",
-    "Hemichordata",
-    "Kinorhyncha",
-    "Loricifera",
-    "Micrognathozoa",
-    "Mollusca",
-    "Nematoda",
-    "Nematomorpha",
-    "Nemertea",
-    "Onychophora" "Orthonectida",
-    "Phoronida",
-    "Placozoa",
-    "Plathelminthes",
-    "Porifera",
-    "Priapulida",
-    "Rhombozoa",
-    "Rotifera",
-    "Sipuncula",
-    "Tardigrada",
-    "Xenoturbella",
-]
-
-EMAIL = "raphaelhebert18@gmail.com"
-TOOL = "NSDPY"
-
-BASE_PARAMETERS = {
-    "email": EMAIL,
-    "tool": TOOL,
-}
+# local imports
+from constants import ESUMMARY_URL, EFETCH_URL, PLANTAE, METAZOA, FUNGI, BASE_PARAMETERS
 
 
 def countDown(iteration, total, message=""):

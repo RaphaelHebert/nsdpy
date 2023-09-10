@@ -9,7 +9,7 @@ import argparse  # parsing command line arguments
 from datetime import datetime
 
 # local imports
-
+from constants import ESEARCH_URL
 from functions import (
     esearchquery,
     completetaxo,
@@ -19,8 +19,6 @@ from functions import (
     fasta,
     duplicates,
 )
-
-ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 
 
 def main():
