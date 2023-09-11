@@ -20,9 +20,15 @@ class TestDownloadGFF3(unittest.TestCase):
             ids = ["fake_id"]
             path = "."
 
-            expected_params = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
-
-            result = download_gff3(ids, path, write_file=True)
+            expected_params = {
+                "db": "nuccore",
+                "report": "gff3",
+                "id": ",".join(ids),
+                "email": "raphaelhebert18@gmail.com",
+                "tool": "NSDPY",
+            }
+            OPTIONS = ("", "", "", "", "", "")
+            result = download_gff3(ids, path, OPTIONS, write_file=True)
 
             # Perform assertions
             self.assertTrue(result.ok)
@@ -49,9 +55,15 @@ class TestDownloadGFF3(unittest.TestCase):
             ids = ["fake_id"]
             path = "."
 
-            expected_params = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
-
-            result = download_gff3(ids, path, write_file=False)
+            expected_params = {
+                "db": "nuccore",
+                "report": "gff3",
+                "id": ",".join(ids),
+                "email": "raphaelhebert18@gmail.com",
+                "tool": "NSDPY",
+            }
+            OPTIONS = ("", "", "", "", "", "")
+            result = download_gff3(ids, path, OPTIONS, write_file=False)
 
             # Perform assertions
             self.assertTrue(result.ok)

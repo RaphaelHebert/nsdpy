@@ -81,6 +81,9 @@ METAZOA = [
     "Xenoturbella",
 ]
 
+EMAIL = "raphaelhebert18@gmail.com"
+TOOL = "NSDPY"
+
 
 def countDown(iteration, total, message=""):
     """
@@ -1441,7 +1444,7 @@ def parseClassifXML(xml):
     return classif
 
 
-def download_gff3(ids, path, write_file=True):
+def download_gff3(list_of_ids, path, OPTIONS, write_file=True):
     """
 
     Retrieve gff3 files and optionnaly write the result in a file
@@ -1458,19 +1461,50 @@ def download_gff3(ids, path, write_file=True):
                 }   result from request.get call
 
     """
+    if OPTIONS is None:
+        OPTIONS = ("", "", "", "", "", "")
 
-    parameters = {"db": "nuccore", "report": "gff3", "id": ",".join(ids)}
-    gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+    ## Unpack parameters
+    (verb, _, _, _, _, _) = OPTIONS
 
-    gff3_file = path + "/results.gff3"
+    count = len(list_of_ids)
+    retmax = 200
 
-    ## TODO handle error if gff3_result.ok not True
+    if count < retmax:
+        retmax = count
 
-    # write gff3 files in result folder
-    # this can be optionnal
-    if write_file:
-        with open(gff3_file, "a") as f:
-            f.write(gff3_result.text)
+    if count % retmax == 0:
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
+
+    for x in range(nb):
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
+        ids = [i for i in ids if i]
+
+        parameters = {
+            "db": "nuccore",
+            "report": "gff3",
+            "id": ",".join(ids),
+            "email": EMAIL,
+            "tool": TOOL,
+        }
+
+        gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+
+        gff3_file = path + "/results.gff3"
+
+        ## TODO handle error if gff3_result.ok not True
+
+        # write gff3 files in result folder
+        # this can be optionnal
+        if write_file:
+            with open(gff3_file, "a") as f:
+                f.write(gff3_result.text)
+
+        if verb and verb > 1:
+            print(countDown(x, nb, "Downloading the gff3 files"))
 
     return gff3_result
 

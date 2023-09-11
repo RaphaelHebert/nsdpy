@@ -56,20 +56,12 @@ def main():
         action="store_true",
     )
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
-    # Sequence types
-    group2 = parser.add_mutually_exclusive_group()
+
     # Gene selection
-    group2.add_argument(
+    parser.add_argument(
         "-c",
         "--cds",
         help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex",
-        nargs="*",
-    )
-    # Gene Features format
-    group2.add_argument(
-        "-g",
-        "--gene",
-        help="download sequences in gene feature format // NOT FUNCTIONAL YET",
         nargs="*",
     )
     # file input
@@ -88,7 +80,7 @@ def main():
     )
 
     parser.add_argument(
-        "-f",
+        "-g",
         "--gff",
         default=None,
         help="download the gff3 files corresponding to the query",
@@ -189,8 +181,6 @@ def main():
         options_report.append(f"--cds (-c) {' '.join(args.cds)}")
     if args.apikey:
         options_report.append(f"--apikey (-a) {args.apikey[0]}")
-    if args.gene:
-        options_report.append(f"--gene (-g) {' '.join(args.gene)}")
 
     # verbose
     if args.verbose:
@@ -237,7 +227,7 @@ def main():
 
     if args.gff and not args.yes:
         answer = input(
-            "\n    !!!! WARNING !!!! \n gff option is experimental, read the documentation: https://nsdpy.readthedocs.io/en/latest/main.html#overview \nAre you sure you want to continue ('y'/'yes')?\n"
+            "\n!!!! WARNING !!!! \n\ngff option is experimental, read the documentation: https://www.ncbi.nlm.nih.gov/home/about/policies/ \nAre you sure you want to continue ('y'/'yes')?\n"
         )
         if answer.lower() not in ["y", "yes"]:
             sys.exit(f"ABORTED: {','.join(options_report)}")
@@ -341,7 +331,9 @@ def main():
 
     # dl the gff3 files
     if args.gff:
-        download_gff3(list_of_ids, path)
+        if verb != 0:
+            print(f"retrieving gff3 files....")
+        download_gff3(list_of_ids, path, OPTIONS)
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
