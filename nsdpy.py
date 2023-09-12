@@ -9,7 +9,7 @@ import argparse  # parsing command line arguments
 from datetime import datetime
 
 # local imports
-
+from constants import ESEARCH_URL
 from functions import (
     esearchquery,
     completetaxo,
@@ -20,8 +20,6 @@ from functions import (
     duplicates,
     download_gff3,
 )
-
-ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 
 
 def main():
@@ -247,8 +245,7 @@ def main():
         taxa_list = [taxon + "[ORGN] OR " for taxon in taxa_list]
 
         # Base URL with params
-        esearch_address = ESEARCH_URL
-        base_URL_length = len(esearch_address) + 100  # Keep 100 chars for params
+        base_URL_length = len(ESEARCH_URL) + 100  # Keep 100 chars for params
 
         # Base query
         base_query = args.request + " AND ("
@@ -313,7 +310,7 @@ def main():
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
 
-        subdictids = taxids(params, path, OPTIONS)
+        subdictids = taxids(params, path, QUERY, OPTIONS)
         dict_ids = {**dict_ids, **subdictids}
 
         total_number_of_results = len(set(dict_ids.keys()))

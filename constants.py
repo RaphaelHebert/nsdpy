@@ -1,7 +1,7 @@
-"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
-ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
+NCBI_URL = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
 
 PLANTAE = [
     "Chlorophyta",
@@ -71,3 +71,11 @@ METAZOA = [
     "Tardigrada",
     "Xenoturbella",
 ]
+
+EMAIL = "raphaelhebert18@gmail.com"
+TOOL = "NSDPY"
+
+BASE_PARAMETERS = {
+    "email": EMAIL,
+    "tool": TOOL,
+}
