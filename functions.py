@@ -8,7 +8,15 @@ from collections import Counter
 import requests  # https://requests.readthedocs.io/en/master/
 
 # local imports
-from constants import ESUMMARY_URL, EFETCH_URL, PLANTAE, METAZOA, FUNGI, BASE_PARAMETERS
+from constants import (
+    ESEARCH_URL,
+    ESUMMARY_URL,
+    EFETCH_URL,
+    PLANTAE,
+    METAZOA,
+    FUNGI,
+    BASE_PARAMETERS,
+)
 
 
 def countDown(iteration, total, message=""):
@@ -100,8 +108,6 @@ def esearchquery(QUERY):
     ## unpack QUERY:
     (query, api_key) = QUERY
 
-    ## build api address
-    esearchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
     # parameters
     parameters = {
         **BASE_PARAMETERS,
@@ -115,7 +121,7 @@ def esearchquery(QUERY):
     }
 
     ### send request to the API
-    y = download(parameters, esearchaddress)
+    y = download(parameters, ESEARCH_URL)
     if y == 1:
         return {"error": "wrong address for esearch"}
     return y.json()
@@ -230,73 +236,6 @@ def dispatch(lineage, classif):
         (STRING) rank
 
     """
-    ###Phylums
-    Plantae = [
-        "Chlorophyta",
-        "Charophyta",
-        "Bryophyta",
-        "Marchantiophyta",
-        "Lycopodiophyta",
-        "Ophioglossophyta",
-        "Pteridophyta",
-        "Cycadophyta",
-        "Ginkgophyta",
-        "Gnetophyta",
-        "Pinophyta",
-        "Magnoliophyta",
-        "Equisetidae",
-        "Psilophyta",
-        "Bacillariophyta",
-        "Cyanidiophyta",
-        "Glaucophyta",
-        "Prasinophyceae",
-        "Rhodophyta",
-    ]
-    Fungi = [
-        "Chytridiomycota",
-        "Zygomycota",
-        "Ascomycota",
-        "Basidiomycota",
-        "Glomeromycota",
-    ]
-    Metazoa = [
-        "Acanthocephala",
-        "Acoelomorpha",
-        "Annelida",
-        "Arthropoda",
-        "Brachiopoda",
-        "Ectoprocta",
-        "Bryozoa",
-        "Chaetognatha",
-        "Chordata",
-        "Cnidaria",
-        "Ctenophora",
-        "Cycliophora",
-        "Echinodermata",
-        "Echiura",
-        "Entoprocta",
-        "Gastrotricha",
-        "Gnathostomulida",
-        "Hemichordata",
-        "Kinorhyncha",
-        "Loricifera",
-        "Micrognathozoa",
-        "Mollusca",
-        "Nematoda",
-        "Nematomorpha",
-        "Nemertea",
-        "Onychophora" "Orthonectida",
-        "Phoronida",
-        "Placozoa",
-        "Plathelminthes",
-        "Porifera",
-        "Priapulida",
-        "Rhombozoa",
-        "Rotifera",
-        "Sipuncula",
-        "Tardigrada",
-        "Xenoturbella",
-    ]
 
     ##no option selected
     if classif == 2:
@@ -387,8 +326,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
         idsublist = idlist[retstart : (retstart + retmax)]
         idsublist = ",".join(idsublist)
 
-        ## build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         # parameters
         parameters = {
             "db": "taxonomy",
@@ -397,7 +334,7 @@ def completetaxo(idlist, QUERY, OPTIONS):
         }
 
         ## oop until download is correct
-        result = download(parameters, efetchaddress)
+        result = download(parameters, EFETCH_URL)
 
         # comments
         if verb > 1:
@@ -929,8 +866,6 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
         ids1 = ",".join(ids)
         retstart = str(x * retmax)
 
-        ## build API address
-        efetchaddress = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
         # parameters
         parameters = {
             "db": "nuccore",
@@ -941,7 +876,7 @@ def taxo(path, list_of_ids, dict_ids, QUERY, dict_taxo=None, OPTIONS=None):
         }
 
         ## loop until dl is correct
-        result = download(parameters, efetchaddress)
+        result = download(parameters, EFETCH_URL)
         result = result.text
 
         ########################################################################

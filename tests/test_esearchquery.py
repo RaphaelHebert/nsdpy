@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 # local import
 from functions import esearchquery
-from constants import ESEARCH_URL
+from constants import ESEARCH_URL, EMAIL, TOOL
 
 
 class testsFunctions(unittest.TestCase):
@@ -21,8 +21,8 @@ class testsFunctions(unittest.TestCase):
             json = lambda _: "hello world"
 
         parameters = {
-            "email": "raphaelhebert18@gmail.com",
-            "tool": "NSDPY",
+            "email": EMAIL,
+            "tool": TOOL,
             "api_key": api_key,
             "db": "nucleotide",
             "idtype": "acc",

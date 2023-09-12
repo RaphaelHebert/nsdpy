@@ -226,8 +226,7 @@ def main():
         taxa_list = [taxon + "[ORGN] OR " for taxon in taxa_list]
 
         # Base URL with params
-        esearch_address = ESEARCH_URL
-        base_URL_length = len(esearch_address) + 100  # Keep 100 chars for params
+        base_URL_length = len(ESEARCH_URL) + 100  # Keep 100 chars for params
 
         # Base query
         base_query = args.request + " AND ("

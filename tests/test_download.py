@@ -16,7 +16,7 @@ sys.path.insert(0, "./xmls")
 
 # local import
 
-from constants import ESEARCH_URL
+from constants import ESEARCH_URL, EMAIL, TOOL
 from functions import download
 from data import (
     data,
@@ -36,8 +36,8 @@ class testsFunctions(unittest.TestCase):
     def test_download(self, mock_stdout):
         ##parameters address
         parameters = {
-            "tool": "nsdpy",
-            "email": "raphaelhebert18@gmail.com",
+            "tool": TOOL,
+            "email": EMAIL,
             "db": "nucleotide",
             "idtype": "acc",
             "retmode": "json",
@@ -72,8 +72,8 @@ class testsFunctions(unittest.TestCase):
             mocked_get.assert_called_with(
                 ESEARCH_URL,
                 params={
-                    "tool": "nsdpy",
-                    "email": "raphaelhebert18@gmail.com",
+                    "tool": TOOL,
+                    "email": EMAIL,
                     "db": "nucleotide",
                     "idtype": "acc",
                     "retmode": "json",
