@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 # local import
 from functions import esearchquery
-from constants import ESEARCH_URL
+from constants import ESEARCH_URL, EMAIL, TOOL
 
 
 class testsFunctions(unittest.TestCase):
@@ -20,14 +20,17 @@ class testsFunctions(unittest.TestCase):
         class Response:
             json = lambda _: "hello world"
 
-        parameters = {}
-        parameters["api_key"] = api_key
-        parameters["db"] = "nucleotide"
-        parameters["idtype"] = "acc"
-        parameters["retmode"] = "json"
-        parameters["retmax"] = "0"
-        parameters["usehistory"] = "y"
-        parameters["term"] = query
+        parameters = {
+            "email": EMAIL,
+            "tool": TOOL,
+            "api_key": api_key,
+            "db": "nucleotide",
+            "idtype": "acc",
+            "retmode": "json",
+            "retmax": "0",
+            "usehistory": "y",
+            "term": query,
+        }
 
         get_content_mock.reset_mock()
         get_content_mock.return_value = Response()

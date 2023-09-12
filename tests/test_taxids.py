@@ -37,21 +37,21 @@ class testsFunctions(unittest.TestCase):
         mocked_webenv = {"web": "ok", "mocked": True}
         mocked_count = 600
         params = (mocked_query_key, mocked_webenv, mocked_count)
-        parameters = {}
-        parameters["db"] = "taxonomy"
-        parameters["query_key"] = mocked_query_key
-        parameters["WebEnv"] = mocked_webenv
-        parameters[
-            "retstart"
-        ] = "400"  # take the latest call, here with mocked_count = 600
-        parameters["retmax"] = "200"
-        parameters["rettype"] = "uilist"
-        parameters["retmode"] = "text"
+        parameters = {
+            "api_key": "someRandomKey",
+            "db": "taxonomy",
+            "query_key": mocked_query_key,
+            "WebEnv": mocked_webenv,
+            "retstart": "400",
+            "retmax": "200",
+            "rettype": "uilist",
+            "retmode": "text",
+        }
 
         OPTIONS = ("", "", "", True, "", "")  # write output file
-
+        QUERY = ("somerandomstring", "someRandomKey")
         get_content_mock.return_value = Taxids_results()
-        result = taxids(params, path, OPTIONS)
+        result = taxids(params, path, QUERY, OPTIONS)
         self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
         self.assertEqual(result, expected_output)
