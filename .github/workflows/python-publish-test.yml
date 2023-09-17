@@ -68,10 +68,12 @@ jobs:
           echo "result of last version: $LAST_VERSION"
           git fetch --tags --quiet
           TAG_EXISTS=$(git tag -l "$LAST_VERSION")
+          echo "$TAG_EXISTS"
           if [ -z "$TAG_EXISTS" ]; then
           echo "No matching tags found for version $LAST_VERSION"
           exit 1
           fi
+          echo "checking SemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
           echo "hello test"
           matching_part=$(echo "$TAG_EXISTS" | grep -oE "$SEMVER")
