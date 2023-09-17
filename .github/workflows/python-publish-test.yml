@@ -78,7 +78,7 @@ jobs:
           echo "hello test"
           matching_part=$(echo "$TAG_EXISTS" | grep -oE "$SEMVER")
           echo "${matching_part}"
-          if [ "$matching_part" != "$TAG_EXISTS" ]; then
+          if [[ ! "$TAG_EXISTS" ~= "$SEMVER" ]]; then
           echo "Tag $TAG_EXISTS is not SemVer, check https://semver.org/ for more info"
           exit 1
           fi
