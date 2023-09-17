@@ -75,7 +75,7 @@ jobs:
           fi
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-          if [[ ! "$TAG_EXISTS" =~ "$SEMVER" ]]; then
+          if ! echo "$TAG_EXISTS" | grep -qE "$SEMVER"; then
           echo "Tag $TAG_EXISTS is not SemVer, check https://semver.org/ for more info"
           exit 1
           fi
