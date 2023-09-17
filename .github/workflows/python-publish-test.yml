@@ -64,6 +64,7 @@ jobs:
       - name: Check for Existing Tag
         id: increment_version_and_check_tag
         run: |
+          set +x
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
           echo "result of last version: $LAST_VERSION"
           git fetch --tags --quiet
