@@ -76,7 +76,7 @@ jobs:
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
           echo "$SEMVER"
-          NUM=$(grep -c -e "$SEMVER" "$TAG_EXISTS")
+          NUM=$(grep -c -e "$SEMVER" <<< "$TAG_EXISTS")
           echo $NUM
           if [[ grep -c -e "$SEMVER" "$TAG_EXISTS" == 1 ]]; then
           echo "Tag $TAG_EXISTS is a valid SemVer"
