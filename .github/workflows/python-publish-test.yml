@@ -76,10 +76,7 @@ jobs:
           fi
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-          if ! echo "$TAG_EXISTS" | grep -qsE "$SEMVER"; then
-            echo "The latest tag '$TAG_EXISTS' is not SemVer-compliant."
-            exit 1
-          fi
+          echo "$TAG_EXISTS" | grep -q "$SEMVER" || echo "The latest tag '$TAG_EXISTS' is not SemVer-compliant." && exit 1
           echo "Matching tags: $TAG_EXISTS"
           echo "tags=$TAG_EXISTS" >> $GITHUB_OUTPUT
 
