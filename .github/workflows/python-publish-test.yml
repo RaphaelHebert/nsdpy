@@ -76,7 +76,9 @@ jobs:
           fi
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-          if grep -q "$SEMVER" <<< "$LAST_VERSION"; then
+          grep -q "$SEMVER" <<< "$TAG_EXISTS"
+          is_semver=$?
+          if [ $is_semver -ne 0 ]; then
           echo "$TAG_EXISTS is not SemVer-compliant"
           exit 1
           else
