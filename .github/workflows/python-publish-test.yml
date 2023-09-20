@@ -79,7 +79,7 @@ jobs:
           grep -oE "$SEMVER" <<< "$TAG_EXISTS"
           ISSEMVER="$?"
           echo "$ISSEMVER"
-          if [ $ISSEMVER -ne 0 ]; then
+          if echo "$TAG_EXISTS" | grep -qE "$SEMVER"; then
           echo "$TAG_EXISTS is not SemVer-compliant"
           exit 1
           else
