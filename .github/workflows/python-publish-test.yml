@@ -64,7 +64,7 @@ jobs:
       - name: Check for Existing Tag
         id: increment_version_and_check_tag
         run: |
-          set +x
+          set +e
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
           echo "result of last version: $LAST_VERSION"
           git fetch --tags --quiet
@@ -77,7 +77,8 @@ jobs:
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
           grep -q "$SEMVER" <<< "$TAG_EXISTS"
-          is_semver=$?
+          ISSEMVER="$?"
+          echo "$ISSEMVER"
           if [ $is_semver -ne 0 ]; then
           echo "$TAG_EXISTS is not SemVer-compliant"
           exit 1
