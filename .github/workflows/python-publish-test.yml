@@ -56,7 +56,7 @@ jobs:
           echo "last version is $LAST_VERSION"
           REGEXP='.*-beta$'
           echo "$REGEXP"
-          TEST=$(echo "$LAST_VERSION" | grep .* )
+          TEST=$(grep .* <<< "$LAST_VERSION")
           echo "$TEST"
           if echo "$LAST_VERSION" | grep -qP "$REGEXP";
           then
