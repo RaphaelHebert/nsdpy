@@ -54,14 +54,11 @@ jobs:
           set +e
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "last version is $LAST_VERSION"
-          grep ".*-beta$" <<< "$LAST_VERSION"
-          echo $?
-          if grep ".*-beta$" <<< "$LAST_VERSION";
+          if echo "$LAST_VERSION" | grep -q "beta$";
           then
           echo "Last version: $LAST_VERSION"
           else
           echo "Version is not a test version: should end with -beta"
-          exit 1
           fi
           echo "Last version: $LAST_VERSION"
           echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
@@ -81,7 +78,8 @@ jobs:
           echo "matching tag $TAG_EXISTS found"
           echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-          if echo "$TAG_EXISTS" | grep -qP "$SEMVER"; then
+          if echo "$TAG_EXISTS" | grep -qP "$SEMVER";
+          then
           echo "$TAG_EXISTS is SemVer-compliant"
           else
           echo "$TAG_EXISTS is not SemVer-compliant"
