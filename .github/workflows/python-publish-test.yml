@@ -60,13 +60,12 @@ jobs:
           echo "TEST:"
           echo "$TEST"
           echo "ok"
-          if echo "$LAST_VERSION" | grep -qP "$REGEXP";
+          if "$LAST_VERSION" = "$TEST";
           then
           echo "Last version: $LAST_VERSION"
           else
           echo "Version is not a test version: should end with -beta"
           fi
-          echo "Last version: $LAST_VERSION"
           echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for Existing Tag
