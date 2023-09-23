@@ -6,7 +6,7 @@ env:
 on:
   push:
     tags:
-      - v*
+      - "*"
 
   workflow_dispatch:
     permissions:
@@ -100,7 +100,8 @@ jobs:
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
           DOC_VERSION=$(grep "release = .*" docs/conf.py | sed " s/release = //")
           echo "documentation is versioned with $DOC_VERSION"
-          if [[ "$LAST_VERSION"  != "$DOC_VERSION" ]]; then
+          if [ "$LAST_VERSION"  != "$DOC_VERSION" ];
+          then
           echo "ERROR: documentation version is not up to date !"
           exit 1
           fi
