@@ -56,13 +56,18 @@ jobs:
       - name: Check Version
         id: check_version
         run: |
+          set +e
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "last version is $LAST_VERSION"
-          if echo "$LAST_VERSION" | grep -q ".*-beta$"; then
-          echo "Version is a test version: should versions published to prod must not be beta version"
+          REGEXP='.*-beta$'
+          TEST=$(grep ".*-beta" <<< "$LAST_VERSION")
+          if [ "$LAST_VERSION" = "$TEST" ];
+          then
+          echo "Version is a test version: $LAST_VERSION"
           exit 1
+          else
+          echo "Version: $LAST_VERSION"
           fi
-          echo "Last version: $LAST_VERSION"
           echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for Existing Tag
