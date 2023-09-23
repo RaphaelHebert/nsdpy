@@ -51,6 +51,7 @@ jobs:
       - name: Check Version
         id: check_version
         run: |
+          set +e
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "last version is $LAST_VERSION"
           grep -qE ".*-beta$" <<< "$LAST_VERSION"
@@ -68,6 +69,7 @@ jobs:
       - name: Check for Existing Tag
         id: increment_version_and_check_tag
         run: |
+          set +e
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
           echo "looking for a matching tag..."
           git fetch --tags --quiet
