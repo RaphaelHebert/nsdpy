@@ -60,7 +60,7 @@ jobs:
           echo "TEST:"
           echo "$TEST"
           echo "ok"
-          if "$LAST_VERSION" = "$TEST";
+          if [ "$LAST_VERSION" = "$TEST" ];
           then
           echo "Last version: $LAST_VERSION"
           else
