@@ -53,11 +53,12 @@ jobs:
         run: |
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "last version is $LAST_VERSION"
-          if ! echo "$LAST_VERSION" | grep -q ".*-beta$"; then
+          if echo "$LAST_VERSION" | grep -qP ".*-beta$"; then
+          echo "Last version: $LAST_VERSION"
+          else
           echo "Version is not a test version: should end with -beta"
           exit 1
           fi
-          echo "$LAST_VERSION"
           echo "Last version: $LAST_VERSION"
           echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
 
