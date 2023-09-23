@@ -54,7 +54,7 @@ jobs:
           set +e
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
           echo "last version is $LAST_VERSION"
-          if echo "$LAST_VERSION" | grep -q beta$;
+          if echo "$LAST_VERSION" | grep -q .*-beta$;
           then
           echo "Last version: $LAST_VERSION"
           else
