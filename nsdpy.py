@@ -89,7 +89,7 @@ def main():
         "-y",
         "--yes",
         default=None,
-        help="automaticaly answer yes to every prompts",
+        help="automatically answer yes to every prompts",
         action="store_true",
     )
 

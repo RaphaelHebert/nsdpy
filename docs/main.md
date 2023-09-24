@@ -330,6 +330,39 @@ The program will write one file for the each of the 4th (notice the 4s) lowest t
 
 <div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>
 
+### gff3 files
+
+<div style="background:#FFEC3A; padding:5%"><p style="text-align: center;"><b> WARNING . .</b>
+
+The **-g** option retreives the the .gff3 files form the URL provided by NCBI GUI as the Entrez APIs do not provide a way to download these files.
+As this way to programatically retrveive these files does not follow NCBI policy. For more information check: [NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/).
+
+</div>
+</br>
+
+    -g
+
+or..
+
+    --gff
+
+The program will retrieve the gene features files for the TaxIds returned bby the provided query. These files have the .gff3 extension. Check the [ensembl documentation](http://www.ensembl.org/info/website/upload/gff3.html) for more information about this format
+
+Example:
+
+    nsdpy -r "ITS2" -g
+
+<div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b> GOOD TO KNOW . .</b>
+
+As the **-g** option does not use the Entrez APIs to retrieve the gene feature files the user will be prompted at the beginning of the run to confirm the choice of the option.
+To automatically confirm the run the **-y** option can be used.
+Example:
+
+    nsdpy -r "ITS2" -g -y
+
+</div>
+</br>
+
 ### More examples
 
 Some options can be used together, for example a gene selection option can be used in combination with a taxonomy option and some file output options as well as a verbose option. Note that the order of the options does not matter.
@@ -433,6 +466,7 @@ The first line of the tsv file:
 **Note that in this example the lineage and the dna sequence have been shortened to fit this document** in the real tsv file the lineage and dna sequence are complete.
 
 </br>
+
 ## Instruction for use from Google Colab
 
 Using the notebook from Google colab doesn’t require any installation, it just needs a web browser. For an introduction about Google Colab see [Welcome to Colaboratory](https://colab.research.google.com/notebooks/intro.ipynb).
