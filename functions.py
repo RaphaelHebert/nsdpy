@@ -1250,7 +1250,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
     return
 
 
-"""
+def parseClassifXML(xml):
+    """
     takes a string and parse it as xml format to extract the available taxonomy
 
 
@@ -1258,10 +1259,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
         xml: string
     OUTPUTS:
         classif: dict
-"""
+    """
 
-
-def parseClassifXML(xml):
     classif = {}
 
     # parse the name before lineageex as well
