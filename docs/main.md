@@ -330,7 +330,7 @@ The program will write one file for the each of the 4th (notice the 4s) lowest t
 
 <div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>
 
-### gff3 files
+### gene features files
 
 <div style="background:#FFEC3A; padding:5%"><p style="text-align: center;"><b> WARNING . .</b>
 
@@ -466,6 +466,20 @@ The first line of the tsv file:
 **Note that in this example the lineage and the dna sequence have been shortened to fit this document** in the real tsv file the lineage and dna sequence are complete.
 
 </br>
+
+## yes
+
+    -y
+
+or..
+
+    --yes
+
+This option will answer yes to all prompts. So far it is only useful with the **gff** option
+
+Example:
+
+    nsdpy -r "ITS2" -g -y
 
 ## Instruction for use from Google Colab
 
