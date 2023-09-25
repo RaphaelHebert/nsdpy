@@ -1,33 +1,131 @@
-# This workflow will upload a Python Package using Twine when a release is created
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python#publishing-to-package-registries
+name: Publish to PyPI PROD
 
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-
-name: deploy PROD
+env:
+  REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
 
 on:
   push:
     tags:
-      - v*
+      - "*"
 
-permissions:
-  contents: read
+  workflow_dispatch:
+    permissions:
+      users:
+        - $REPO_OWNER_USERNAME
 
 jobs:
-  deploy:
+  checkMain:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v3
+      - name: Check if push is to main branch
+        run: |
+          echo "Running on ${{ github.ref }}"
+          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
+            echo "Not on main branch, exiting workflow."
+            exit 1
+          fi
+  tests:
+    needs: checkMain
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v2
         with:
-          python-version: "3.x"
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Run Unittest Tests
+        run: |
+          python -m unittest discover tests -p '*_test.py'
+
+  publish:
+    if: steps.tests.outcome == 'success'
+    needs: tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v2
         with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+          python-version: 3.x
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+          poetry install
+
+      - name: Check Version
+        id: check_version
+        run: |
+          set +e
+          LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
+          echo "last version is $LAST_VERSION"
+          REGEXP='.*-beta$'
+          TEST=$(grep ".*-beta" <<< "$LAST_VERSION")
+          if [ "$LAST_VERSION" = "$TEST" ];
+          then
+          echo "Version is a test version: $LAST_VERSION"
+          exit 1
+          else
+          echo "Version: $LAST_VERSION"
+          fi
+          echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Check for Existing Tag
+        id: increment_version_and_check_tag
+        run: |
+          LAST_VERSION=${{ steps.check_version.outputs.last_version }}
+          echo "looking for a matching tag..."
+          git fetch --tags --quiet
+          TAG_EXISTS=$(git tag -l "$LAST_VERSION")
+          if [ -z "$TAG_EXISTS" ]; then
+          echo "No matching tags found for version $LAST_VERSION"
+          exit 1
+          fi
+          echo "matching tag $TAG_EXISTS found"
+          echo "checking tag isSemVer..."
+          SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
+          if echo "$TAG_EXISTS" | grep -qP "$SEMVER"; then
+          echo "$TAG_EXISTS is SemVer-compliant"
+          else
+          echo "$TAG_EXISTS is not SemVer-compliant"
+          exit 1
+          fi
+          echo "$TAG_EXISTS is SemVer-compliant"
+          echo "tags=$TAG_EXISTS" >> $GITHUB_OUTPUT
+
+      - name: Check Documentation Version
+        id: check_doc_version
+        run: |
+          echo "checking documentation version..."
+          LAST_VERSION=${{ steps.check_version.outputs.last_version }}
+          DOC_VERSION=$(grep "release = .*" docs/conf.py | sed " s/release = //")
+          echo "documentation is versioned with $DOC_VERSION"
+          if [ "$LAST_VERSION"  != "$DOC_VERSION" ];
+          then
+          echo "ERROR: documentation version is not up to date !"
+          exit 1
+          fi
+          echo "documentation is up to date"
+          echo "documentation_version=$DOC_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and Publish to PyPI Test
+        env:
+          BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+        if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
+        run: |
+          echo $BOT_ACCESS_TOKEN
+          poetry build
+          poetry config repositories.pypi https://pypi.org/
+          poetry config pypi-token.pypi $BOT_ACCESS_TOKEN
+          poetry publish -r pypi

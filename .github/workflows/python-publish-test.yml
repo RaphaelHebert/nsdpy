@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v2
@@ -51,64 +51,51 @@ jobs:
       - name: Check Version
         id: check_version
         run: |
+          set +e
           LAST_VERSION=$(grep "__version__ = .*" nsdpy.py | sed " s/__version__ = //")
-          echo "version is $LAST_VERSION"
-          if grep -q ".*-beta$" <<< "$LAST_VERSION"; then
+          echo "last version is $LAST_VERSION"
+          REGEXP='.*-beta$'
+          TEST=$(grep ".*-beta" <<< "$LAST_VERSION")
+          if [ "$LAST_VERSION" = "$TEST" ];
+          then
+          echo "Last version: $LAST_VERSION"
+          else
           echo "Version is not a test version: should end with -beta"
           exit 1
           fi
-          echo "$LAST_VERSION"
-          echo "Last version: $LAST_VERSION"
           echo "last_version=$LAST_VERSION" >> $GITHUB_OUTPUT
 
       - name: Check for Existing Tag
         id: increment_version_and_check_tag
         run: |
+          set +e
           LAST_VERSION=${{ steps.check_version.outputs.last_version }}
-          echo "result of last version: $LAST_VERSION"
+          echo "looking for a matching tag..."
           git fetch --tags --quiet
           TAG_EXISTS=$(git tag -l "$LAST_VERSION")
           if [ -z "$TAG_EXISTS" ]; then
           echo "No matching tags found for version $LAST_VERSION"
           exit 1
           fi
+          echo "matching tag $TAG_EXISTS found"
+          echo "checking tag isSemVer..."
           SEMVER="^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$"
-          if ! [[ "$TAG_EXISTS"  ]]; then
-          echo "Tag is not SemVer, check https://semver.org/ for more info"
+          if echo "$TAG_EXISTS" | grep -qP "$SEMVER";
+          then
+          echo "$TAG_EXISTS is SemVer-compliant"
+          else
+          echo "$TAG_EXISTS is not SemVer-compliant"
           exit 1
           fi
-          echo "Matching tags: $TAG_EXISTS"
+          echo "$TAG_EXISTS is SemVer-compliant"
           echo "tags=$TAG_EXISTS" >> $GITHUB_OUTPUT
-
-      #     echo "::set-output name=new_version::$NEW_VERSION"
-      #     echo "::set-output name=tag_exists::$TAG_EXISTS"
-
-      # - name: Update Version and Files
-      #   if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
-      #   run: |
-      #     NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
-      #     sed -i "s/__version__ = .*/__version__ = \"$NEW_VERSION\"/" nsdpy.py
-      #     poetry version $NEW_VERSION
-      #     git config --global user.email "github-actions@gg.com"
-      #     git config --global user.name "GitHub Actions"
-      #     git commit -am "Bump version to $NEW_VERSION [skip ci]"
-      #     git push origin $BRANCH_NAME
-
-      # - name: Create Tag and Push
-      #   if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
-      #   run: |
-      #     NEW_VERSION=${{ steps.increment_version_and_check_tag.outputs.new_version }}
-      #     BRANCH_NAME=${GITHUB_REF##*/}
-      #     COMMIT_SHA=$(git rev-parse HEAD)
-      #     git tag -a $NEW_VERSION -m "Version $NEW_VERSION, Branch: $BRANCH_NAME, Commit: $COMMIT_SHA"
-      #     git push origin $NEW_VERSION
 
       - name: Build and Publish to PyPI Test
         env:
           BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
-          echo $BOT_ACCESS_TOKEN
+          echo "Publishing to PyPI test..."
           poetry build
           poetry config repositories.test-pypi https://test.pypi.org/legacy/
           poetry config pypi-token.test-pypi $BOT_ACCESS_TOKEN

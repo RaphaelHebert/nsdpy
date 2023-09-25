@@ -488,7 +488,7 @@ or..
 
     --yes
 
-This option will answer yes to all prompts. So far it is only useful with the **gff** option
+This option will answer yes to all prompts. So far it is only useful with the **-gff** option
 
 Example:
 

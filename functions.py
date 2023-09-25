@@ -1362,10 +1362,9 @@ def download_gff3(list_of_ids, path, OPTIONS, write_file=True):
 
         gff3_file = path + "/results.gff3"
 
-        ## TODO handle error if gff3_result.ok not True
-
+        if not gff3_result.ok:
+            return
         # write gff3 files in result folder
-        # this can be optionnal
         if write_file:
             with open(gff3_file, "a") as f:
                 f.write(gff3_result.text)
