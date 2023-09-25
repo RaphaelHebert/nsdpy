@@ -263,6 +263,20 @@ For the tsv files the header line will appears to be: name (organism name), SeqI
 
 ### Taxonomy
 
+#### custom
+
+    -x
+
+or..
+
+    --custom
+
+The script will sort the sequences according to the taxonomic rank provided. (For example -x phylum, will produce one file per phylum). This option will use the taxonomy found in the .xml files returned by the call to Efetch for the taxonomy database, and thus does not need hardcoded list of taxa as is the case for earlier taxonomic options **--phylum** and **--kingdom**. See the documentation below for more information on these options.
+
+Example:
+
+    nsdpy -r "ITS2" -x kingdom
+
 #### kingdom (--kingdom or -k)
 
     -k
@@ -335,7 +349,7 @@ The program will write one file for the each of the 4th (notice the 4s) lowest t
 <div style="background:#FFEC3A; padding:5%"><p style="text-align: center;"><b> WARNING . .</b>
 
 The **-g** option retreives the the .gff3 files form the URL provided by NCBI GUI as the Entrez APIs do not provide a way to download these files.
-As this way to programatically retrveive these files does not follow NCBI policy. For more information check: [NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/).
+This procedure does not follow NCBI policy. For more information check: [NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/).
 
 </div>
 </br>
@@ -346,7 +360,7 @@ or..
 
     --gff
 
-The program will retrieve the gene features files for the TaxIds returned bby the provided query. These files have the .gff3 extension. Check the [ensembl documentation](http://www.ensembl.org/info/website/upload/gff3.html) for more information about this format
+TThe program will retrieve the gene features files for the accessions returned by the provided query. These files have the .gff3 extension. Check the [ensembl documentation](http://www.ensembl.org/info/website/upload/gff3.html) for more information about this format
 
 Example:
 
@@ -355,8 +369,7 @@ Example:
 <div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b> GOOD TO KNOW . .</b>
 
 As the **-g** option does not use the Entrez APIs to retrieve the gene feature files the user will be prompted at the beginning of the run to confirm the choice of the option.
-To automatically confirm the run the **-y** option can be used.
-Example:
+To avoid being prompted, confirm the run automatically using the **-y** option.Example:
 
     nsdpy -r "ITS2" -g -y
 
