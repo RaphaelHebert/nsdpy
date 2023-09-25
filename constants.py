@@ -1,6 +1,7 @@
 ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 ESUMMARY_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
 EFETCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
+NCBI_URL = "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi"
 
 PLANTAE = [
     "Chlorophyta",
