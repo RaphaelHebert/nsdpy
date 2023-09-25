@@ -16,6 +16,9 @@ from constants import (
     METAZOA,
     FUNGI,
     BASE_PARAMETERS,
+    EMAIL,
+    TOOL,
+    NCBI_URL,
 )
 
 
@@ -1247,7 +1250,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
     return
 
 
-"""
+def parseClassifXML(xml):
+    """
     takes a string and parse it as xml format to extract the available taxonomy
 
 
@@ -1255,10 +1259,8 @@ def tsv_file_writer(path, data, OPTIONS=None):
         xml: string
     OUTPUTS:
         classif: dict
-"""
+    """
 
-
-def parseClassifXML(xml):
     classif = {}
 
     # parse the name before lineageex as well
@@ -1307,6 +1309,71 @@ def parseClassifXML(xml):
                 classif[rank] = name
 
     return classif
+
+
+def download_gff3(list_of_ids, path, OPTIONS, write_file=True):
+    """
+
+    Retrieve gff3 files and optionnaly write the result in a file
+
+    INPUTS:
+        ids: (LIST) [id] accession sequence id
+        path: (STRING)
+        write_file: (BOOL)
+
+    OUTPUTS:
+        (DICT) {ok: (BOOL),
+                text: (STRING),
+                url: (STRING)
+                }   result from request.get call
+
+    """
+    if OPTIONS is None:
+        OPTIONS = ("", "", "", "", "", "")
+
+    ## Unpack parameters
+    (verb, _, _, _, _, _) = OPTIONS
+
+    count = len(list_of_ids)
+    retmax = 200
+
+    if count < retmax:
+        retmax = count
+
+    if count % retmax == 0:
+        nb = count // retmax
+    else:
+        nb = (count // retmax) + 1
+
+    for x in range(nb):
+        ids = list_of_ids[x * retmax : (x * retmax) + retmax]
+        ## Check that id parameters is not empty
+        ids = [i for i in ids if i]
+
+        parameters = {
+            "db": "nuccore",
+            "report": "gff3",
+            "id": ",".join(ids),
+            "email": EMAIL,
+            "tool": TOOL,
+        }
+
+        gff3_result = requests.get(NCBI_URL, params=parameters, timeout=60)
+
+        gff3_file = path + "/results.gff3"
+
+        ## TODO handle error if gff3_result.ok not True
+
+        # write gff3 files in result folder
+        # this can be optionnal
+        if write_file:
+            with open(gff3_file, "a") as f:
+                f.write(gff3_result.text)
+
+        if verb and verb > 1:
+            print(countDown(x, nb, "Downloading the gff3 files"))
+
+    return gff3_result
 
 
 if __name__ == "_main_":

@@ -263,6 +263,20 @@ For the tsv files the header line will appears to be: name (organism name), SeqI
 
 ### Taxonomy
 
+#### custom
+
+    -x
+
+or..
+
+    --custom
+
+The script will sort the sequences according to the taxonomic rank provided. (For example -x phylum, will produce one file per phylum). This option will use the taxonomy found in the .xml files returned by the call to Efetch for the taxonomy database, and thus does not need hardcoded list of taxa as is the case for earlier taxonomic options **--phylum** and **--kingdom**. See the documentation below for more information on these options.
+
+Example:
+
+    nsdpy -r "ITS2" -x kingdom
+
 #### kingdom (--kingdom or -k)
 
     -k
@@ -329,6 +343,38 @@ The program will write one file for the each of the different lowest taxonomic l
 The program will write one file for the each of the 4th (notice the 4s) lowest taxonomic level found, if the lineage is,for example, _cellular organisms, Eukaryota, Opisthokonta, Metazoa, Eumetazoa, Bilateria, Protostomia, Spiralia, Lophotrochozoa, Annelida, Polychaeta, Errantia, Phyllodocida, Nereididae, Platynereis_ the program will select _Errantia_).
 
 <div style="text-align: center; font-weight: bold; padding-bottom:3%"> Note that the different taxonomic options are mutually exclusive. </div>
+
+### gene features files
+
+<div style="background:#FFEC3A; padding:5%"><p style="text-align: center;"><b> WARNING . .</b>
+
+The **-g** option retreives the the .gff3 files form the URL provided by NCBI GUI as the Entrez APIs do not provide a way to download these files.
+This procedure does not follow NCBI policy. For more information check: [NCBI policies](https://www.ncbi.nlm.nih.gov/home/about/policies/).
+
+</div>
+</br>
+
+    -g
+
+or..
+
+    --gff
+
+TThe program will retrieve the gene features files for the accessions returned by the provided query. These files have the .gff3 extension. Check the [ensembl documentation](http://www.ensembl.org/info/website/upload/gff3.html) for more information about this format
+
+Example:
+
+    nsdpy -r "ITS2" -g
+
+<div style="background:Cornsilk; padding:5%"><p style="text-align: center;"><b> GOOD TO KNOW . .</b>
+
+As the **-g** option does not use the Entrez APIs to retrieve the gene feature files the user will be prompted at the beginning of the run to confirm the choice of the option.
+To avoid being prompted, confirm the run automatically using the **-y** option.Example:
+
+    nsdpy -r "ITS2" -g -y
+
+</div>
+</br>
 
 ### More examples
 
@@ -433,6 +479,21 @@ The first line of the tsv file:
 **Note that in this example the lineage and the dna sequence have been shortened to fit this document** in the real tsv file the lineage and dna sequence are complete.
 
 </br>
+
+## yes
+
+    -y
+
+or..
+
+    --yes
+
+This option will answer yes to all prompts. So far it is only useful with the **gff** option
+
+Example:
+
+    nsdpy -r "ITS2" -g -y
+
 ## Instruction for use from Google Colab
 
 Using the notebook from Google colab doesn’t require any installation, it just needs a web browser. For an introduction about Google Colab see [Welcome to Colaboratory](https://colab.research.google.com/notebooks/intro.ipynb).
