@@ -248,7 +248,7 @@ def main():
                 # Delete the last "[ORGN] OR " and close parenthesis
                 queries_list.append(new_query[:-8] + ")")
                 # Start another query
-                new_query = base_query
+                new_query = base_query + taxon
                 remaining_space = taxa_max_length
             else:
                 remaining_space = remaining_space - len(taxon)
