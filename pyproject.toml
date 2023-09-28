@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nsdpy"
-version = "0.3.9-beta"
+version = "0.3.31-beta"
 description = "Automatize the download of DNA sequences from NCBI, sort them according to their taxonomy and filter them with a gene name (provided as a regular expression)"
 authors = ["RaphaelHebert <raphaelhebert18@gmail.com>", "Emese Meglecz <emese.meglecz@imbe.fr>"]
 include = ["functions.py"]
