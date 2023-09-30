@@ -4,6 +4,7 @@
 [![pypi](https://img.shields.io/pypi/v/nsdpy)](https://pypi.org/project/nsdpy/)
 [![Python 3.8](https://upload.wikimedia.org/wikipedia/commons/a/a5/Blue_Python_3.8_Shield_Badge.svg)](https://www.python.org/)
 [![Documentation Status](https://readthedocs.org/projects/nsdpy/badge/?version=latest)](https://nsdpy.readthedocs.io/en/latest/?badge=latest)
+[![Coverage Status](https://coveralls.io/repos/github/RaphaelHebert/nsdpy/badge.svg?branch=fix/longSpeciesList)](https://coveralls.io/github/RaphaelHebert/nsdpy?branch=fix/longSpeciesList)
 
 <a href="https://www.buymeacoffee.com/joe010" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
