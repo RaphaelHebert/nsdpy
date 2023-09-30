@@ -9,7 +9,7 @@ import argparse  # parsing command line arguments
 from datetime import datetime
 
 # local imports
-
+from constants import ESEARCH_URL
 from functions import (
     esearchquery,
     completetaxo,
@@ -18,9 +18,8 @@ from functions import (
     taxo,
     fasta,
     duplicates,
+    download_gff3,
 )
-
-ESEARCH_URL = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 
 
 def main():
@@ -55,20 +54,12 @@ def main():
         action="store_true",
     )
     group.add_argument("-q", "--quiet", help="No verbose output", action="store_true")
-    # Sequence types
-    group2 = parser.add_mutually_exclusive_group()
+
     # Gene selection
-    group2.add_argument(
+    parser.add_argument(
         "-c",
         "--cds",
         help="search for a given list of gene, exp: COX1 COX2 COX3, accepts regex",
-        nargs="*",
-    )
-    # Gene Features format
-    group2.add_argument(
-        "-g",
-        "--gene",
-        help="download sequences in gene feature format // NOT FUNCTIONAL YET",
         nargs="*",
     )
     # file input
@@ -85,6 +76,23 @@ def main():
         help="write a text file listing all the accession numbers and their related TaxIDs",
         action="store_true",
     )
+
+    parser.add_argument(
+        "-g",
+        "--gff",
+        default=None,
+        help="download the gff3 files corresponding to the query",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-y",
+        "--yes",
+        default=None,
+        help="automatically answer yes to every prompts",
+        action="store_true",
+    )
+
     parser.add_argument(
         "-t",
         "--tsv",
@@ -157,6 +165,10 @@ def main():
 
     # list of chosen options to display in the report.tsv
     ## parse options
+    if args.yes:
+        options_report.append("--yes (-y)")
+    if args.gff:
+        options_report.append("--gff (-f)")
     if args.tsv:
         options_report.append("--tsv (-t)")
     if args.information:
@@ -167,8 +179,6 @@ def main():
         options_report.append(f"--cds (-c) {' '.join(args.cds)}")
     if args.apikey:
         options_report.append(f"--apikey (-a) {args.apikey[0]}")
-    if args.gene:
-        options_report.append(f"--gene (-g) {' '.join(args.gene)}")
 
     # verbose
     if args.verbose:
@@ -213,6 +223,13 @@ def main():
     #########  RUN THE RUN!!  ####################
     ##############################################
 
+    if args.gff and not args.yes:
+        answer = input(
+            "\n!!!! WARNING !!!! \n\ngff option is experimental, read the documentation: https://www.ncbi.nlm.nih.gov/home/about/policies/ \nAre you sure you want to continue ('y'/'yes')?\n"
+        )
+        if answer.lower() not in ["y", "yes"]:
+            sys.exit(f"ABORTED: {','.join(options_report)}")
+
     # Create the directory to store the results
     if not os.path.exists(path):
         os.makedirs(path)
@@ -228,8 +245,7 @@ def main():
         taxa_list = [taxon + "[ORGN] OR " for taxon in taxa_list]
 
         # Base URL with params
-        esearch_address = ESEARCH_URL
-        base_URL_length = len(esearch_address) + 100  # Keep 100 chars for params
+        base_URL_length = len(ESEARCH_URL) + 100  # Keep 100 chars for params
 
         # Base query
         base_query = args.request + " AND ("
@@ -294,7 +310,7 @@ def main():
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
 
-        subdictids = taxids(params, path, OPTIONS)
+        subdictids = taxids(params, path, QUERY, OPTIONS)
         dict_ids = {**dict_ids, **subdictids}
 
         total_number_of_results = len(set(dict_ids.keys()))
@@ -309,6 +325,12 @@ def main():
     list_of_ids = list(dict_ids.keys())
     reverse = set(dict_ids.values())
     list_of_TaxIDs = list(reverse)
+
+    # dl the gff3 files
+    if args.gff:
+        if verb != 0:
+            print(f"retrieving gff3 files....")
+        download_gff3(list_of_ids, path, OPTIONS)
 
     ### completetaxo (call EFETCH to query the taxonomy database)
     # Check that an option that requires the taxonomic information has been selected
