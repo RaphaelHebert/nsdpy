@@ -291,6 +291,7 @@ def main():
         y = esearchquery(QUERY)
 
         ## check errors (if bad API key etc) errors returned by the Entrez API
+        print("y is ", y)
         if "error" in y.keys():
             errors = y["error"]
             sys.exit(errors)
@@ -311,6 +312,8 @@ def main():
             print("retreiving the corresponding TaxIDs...")
 
         subdictids = taxids(params, path, QUERY, OPTIONS)
+
+        print("subdictids", subdictids)
         dict_ids = {**dict_ids, **subdictids}
 
         total_number_of_results = len(set(dict_ids.keys()))

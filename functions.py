@@ -111,6 +111,8 @@ def esearchquery(QUERY):
     ## unpack QUERY:
     (query, api_key) = QUERY
 
+    print("\n\n", query, api_key, "\n\n")
+
     # parameters
     parameters = {
         **BASE_PARAMETERS,

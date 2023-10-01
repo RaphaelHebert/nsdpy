@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import patch
 from functions import download_gff3
-import requests
 import filecmp
 import os
 
