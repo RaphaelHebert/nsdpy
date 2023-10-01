@@ -6,7 +6,11 @@
 [![Documentation Status](https://readthedocs.org/projects/nsdpy/badge/?version=latest)](https://nsdpy.readthedocs.io/en/latest/?badge=latest)
 [![Coverage Status](https://coveralls.io/repos/github/RaphaelHebert/nsdpy/badge.svg?branch=fix/longSpeciesList)](https://coveralls.io/github/RaphaelHebert/nsdpy?branch=fix/longSpeciesList)
 
-<a href="https://www.buymeacoffee.com/joe010" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+<div align="center" style="text-align: center">
+Your support means the world to me and helps me continue developing and maintaining this repository to benefit the entire community. Thank you for making a difference in the open-source world! </div>
+<br/>
+<div align="center" style="text-align: center;" markdown="1"><a href="https://www.buymeacoffee.com/joe010" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+</div>
 
 ## 
 
