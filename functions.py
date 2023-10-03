@@ -316,7 +316,9 @@ def completetaxo(idlist, QUERY, OPTIONS):
     idlist = [i.split(".")[0] for i in idlist]
     ## retreive the taxonomy sending batches of TaxIds to efetch
     # number of TaxIds to be sent to the API at once
-    retmax = 100
+    # above 60 make the parsing of the file more difficult see https://github.com/RaphaelHebert/nsdpy/pull/39
+    retmax = 50
+
     count = len(idlist)
     if count % retmax == 0:
         nb = count // retmax
@@ -328,7 +330,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
         retstart = x * retmax
         idsublist = idlist[retstart : (retstart + retmax)]
         idsublist = ",".join(idsublist)
-
         # parameters
         parameters = {
             "db": "taxonomy",
@@ -345,7 +346,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
 
         ## analyse the results from efetch
         result = result.text.split("</Taxon>\n<Taxon>")
-
         for seq in result:
             dicttemp = {}
             try:
@@ -385,7 +385,6 @@ def completetaxo(idlist, QUERY, OPTIONS):
                 dicttemp["dispatch"] = dispatch(lineage, classif)
 
             data[TaxId] = dicttemp
-
     # comments
     if verb and verb > 0:
         print(f"number of taxids:\t{len(data.keys())}")
