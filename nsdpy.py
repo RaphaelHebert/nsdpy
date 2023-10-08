@@ -279,8 +279,6 @@ def main():
 
     ### Retrieving results from esearch and the related TaxIDs
     dict_ids = {}
-    sublist_length = []
-    params_history = []
 
     total_number_of_results = 0
     for query in queries_list:
@@ -309,7 +307,6 @@ def main():
             continue
 
         params = (querykey, webenv, count)
-        params_history.append(params)
 
         ### Taxids
         if verb != 0:
