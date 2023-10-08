@@ -265,10 +265,10 @@ def main():
                 queries_list.append(new_query[:-8] + ")")
                 # Start another query
                 new_query = base_query + taxon
-                remaining_space = taxa_max_length
+                remaining_space = taxa_max_length - len(taxon)
             else:
-                remaining_space = remaining_space - len(taxon)
                 new_query = new_query + taxon
+                remaining_space = remaining_space - len(taxon)
                 if queries_list:
                     queries_list[-1] = new_query
                 else:
@@ -279,41 +279,43 @@ def main():
 
     ### Retrieving results from esearch and the related TaxIDs
     dict_ids = {}
+    sublist_length = []
+    params_history = []
 
     total_number_of_results = 0
     for query in queries_list:
         query = query.rstrip("0").rstrip(" OR ") + ")"
         QUERY = (query, args.apikey)
         if verb != 0:
-            print(f"retrieving results for {query} ....")
+            print(f"retrieving results for {query}\n")
 
         ## esearchquery
         y = esearchquery(QUERY)
 
         ## check errors (if bad API key etc) errors returned by the Entrez API
-        print("y is ", y)
         if "error" in y.keys():
             errors = y["error"]
             sys.exit(errors)
 
         count = int(y["esearchresult"]["count"])
+        webenv = str(y["esearchresult"]["webenv"])
+        querykey = str(y["esearchresult"]["querykey"])
+
         # comments
         if verb > 0:
             print(f"Number of results found: {count}")
 
         if count < 1:
             continue
-        webenv = str(y["esearchresult"]["webenv"])
-        querykey = str(y["esearchresult"]["querykey"])
+
         params = (querykey, webenv, count)
+        params_history.append(params)
 
         ### Taxids
         if verb != 0:
             print("retreiving the corresponding TaxIDs...")
 
         subdictids = taxids(params, path, QUERY, OPTIONS)
-
-        print("subdictids", subdictids)
         dict_ids = {**dict_ids, **subdictids}
 
         total_number_of_results = len(set(dict_ids.keys()))
@@ -327,6 +329,7 @@ def main():
     # make a set of TaxIDs
     list_of_ids = list(dict_ids.keys())
     reverse = set(dict_ids.values())
+
     list_of_TaxIDs = list(reverse)
 
     # dl the gff3 files

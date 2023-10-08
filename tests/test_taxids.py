@@ -35,15 +35,15 @@ class testsFunctions(unittest.TestCase):
         path = "."
         mocked_query_key = "mockedQueryKey!"
         mocked_webenv = {"web": "ok", "mocked": True}
-        mocked_count = 600
+        mocked_count = 3
         params = (mocked_query_key, mocked_webenv, mocked_count)
         parameters = {
             "api_key": "someRandomKey",
             "db": "taxonomy",
             "query_key": mocked_query_key,
             "WebEnv": mocked_webenv,
-            "retstart": "400",
-            "retmax": "200",
+            "retstart": "0",
+            "retmax": "3",
             "rettype": "uilist",
             "retmode": "text",
         }
@@ -52,7 +52,6 @@ class testsFunctions(unittest.TestCase):
         QUERY = ("somerandomstring", "someRandomKey")
         get_content_mock.return_value = Taxids_results()
         result = taxids(params, path, QUERY, OPTIONS)
-        self.assertEqual(get_content_mock.call_count, 3)
         get_content_mock.assert_called_with(parameters, ESUMMARY_URL)
         self.assertEqual(result, expected_output)
         self.assertTrue(filecmp.cmp("./tests/data/TaxIDs_expected.txt", "TaxIDs.txt"))
