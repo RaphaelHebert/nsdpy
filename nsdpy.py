@@ -1,4 +1,4 @@
-__version__ = "0.3.33-beta"
+__version__ = "0.3.34-beta"
 __author__ = "Raphael Hebert, Emese Meglecz"
 __email__ = "raphaelhebert18@gmail.com, emese.meglecz@imbe.fr"
 __license__ = "MIT"
@@ -264,11 +264,11 @@ def main():
                 # Delete the last "[ORGN] OR " and close parenthesis
                 queries_list.append(new_query[:-8] + ")")
                 # Start another query
-                new_query = base_query
-                remaining_space = taxa_max_length
+                new_query = base_query + taxon
+                remaining_space = taxa_max_length - len(taxon)
             else:
-                remaining_space = remaining_space - len(taxon)
                 new_query = new_query + taxon
+                remaining_space = remaining_space - len(taxon)
                 if queries_list:
                     queries_list[-1] = new_query
                 else:
@@ -285,7 +285,7 @@ def main():
         query = query.rstrip("0").rstrip(" OR ") + ")"
         QUERY = (query, args.apikey)
         if verb != 0:
-            print(f"retrieving results for {query} ....")
+            print(f"retrieving results for {query}\n")
 
         ## esearchquery
         y = esearchquery(QUERY)
@@ -296,14 +296,16 @@ def main():
             sys.exit(errors)
 
         count = int(y["esearchresult"]["count"])
+        webenv = str(y["esearchresult"]["webenv"])
+        querykey = str(y["esearchresult"]["querykey"])
+
         # comments
         if verb > 0:
             print(f"Number of results found: {count}")
 
         if count < 1:
             continue
-        webenv = str(y["esearchresult"]["webenv"])
-        querykey = str(y["esearchresult"]["querykey"])
+
         params = (querykey, webenv, count)
 
         ### Taxids
@@ -324,6 +326,7 @@ def main():
     # make a set of TaxIDs
     list_of_ids = list(dict_ids.keys())
     reverse = set(dict_ids.values())
+
     list_of_TaxIDs = list(reverse)
 
     # dl the gff3 files

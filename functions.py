@@ -161,7 +161,7 @@ def taxids(params, path, QUERY, OPTIONS=None):
     seqnb = ""
 
     ## retreive the taxids sending batches of accession numbers to esummary
-    retmax = 200
+    retmax = 100
     if count < retmax:
         retmax = count
 
@@ -170,7 +170,8 @@ def taxids(params, path, QUERY, OPTIONS=None):
     else:
         nb = (count // retmax) + 1
 
-    for x in range(nb):
+    x = 0
+    while x < nb:
         # parameters
         parameters = {
             **({"api_key": str(api_key)} if api_key else {}),
@@ -214,6 +215,14 @@ def taxids(params, path, QUERY, OPTIONS=None):
 
                 if seqnb:
                     dict_ids[seqnb] = taxid
+
+        if count - (retmax * x) > 100:
+            if len(dict_ids.keys()) != (retmax * (x + 1)):
+                x -= 1
+        else:
+            if len(dict_ids.keys()) != count:
+                x -= 1
+        x += 1
 
     if fileoutput:
         ## filename
