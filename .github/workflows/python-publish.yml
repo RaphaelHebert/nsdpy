@@ -1,5 +1,8 @@
 name: Publish to PyPI PROD
 
+env:
+  REPO_OWNER_USERNAME: ${{ secrets.REPO_OWNER_USERNAME }}
+
 on:
   push:
     tags:
