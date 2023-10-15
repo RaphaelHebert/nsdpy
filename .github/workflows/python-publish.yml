@@ -98,7 +98,7 @@ jobs:
         run: |
           TAG_EXISTS=${{ steps.increment_version_and_check_tag.outputs.tag }}
           echo "checking documentation version..."
-          DOC_VERSION=$(grep "release = .*" docs/conf.py | sed " s/release = //")
+          DOC_VERSION=$(grep "release = .*" docs/conf.py | sed " s/release = //" | sed 's/\"//')
           echo "documentation is versioned with $DOC_VERSION"
           if [ "$TAG_EXISTS"  != "$DOC_VERSION" ];
           then
