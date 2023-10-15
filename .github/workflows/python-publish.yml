@@ -110,11 +110,11 @@ jobs:
 
       - name: Build and Publish to PyPI Test
         env:
-          BOT_ACCESS_TOKEN: ${{ secrets.BOT_ACCESS_TOKEN }}
+          PYPI_PROD: ${{ secrets.PYPI_PROD }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
-          echo $BOT_ACCESS_TOKEN
+          echo $PYPI_PROD
           poetry build
           poetry config repositories.pypi https://pypi.org/
-          poetry config pypi-token.pypi $BOT_ACCESS_TOKEN
+          poetry config pypi-token.pypi $PYPI_PROD
           poetry publish -r pypi
