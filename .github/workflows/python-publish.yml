@@ -42,7 +42,7 @@ jobs:
           pip install poetry
           poetry install
 
-      - name: Run Unittest Tests
+      - name: Unittest
         run: |
           python -m unittest discover tests -p '*_test.py'
 
