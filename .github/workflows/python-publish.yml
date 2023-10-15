@@ -115,6 +115,6 @@ jobs:
         run: |
           echo "Publishing to PyPI..."
           poetry build
-          poetry config repositories.pypi https://pypi.org/simple/
+          poetry config repositories.pypi https://pypi.org/legacy/
           poetry config pypi-token.pypi $PYPI_PROD
           poetry publish -r pypi
