@@ -15,7 +15,6 @@ on:
 
 jobs:
   tests:
-    needs: checkMain
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
