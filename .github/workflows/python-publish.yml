@@ -14,16 +14,6 @@ on:
         - $REPO_OWNER_USERNAME
 
 jobs:
-  checkMain:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check if push is to main branch
-        run: |
-          echo "Running on ${{ github.ref }}"
-          if [[ "${{ github.ref }}" != "refs/heads/main" ]]; then
-            echo "Not on main branch, exiting workflow."
-            exit 1
-          fi
   tests:
     needs: checkMain
     runs-on: ubuntu-latest
