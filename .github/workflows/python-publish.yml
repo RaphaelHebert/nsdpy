@@ -113,8 +113,8 @@ jobs:
           PYPI_PROD: ${{ secrets.PYPI_PROD }}
         if: steps.increment_version_and_check_tag.outputs.tag_exists != '1'
         run: |
-          echo $PYPI_PROD
+          echo "Publishing to PyPI..."
           poetry build
-          poetry config repositories.pypi https://pypi.org/
+          poetry config repositories.pypi https://pypi.org/simple
           poetry config pypi-token.pypi $PYPI_PROD
           poetry publish -r pypi
