@@ -15,7 +15,7 @@ Your support means the world to me and helps me continue developing and maintain
 ##
 
 - [Introduction](#introduction)
-- [Workfolw](#workflow)
+- [Workflow](#workflow)
 - [Quick start](#quick-start)
 - [Usage](#usage)
   - [Google Colab](#google-colab)
@@ -35,21 +35,25 @@ Using nsdpy the user can:
 - **Download** the fasta files or the cds_fasta files corresponding to the result of the search
 - **Sort** the sequences based on their taxonomy
 - **Select** coding sequences from cds files based on the gene names using one or more regular expressions.
-This can help the user retrieve some sequences for which the gene name is annotated in another field.
+  This can help the user retrieve some sequences for which the gene name is annotated in another field.
 - **Retrieve** the taxonomic information and add it to the output sequences.
 
 ## Quick start
 
 - Clone the repo from Github:
+
 ```bash
 git clone https://github.com/RaphaelHebert/nsdpy.git
-  ```
+```
+
 - pip:
-_depending on the user environment pip may be replaced by pip3 if pip3 is used_
+  _depending on the user environment pip may be replaced by pip3 if pip3 is used_
+
 ```bash
 pip install nsdpy
 ```
-*minimum python version for nsdpy: 3.8.2*
+
+_minimum python version for nsdpy: 3.8.2_
 
 - Google Colab: save a copy of [this notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing) in your drive.
 
@@ -58,6 +62,7 @@ pip install nsdpy
 <img src="https://docs.google.com/drawings/d/e/2PACX-1vRD4h7l0S57op_4j-5xsz8iv1j1XBliw-jEdtnWOIq-JAU2l8kSV6d1NmkHd5Q4zhUmZCA3SHUSuHJw/pub?w=801&amp;h=744" width="600" />
 
 ## Usage
+
 ### Google colab
 
 [nsdpy colab notebook](https://colab.research.google.com/drive/1UmxzRc_k5sNeQ2RPGe29nWR_1_0FRPkq?usp=sharing)
@@ -72,7 +77,6 @@ nsdpy -r "USER'S REQUEST" [OPTIONS]
 
 [Raphael Hebert](https://github.com/RaphaelHebert)
 [Emese Meglecz](https://github.com/meglecz)
-
 
 ## Support
 
