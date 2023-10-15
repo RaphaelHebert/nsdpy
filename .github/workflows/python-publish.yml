@@ -45,11 +45,12 @@ jobs:
       - name: Run Unittest Tests
         run: |
           python -m unittest discover tests -p '*_test.py'
+          echo "test_status=success" >> $GITHUB_ENV
 
   publish:
     needs: tests
     runs-on: ubuntu-latest
-    if: ${{ steps.tests.outcome }} == 'success'
+    if: success()
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
