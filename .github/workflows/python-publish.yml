@@ -49,7 +49,7 @@ jobs:
   publish:
     needs: tests
     runs-on: ubuntu-latest
-    if: steps.tests.outcome == 'success'
+    if: ${{ steps.tests.outcome }} == 'success'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
