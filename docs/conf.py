@@ -22,7 +22,7 @@ copyright = "2021, Raphael Hebert"
 author = "Raphael Hebert"
 
 # The full version, including alpha/beta/rc tags
-release = "0.1.17"
+release = "1.0.0"
 
 
 # -- General configuration ---------------------------------------------------
