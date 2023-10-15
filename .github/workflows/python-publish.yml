@@ -91,17 +91,16 @@ jobs:
           echo "$TAG_EXISTS is not SemVer-compliant"
           exit 1
           fi
-          echo "$TAG_EXISTS is SemVer-compliant"
-          echo "tags=$TAG_EXISTS" >> $GITHUB_OUTPUT
+          echo "tag=$TAG_EXISTS" >> $GITHUB_OUTPUT
 
       - name: Check Documentation Version
         id: check_doc_version
         run: |
+          TAG_EXISTS=${{ steps.increment_version_and_check_tag.outputs.tag }}
           echo "checking documentation version..."
-          LAST_VERSION=${{ steps.check_version.outputs.last_version }}
           DOC_VERSION=$(grep "release = .*" docs/conf.py | sed " s/release = //")
           echo "documentation is versioned with $DOC_VERSION"
-          if [ "$LAST_VERSION"  != "$DOC_VERSION" ];
+          if [ "$TAG_EXISTS"  != "$DOC_VERSION" ];
           then
           echo "ERROR: documentation version is not up to date !"
           exit 1
